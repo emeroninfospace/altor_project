@@ -8,26 +8,35 @@
  "field_order": [
   "naming_series",
   "project",
+  "company",
   "boq_reference",
   "column_break_2",
   "posting_date",
+  "budget_status",
+  "warning_threshold",
+  "dashboard_section",
+  "budget_dashboard",
   "section_break_5",
   "total_estimated_cost",
+  "total_committed_cost",
   "column_break_7",
   "total_actual_cost",
+  "total_utilized_cost",
   "column_break_9",
   "variance",
   "variance_percentage",
+  "column_break_util",
+  "utilization_percentage",
+  "unbudgeted_amount",
+  "last_updated_on",
+  "section_break_11",
+  "budget_items",
   "budget_control_action_section",
   "applicable_on_material_request",
   "action_if_annual_budget_exceeded_on_mr",
-  "action_if_accumulated_monthly_budget_exceeded_on_mr",
   "column_break_doki",
   "applicable_on_purchase_order",
   "action_if_annual_budget_exceeded_on_po",
-  "action_if_accumulated_monthly_budget_exceeded_on_po",
-  "section_break_11",
-  "budget_items",
   "section_break_17",
   "remarks",
   "amended_from"
@@ -50,6 +59,14 @@
    "reqd": 1
   },
   {
+   "fetch_from": "project.company",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1
+  },
+  {
    "fieldname": "boq_reference",
    "fieldtype": "Link",
    "label": "BOQ Reference",
@@ -61,6 +78,41 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Posting Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "budget_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Budget Status",
+   "options": "\nWithin Budget\nWarning\nExceeded",
+   "read_only": 1
+  },
+  {
+   "default": "90",
+   "description": "Show a warning when utilization reaches this % of the item group budget",
+   "fieldname": "warning_threshold",
+   "fieldtype": "Percent",
+   "label": "Warning Threshold %"
+  },
+  {
+   "fieldname": "dashboard_section",
+   "fieldtype": "Section Break",
+   "label": "Budget Dashboard"
+  },
+  {
+   "fieldname": "budget_dashboard",
+   "fieldtype": "HTML",
+   "label": "Budget Dashboard"
+  },
+  {
    "fieldname": "section_break_5",
    "fieldtype": "Section Break",
    "label": "Budget Summary"
@@ -68,7 +120,16 @@
   {
    "fieldname": "total_estimated_cost",
    "fieldtype": "Currency",
-   "label": "Total Estimated Cost",
+   "label": "Total Budget",
+   "options": "Company:company:default_currency",
+   "read_only": 1,
+   "allow_on_submit": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "total_committed_cost",
+   "fieldtype": "Currency",
+   "label": "Total Committed Cost",
    "options": "Company:company:default_currency",
    "read_only": 1
   },
@@ -81,6 +142,15 @@
    "fieldtype": "Currency",
    "label": "Total Actual Cost",
    "options": "Company:company:default_currency",
+   "read_only": 1,
+   "allow_on_submit": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "total_utilized_cost",
+   "fieldtype": "Currency",
+   "label": "Total Utilized",
+   "options": "Company:company:default_currency",
    "read_only": 1
   },
   {
@@ -90,27 +160,94 @@
   {
    "fieldname": "variance",
    "fieldtype": "Currency",
-   "label": "Variance",
+   "label": "Balance",
    "options": "Company:company:default_currency",
-   "read_only": 1
+   "read_only": 1,
+   "allow_on_submit": 1
   },
   {
    "fieldname": "variance_percentage",
    "fieldtype": "Percent",
-   "label": "Variance %",
+   "label": "Balance %",
+   "read_only": 1,
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "column_break_util",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "utilization_percentage",
+   "fieldtype": "Percent",
+   "label": "Utilization %",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "description": "Spend on item groups that have no budget line",
+   "fieldname": "unbudgeted_amount",
+   "fieldtype": "Currency",
+   "label": "Unbudgeted Spend",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "last_updated_on",
+   "fieldtype": "Datetime",
+   "label": "Figures Updated On",
    "read_only": 1
   },
   {
    "fieldname": "section_break_11",
    "fieldtype": "Section Break",
-   "label": "Budget Details"
+   "label": "Item Group Wise Budget"
   },
   {
    "fieldname": "budget_items",
    "fieldtype": "Table",
-   "label": "Budget Items",
+   "label": "Item Group Wise Budget",
    "options": "Project Budget Item",
    "reqd": 1
+  },
+  {
+   "fieldname": "budget_control_action_section",
+   "fieldtype": "Section Break",
+   "label": "Budget Control Action",
+   "description": "Stop: block saving the Material Request / Purchase Order. Warn: show a warning and allow it. Ignore: no check."
+  },
+  {
+   "default": "0",
+   "fieldname": "applicable_on_material_request",
+   "fieldtype": "Check",
+   "label": "Applicable on Material Request"
+  },
+  {
+   "depends_on": "eval:doc.applicable_on_material_request == 1",
+   "fieldname": "action_if_annual_budget_exceeded_on_mr",
+   "fieldtype": "Select",
+   "label": "Action if Item Group Budget Exceeded on MR",
+   "options": "\nStop\nWarn\nIgnore",
+   "default": "Warn"
+  },
+  {
+   "fieldname": "column_break_doki",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "applicable_on_purchase_order",
+   "fieldtype": "Check",
+   "label": "Applicable on Purchase Order"
+  },
+  {
+   "depends_on": "eval:doc.applicable_on_purchase_order == 1",
+   "fieldname": "action_if_annual_budget_exceeded_on_po",
+   "fieldtype": "Select",
+   "label": "Action if Item Group Budget Exceeded on PO",
+   "options": "\nStop\nWarn\nIgnore",
+   "default": "Warn"
   },
   {
    "collapsible": 1,
@@ -131,70 +268,13 @@
    "options": "Project Budget",
    "print_hide": 1,
    "read_only": 1
-  },
-  {
-   "default": "Today",
-   "fieldname": "posting_date",
-   "fieldtype": "Date",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Posting Date"
-  },
-  {
-   "fieldname": "budget_control_action_section",
-   "fieldtype": "Section Break",
-   "label": "Budget Control Action"
-  },
-  {
-   "default": "0",
-   "fieldname": "applicable_on_material_request",
-   "fieldtype": "Check",
-   "label": "Applicable on Material Request"
-  },
-  {
-   "depends_on": "eval:doc.applicable_on_material_request == 1",
-   "fieldname": "action_if_annual_budget_exceeded_on_mr",
-   "fieldtype": "Select",
-   "label": "Action if Annual Budget Exceeded on MR",
-   "options": "\nStop\nWarn\nIgnore"
-  },
-  {
-   "depends_on": "eval:doc.applicable_on_material_request == 1",
-   "fieldname": "action_if_accumulated_monthly_budget_exceeded_on_mr",
-   "fieldtype": "Select",
-   "label": "Action if Accumulated Monthly Budget Exceeded on MR",
-   "options": "\nStop\nWarn\nIgnore"
-  },
-  {
-   "fieldname": "column_break_doki",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "0",
-   "fieldname": "applicable_on_purchase_order",
-   "fieldtype": "Check",
-   "label": "Applicable on Purchase Order"
-  },
-  {
-   "depends_on": "eval:doc.applicable_on_purchase_order == 1",
-   "fieldname": "action_if_annual_budget_exceeded_on_po",
-   "fieldtype": "Select",
-   "label": "Action if Annual Budget Exceeded on PO",
-   "options": "\nStop\nWarn\nIgnore"
-  },
-  {
-   "depends_on": "eval:doc.applicable_on_purchase_order == 1",
-   "fieldname": "action_if_accumulated_monthly_budget_exceeded_on_po",
-   "fieldtype": "Select",
-   "label": "Action if Accumulated Monthly Budget Exceeded on PO",
-   "options": "\nStop\nWarn\nIgnore"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-04-03 10:48:12.252946",
+ "modified": "2026-11-01 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Project Budget",
@@ -213,11 +293,36 @@
    "share": 1,
    "submit": 1,
    "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "share": 1,
+   "submit": 1,
+   "write": 1,
+   "role": "Projects Manager"
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "email": 1,
+   "share": 0,
+   "role": "Projects User"
   }
  ],
  "row_format": "Dynamic",
  "rows_threshold_for_grid_search": 20,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "track_changes": 1,
+ "title_field": "project",
+ "show_title_field_in_link": 0
 }
