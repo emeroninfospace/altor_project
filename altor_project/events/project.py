@@ -65,21 +65,40 @@ def create_material_request(name):
 def make_project_budget(project):
     project_doc = frappe.get_doc("Project", project)
 
+    existing = frappe.db.get_value(
+        "Project Budget", {"project": project, "docstatus": ["<", 2]}, "name"
+    )
+    if existing:
+        frappe.msgprint(
+            _("Project Budget {0} already exists for this project.").format(
+                frappe.utils.get_link_to_form("Project Budget", existing)
+            ),
+            indicator="orange",
+        )
+        return existing
+
     ps = frappe.new_doc("Project Budget")
     ps.project = project_doc.name
     ps.boq_reference = project_doc.custom_bill_of_quantity
 
+    # One budget line per Item Group. The BOQ value is kept as a reference;
+    # the budgeted (cost) amount is entered by the user.
     if project_doc.custom_bill_of_quantity:
-        boq = frappe.get_doc(
-            "Bill of Quantity",
-            project_doc.custom_bill_of_quantity
+        boq = frappe.get_doc("Bill of Quantity", project_doc.custom_bill_of_quantity)
+        lines = {}
+        for row in boq.boq_template:
+            if not row.boq_template:
+                continue
+            lines[row.boq_template] = lines.get(row.boq_template, 0) + flt(row.total_amount)
+        for item_group, amount in lines.items():
+            ps.append("budget_items", {"category": item_group, "boq_amount": amount})
+
+    if not ps.budget_items:
+        frappe.throw(
+            _("No Item Groups found in the Bill of Quantity. Create the Project Budget manually and add Item Group lines.")
         )
 
-        for row in boq.boq_template:
-            budget = ps.append("budget_items")
-            budget.category = row.boq_template
-            budget.actual_amount = row.total_amount
-
-
+    ps.flags.ignore_budget_warnings = True
+    ps.flags.ignore_mandatory = True
     ps.insert(ignore_permissions=True)
     return ps.name

@@ -180,6 +180,27 @@ doc_events = {
     "Bill of Quantity": {
         "on_submit": "altor_project.events.lead.on_boq_submit"
     },
+    # Item Group wise Project Budget: checks and live figures
+    "Material Request": {
+        "validate": "altor_project.budget.validate_budget"
+    },
+    "Purchase Order": {
+        "validate": "altor_project.budget.validate_budget",
+        "on_submit": "altor_project.budget.on_transaction_change",
+        "on_cancel": "altor_project.budget.on_transaction_change"
+    },
+    "Purchase Invoice": {
+        "on_submit": "altor_project.budget.on_transaction_change",
+        "on_cancel": "altor_project.budget.on_transaction_change"
+    },
+    "Subcontract Work Order": {
+        "on_submit": "altor_project.budget.on_transaction_change",
+        "on_cancel": "altor_project.budget.on_transaction_change"
+    },
+    "Subcontract Invoice": {
+        "on_submit": "altor_project.budget.on_transaction_change",
+        "on_cancel": "altor_project.budget.on_transaction_change"
+    },
 }
 
 app_include_js = [
@@ -192,7 +213,9 @@ fixtures = [
         "dt": "Custom HTML Block",
         "filters": [
             ["name", "in", [
-                "Task Dashboard"
+                "Task Dashboard",
+                "Project Overview Dashboard",
+                "HR Dashboard"
             ]]
         ]
     }
@@ -201,6 +224,12 @@ fixtures = [
 
 # Scheduled Tasks
 # ---------------
+
+scheduler_events = {
+    "daily": [
+        "altor_project.budget.refresh_all_budgets"
+    ]
+}
 
 # scheduler_events = {
 # 	"all": [
