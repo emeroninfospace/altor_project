@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:PT-{#####}",
+ "creation": "2026-01-10 17:42:40.790302",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "project_user",
+  "section_break_ogar",
+  "employee_and_user"
+ ],
+ "fields": [
+  {
+   "fieldname": "project_user",
+   "fieldtype": "Data",
+   "label": "Project Team"
+  },
+  {
+   "fieldname": "section_break_ogar",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "employee_and_user",
+   "fieldtype": "Table",
+   "label": "Employee and User",
+   "options": "Project Team Child"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-13 12:38:03.873675",
+ "modified_by": "Administrator",
+ "module": "Altor Project",
+ "name": "Project Team",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "project_user"
+}

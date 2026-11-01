@@ -1,0 +1,81 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-01-10 17:38:28.193876",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "description",
+  "boq_template",
+  "expected_start_date",
+  "expected_end_date",
+  "total_work",
+  "project_team",
+  "item_code"
+ ],
+ "fields": [
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Description"
+  },
+  {
+   "fieldname": "boq_template",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "BOQ Template",
+   "options": "Item Group"
+  },
+  {
+   "columns": 1,
+   "fieldname": "expected_start_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Start Date"
+  },
+  {
+   "columns": 1,
+   "fieldname": "expected_end_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "End Date"
+  },
+  {
+   "fieldname": "total_work",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Total Work"
+  },
+  {
+   "fieldname": "project_team",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Project Team",
+   "options": "Project Team"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Code",
+   "options": "Item",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-01-24 16:55:54.380691",
+ "modified_by": "Administrator",
+ "module": "Altor Project",
+ "name": "Project Schedule Child",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
