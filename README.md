@@ -35,6 +35,32 @@ Both are Custom HTML Blocks (fixtures) backed by `altor_project/api/dashboard.py
   *Ignore* skips. A warning is also shown when the warning threshold (default 90%) is reached or an item group has no budget line.
 - Report: **Project Budget Variance**.
 
+### Manpower Costing (own staff and outsourced manpower)
+
+- **Manpower Entry** (daily, per project): one row per worker: Own Staff or Outsourced (agency).
+  An outsourced row can be a named worker (Employee) or a crew (agency + designation + number of workers).
+  Amount = workers x (hours x hourly rate + OT hours x OT rate).
+- Hourly rate comes from the Employee's **Hourly Cost Rate**, otherwise the agency rate in
+  **Altor Settings > Outsourced Manpower Rates** (supplier + designation), otherwise CTC / 12 / working days / hours.
+  OT rate falls back to hourly rate x OT Multiplier (default 1.25).
+- Employee fields: **Outsourced Manpower**, **Manpower Supplier / Agency**, **Hourly Cost Rate**, **OT Hourly Rate**.
+- Checks: own staff needs an Employee, outsourced needs an agency, no duplicate employee in an entry,
+  max 24 hours per employee per day across all projects, no booking on completed / cancelled projects,
+  rate required.
+- The cost goes to the Project Budget line of the entry's **Budget Item Group** (Manpower Cost column) and is part of Utilized.
+  Tick **Outsourced Manpower Invoice** on the agency's Purchase Invoice so that labour is not counted twice.
+- Report: **Manpower Cost Summary** (by project, agency, employee, designation, date or item group) to check agency bills.
+
+### Demo data
+
+```bash
+bench --site <site> execute altor_project.demo.make_demo_data
+bench --site <site> execute altor_project.demo.delete_demo_data
+```
+
+Creates (and removes) projects, tasks, item group budgets, purchase orders and invoices, own and outsourced
+employees, manpower entries, attendance and leave requests. Every record starts with `DEMO`.
+
 ### Contributing
 
 This app uses `pre-commit` for code formatting and linting. Please [install pre-commit](https://pre-commit.com/#installation) and enable it for this repository:

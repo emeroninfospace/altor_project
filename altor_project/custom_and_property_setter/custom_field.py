@@ -171,4 +171,60 @@ CREATE_FIELDS={
                 "insert_after": "tax_withholding_category"
         }
     ]
+    ,
+    # Manpower costing (own staff and outsourced manpower)
+    "Employee": [
+        {
+            "fieldname": "custom_manpower_costing_section",
+            "label": "Manpower Costing",
+            "fieldtype": "Section Break",
+            "collapsible": 1,
+            "insert_after": "reports_to",
+        },
+        {
+            "fieldname": "custom_is_outsourced",
+            "label": "Outsourced Manpower",
+            "fieldtype": "Check",
+            "in_standard_filter": 1,
+            "description": "Worker supplied by a manpower agency",
+            "insert_after": "custom_manpower_costing_section",
+        },
+        {
+            "fieldname": "custom_manpower_supplier",
+            "label": "Manpower Supplier / Agency",
+            "fieldtype": "Link",
+            "options": "Supplier",
+            "depends_on": "eval:doc.custom_is_outsourced",
+            "mandatory_depends_on": "eval:doc.custom_is_outsourced",
+            "insert_after": "custom_is_outsourced",
+        },
+        {
+            "fieldname": "custom_manpower_column_break",
+            "fieldtype": "Column Break",
+            "insert_after": "custom_manpower_supplier",
+        },
+        {
+            "fieldname": "custom_hourly_cost_rate",
+            "label": "Hourly Cost Rate",
+            "fieldtype": "Currency",
+            "description": "Cost per hour. Leave empty to use the agency rate (outsourced) or CTC / working hours (own staff) from Altor Settings",
+            "insert_after": "custom_manpower_column_break",
+        },
+        {
+            "fieldname": "custom_ot_hourly_rate",
+            "label": "OT Hourly Rate",
+            "fieldtype": "Currency",
+            "description": "Leave empty to use Hourly Cost Rate x OT Multiplier",
+            "insert_after": "custom_hourly_cost_rate",
+        },
+    ],
+    "Purchase Invoice": [
+        {
+            "fieldname": "custom_is_manpower_invoice",
+            "label": "Outsourced Manpower Invoice",
+            "fieldtype": "Check",
+            "description": "Agency invoice for manpower already recorded in Manpower Entries. It is left out of the Project Budget so labour cost is not counted twice.",
+            "insert_after": "supplier",
+        },
+    ],
 }

@@ -15,6 +15,9 @@ frappe.ui.form.on("Project Budget", {
             frm.add_custom_button(__("Project Overview"), () => {
                 frappe.set_route("Workspaces", "Project Overview");
             }, __("View"));
+            frm.add_custom_button(__("Manpower Cost Summary"), () => {
+                frappe.set_route("query-report", "Manpower Cost Summary", { project: frm.doc.project });
+            }, __("View"));
             frm.add_custom_button(__("Budget Variance Report"), () => {
                 frappe.set_route("query-report", "Project Budget Variance", { project: frm.doc.project });
             }, __("View"));
@@ -154,12 +157,13 @@ function render_budget_dashboard(frm) {
                     <span class="indicator-pill ${STATUS_COLORS[r.budget_status] || "gray"}">${round(pct, 1)}%</span>
                 </span>
             </div>
-            <div class="pb-track" title="${__("Committed")}: ${money(r.committed_amount)} | ${__("Actual")}: ${money(r.actual_amount)}">
+            <div class="pb-track" title="${__("Committed")}: ${money(r.committed_amount)} | ${__("Actual")}: ${money(r.actual_amount)} | ${__("Manpower")}: ${money(r.manpower_amount)}">
                 <div class="pb-fill" style="width:${width}%;background:${bar_color(r.budget_status)}"></div>
                 <div class="pb-marker" style="left:${Math.min(limit, 100)}%"></div>
             </div>
             <div class="pb-row-sub text-muted">
                 ${__("Committed")} ${money(r.committed_amount)} &middot; ${__("Actual")} ${money(r.actual_amount)} &middot;
+                ${flt(r.manpower_amount) ? `${__("Manpower")} ${money(r.manpower_amount)} &middot;` : ""}
                 ${__("Balance")} <span style="color:${flt(r.variance) < 0 ? "var(--red-500,#e03636)" : "inherit"}">${money(r.variance)}</span>
             </div>
         </div>`;
@@ -173,6 +177,10 @@ function render_budget_dashboard(frm) {
     if (near.length) {
         alerts += `<div class="pb-alert pb-alert-orange">${__("Above {0}% used", [limit])}: ${near
             .map((r) => `<b>${frappe.utils.escape_html(r.category)}</b> (${round(flt(r.utilization_percentage), 1)}%)`).join(", ")}</div>`;
+    }
+    if (flt(frm.doc.total_manpower_cost)) {
+        alerts += `<div class="pb-alert" style="background:var(--subtle-fg,#f4f5f6)">${__("Manpower")}: ${__("Own Staff")} ${money(frm.doc.own_staff_manpower_cost)}
+            &middot; ${__("Outsourced")} ${money(frm.doc.outsourced_manpower_cost)}</div>`;
     }
     if (flt(frm.doc.unbudgeted_amount)) {
         alerts += `<div class="pb-alert pb-alert-orange">${__("Unbudgeted spend")}: ${money(frm.doc.unbudgeted_amount)}
@@ -203,6 +211,7 @@ function render_budget_dashboard(frm) {
                 ${card(__("Total Budget"), money(budget))}
                 ${card(__("Committed"), money(frm.doc.total_committed_cost))}
                 ${card(__("Actual"), money(frm.doc.total_actual_cost))}
+                ${card(__("Manpower"), money(frm.doc.total_manpower_cost))}
                 ${card(__("Utilized"), money(utilized))}
                 ${card(__("Balance"), money(frm.doc.variance), flt(frm.doc.variance) < 0 ? "var(--red-500,#e03636)" : "")}
                 ${card(__("Utilization"), round(util_pct, 1) + "%",
