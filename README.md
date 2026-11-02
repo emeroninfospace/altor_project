@@ -49,6 +49,12 @@ Both are Custom HTML Blocks (fixtures) backed by `altor_project/api/dashboard.py
   rate required.
 - The cost goes to the Project Budget line of the entry's **Budget Item Group** (Manpower Cost column) and is part of Utilized.
   Tick **Outsourced Manpower Invoice** on the agency's Purchase Invoice so that labour is not counted twice.
+- **Automation** (Altor Settings > Manpower Entry Automation): every night at 01:30 one Manpower Entry per project is
+  created for the previous day: named workers from Attendance (or Employee Checkins, first IN to last OUT) charged to
+  the employee's **Assigned Project** (or the Project on the checkin), hours above the standard day as OT, plus each
+  project's **Daily Manpower Crew** (agency, trade, workers, hours, from/to date; skipped on holidays). Already booked
+  employees / crews are skipped. Entries are drafts for review unless "Submit Automatically" is ticked.
+  The Manpower Entry list has a **Create from Attendance** button to run it for any past date.
 - Report: **Manpower Cost Summary** (by project, agency, employee, designation, date or item group) to check agency bills.
 
 ### Demo data
