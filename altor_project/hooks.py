@@ -271,7 +271,12 @@ scheduler_events = {
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
 override_doctype_dashboards = {
-	"Quotation": "altor_project.events.quotation_dashboard.get_dashboard_data"
+	"Project": "altor_project.events.dashboards.project",
+	"Quotation": "altor_project.events.dashboards.quotation",
+	"Lead": "altor_project.events.dashboards.lead",
+	"Customer": "altor_project.events.dashboards.customer",
+	"Supplier": "altor_project.events.dashboards.supplier",
+	"Employee": "altor_project.events.dashboards.employee",
 }
 
 # exempt linked doctypes from being automatically cancelled
