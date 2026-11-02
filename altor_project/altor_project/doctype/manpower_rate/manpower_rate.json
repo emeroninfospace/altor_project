@@ -1,0 +1,64 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-02 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "supplier",
+  "designation",
+  "hourly_rate",
+  "ot_hourly_rate"
+ ],
+ "fields": [
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Manpower Supplier",
+   "options": "Supplier",
+   "reqd": 1,
+   "columns": 3
+  },
+  {
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Designation / Trade",
+   "options": "Designation",
+   "columns": 3,
+   "description": "Leave empty for the agency's default rate"
+  },
+  {
+   "fieldname": "hourly_rate",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Hourly Rate",
+   "reqd": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "ot_hourly_rate",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "OT Hourly Rate",
+   "columns": 2,
+   "description": "Leave empty to use Hourly Rate x OT Multiplier"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-02 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Altor Project",
+ "name": "Manpower Rate",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1
+}

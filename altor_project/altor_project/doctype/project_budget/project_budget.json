@@ -29,6 +29,12 @@
   "utilization_percentage",
   "unbudgeted_amount",
   "last_updated_on",
+  "manpower_section",
+  "total_manpower_cost",
+  "column_break_mp1",
+  "own_staff_manpower_cost",
+  "column_break_mp2",
+  "outsourced_manpower_cost",
   "section_break_11",
   "budget_items",
   "budget_control_action_section",
@@ -268,13 +274,51 @@
    "options": "Project Budget",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "manpower_section",
+   "fieldtype": "Section Break",
+   "label": "Manpower Cost",
+   "collapsible": 0
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "total_manpower_cost",
+   "fieldtype": "Currency",
+   "label": "Total Manpower Cost",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mp1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "own_staff_manpower_cost",
+   "fieldtype": "Currency",
+   "label": "Own Staff Cost",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mp2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "outsourced_manpower_cost",
+   "fieldtype": "Currency",
+   "label": "Outsourced Manpower Cost",
+   "options": "Company:company:default_currency",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-01 12:00:00.000000",
+ "modified": "2026-11-02 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Project Budget",

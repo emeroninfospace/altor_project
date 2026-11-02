@@ -128,23 +128,45 @@ def get_project_overview(filters=None):
 				],
 			)
 
-	# Tasks
+	# Tasks: one grouped query instead of loading every task
 	task_stats = {}
 	if names:
-		for t in frappe.get_all(
-			"Task",
-			filters={"project": ["in", names]},
-			fields=["project", "status", "exp_end_date"],
-			limit_page_length=0,
+		for t in frappe.db.sql(
+			"""
+			SELECT project,
+				COUNT(*) AS total,
+				SUM(status = 'Completed') AS completed,
+				SUM(status NOT IN ('Completed', 'Cancelled')) AS open,
+				SUM(status NOT IN ('Completed', 'Cancelled') AND exp_end_date < %(today)s) AS overdue
+			FROM `tabTask`
+			WHERE project IN %(projects)s
+			GROUP BY project
+			""",
+			{"projects": tuple(names), "today": today},
+			as_dict=True,
 		):
-			s = task_stats.setdefault(t.project, {"total": 0, "open": 0, "overdue": 0, "completed": 0})
-			s["total"] += 1
-			if t.status == "Completed":
-				s["completed"] += 1
-			elif t.status != "Cancelled":
-				s["open"] += 1
-				if t.exp_end_date and getdate(t.exp_end_date) < today:
-					s["overdue"] += 1
+			task_stats[t.project] = {k: int(t[k] or 0) for k in ("total", "completed", "open", "overdue")}
+
+	# Manpower (own staff + outsourced) per project
+	manpower = {}
+	if names:
+		month_start = get_first_day(today)
+		for m in frappe.db.sql(
+			"""
+			SELECT me.project,
+				SUM(CASE WHEN d.worker_type = 'Outsourced' THEN 0 ELSE d.amount END) AS own,
+				SUM(CASE WHEN d.worker_type = 'Outsourced' THEN d.amount ELSE 0 END) AS outsourced,
+				SUM(CASE WHEN me.posting_date >= %(month_start)s THEN d.amount ELSE 0 END) AS this_month,
+				SUM(CASE WHEN me.posting_date = %(today)s THEN d.no_of_workers ELSE 0 END) AS workers_today
+			FROM `tabManpower Entry Detail` d
+			INNER JOIN `tabManpower Entry` me ON me.name = d.parent
+			WHERE me.docstatus = 1 AND me.project IN %(projects)s
+			GROUP BY me.project
+			""",
+			{"projects": tuple(names), "today": today, "month_start": month_start},
+			as_dict=True,
+		):
+			manpower[m.project] = m
 
 	summary = frappe._dict(
 		total=len(projects),
@@ -165,6 +187,11 @@ def get_project_overview(filters=None):
 		without_budget=0,
 		open_tasks=0,
 		overdue_tasks=0,
+		manpower=0,
+		manpower_own=0,
+		manpower_outsourced=0,
+		manpower_this_month=0,
+		workers_today=0,
 	)
 	status_counts = {}
 	rows = []
@@ -191,6 +218,13 @@ def get_project_overview(filters=None):
 		t = task_stats.get(p.name, {})
 		summary.contract_value += contract
 		summary.billed += flt(p.total_billed_amount)
+		mp = manpower.get(p.name) or {}
+		mp_total = flt(mp.get("own")) + flt(mp.get("outsourced"))
+		summary.manpower += mp_total
+		summary.manpower_own += flt(mp.get("own"))
+		summary.manpower_outsourced += flt(mp.get("outsourced"))
+		summary.manpower_this_month += flt(mp.get("this_month"))
+		summary.workers_today += int(mp.get("workers_today") or 0)
 		summary.open_tasks += t.get("open", 0)
 		summary.overdue_tasks += t.get("overdue", 0)
 		if b:
@@ -225,6 +259,9 @@ def get_project_overview(filters=None):
 				"unbudgeted": flt(b.unbudgeted_amount) if b else 0,
 				"budget_status": b.budget_status if b else "",
 				"tasks": t,
+				"manpower": mp_total,
+				"manpower_outsourced": flt(mp.get("outsourced")),
+				"workers_today": int(mp.get("workers_today") or 0),
 			}
 		)
 	summary.avg_progress = round(progress_sum / progress_n, 1) if progress_n else 0
@@ -327,6 +364,8 @@ def get_hr_overview(filters=None):
 		"branch",
 		"employment_type",
 		"image",
+		"custom_is_outsourced",
+		"custom_manpower_supplier",
 	]
 	fields = [f for f in fields if f in ("name",) or meta.has_field(f)]
 	has_passport = meta.has_field("valid_upto")
@@ -337,9 +376,11 @@ def get_hr_overview(filters=None):
 	active = [e for e in employees if e.status == "Active"]
 	active_ids = {e.name for e in active}
 
-	def count_by(field):
+	def count_by(field, only_outsourced=False):
 		out = {}
 		for e in active:
+			if only_outsourced and not e.get("custom_is_outsourced"):
+				continue
 			key = e.get(field) or _("Not Set")
 			out[key] = out.get(key, 0) + 1
 		return sorted(({"label": k, "value": v} for k, v in out.items()), key=lambda x: -x["value"])
@@ -370,7 +411,66 @@ def get_hr_overview(filters=None):
 		not_marked_today=0,
 		pending_leaves=0,
 		attendance_marked=False,
+		outsourced=sum(1 for e in active if e.get("custom_is_outsourced")),
+		own_staff=sum(1 for e in active if not e.get("custom_is_outsourced")),
+		manpower_today=0,
+		manpower_cost_month=0,
+		manpower_own_month=0,
+		manpower_outsourced_month=0,
 	)
+
+	# Manpower deployed on projects (Manpower Entries)
+	manpower_by_project, manpower_by_agency = [], []
+	if _doctype_exists("Manpower Entry"):
+		mp_cond, mp_values = "", {"month_start": month_start, "month_end": month_end, "today": today}
+		if filters.company:
+			mp_cond = " AND me.company = %(company)s"
+			mp_values["company"] = filters.company
+		totals = frappe.db.sql(
+			f"""
+			SELECT SUM(CASE WHEN me.posting_date = %(today)s THEN d.no_of_workers ELSE 0 END) AS workers_today,
+				SUM(CASE WHEN d.worker_type = 'Outsourced' THEN 0 ELSE d.amount END) AS own,
+				SUM(CASE WHEN d.worker_type = 'Outsourced' THEN d.amount ELSE 0 END) AS outsourced
+			FROM `tabManpower Entry Detail` d
+			INNER JOIN `tabManpower Entry` me ON me.name = d.parent
+			WHERE me.docstatus = 1 AND me.posting_date BETWEEN %(month_start)s AND %(month_end)s {mp_cond}
+			""",
+			mp_values,
+			as_dict=True,
+		)[0]
+		summary.manpower_today = int(totals.workers_today or 0)
+		summary.manpower_own_month = flt(totals.own)
+		summary.manpower_outsourced_month = flt(totals.outsourced)
+		summary.manpower_cost_month = summary.manpower_own_month + summary.manpower_outsourced_month
+		manpower_by_project = [
+			{"label": r.project, "value": flt(r.amount)}
+			for r in frappe.db.sql(
+				f"""
+				SELECT me.project, SUM(d.amount) AS amount
+				FROM `tabManpower Entry Detail` d
+				INNER JOIN `tabManpower Entry` me ON me.name = d.parent
+				WHERE me.docstatus = 1 AND me.posting_date BETWEEN %(month_start)s AND %(month_end)s {mp_cond}
+				GROUP BY me.project ORDER BY amount DESC LIMIT 10
+				""",
+				mp_values,
+				as_dict=True,
+			)
+		]
+		manpower_by_agency = [
+			{"label": r.supplier, "value": flt(r.amount), "workers": int(r.workers or 0)}
+			for r in frappe.db.sql(
+				f"""
+				SELECT d.supplier, SUM(d.amount) AS amount, SUM(d.no_of_workers) AS workers
+				FROM `tabManpower Entry Detail` d
+				INNER JOIN `tabManpower Entry` me ON me.name = d.parent
+				WHERE me.docstatus = 1 AND d.worker_type = 'Outsourced'
+					AND me.posting_date BETWEEN %(month_start)s AND %(month_end)s {mp_cond}
+				GROUP BY d.supplier ORDER BY amount DESC LIMIT 10
+				""",
+				mp_values,
+				as_dict=True,
+			)
+		]
 
 	# Attendance today + trend for the last 7 days
 	trend = []
@@ -520,6 +620,12 @@ def get_hr_overview(filters=None):
 		"by_designation": count_by("designation")[:12],
 		"by_gender": count_by("gender"),
 		"by_employment_type": count_by("employment_type"),
+		"by_agency": count_by("custom_manpower_supplier", only_outsourced=True),
+		"manpower_by_project": manpower_by_project,
+		"manpower_cost_by_agency": manpower_by_agency,
+		"currency": frappe.get_cached_value("Company", filters.company, "default_currency")
+		if filters.company
+		else frappe.defaults.get_global_default("currency"),
 		"attendance_trend": trend,
 		"leaves_today": leaves_today,
 		"pending_leaves": pending_leaves[:20],

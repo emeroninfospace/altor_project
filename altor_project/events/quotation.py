@@ -31,11 +31,16 @@ def make_project(source_name, target_doc=None):
         if source.custom_bill_of_quantity:
             boq = frappe.get_doc("Bill of Quantity", source.custom_bill_of_quantity)
             target.set("custom_boq_items", [])
+            item_names = dict(frappe.get_all(
+                "Item",
+                filters={"name": ["in", list({r.item_code for r in boq.table_kfog if r.item_code})]},
+                fields=["name", "item_name"],
+                as_list=True,
+            )) if boq.table_kfog else {}
             for row in boq.table_kfog:
-                item_name = frappe.db.get_value("Item", row.item_code, "item_name")
                 target.append("custom_boq_items", {
                     "item_code": row.item_code,
-                    "item_name": item_name,
+                    "item_name": item_names.get(row.item_code),
                     "uom": row.uom,
                     "qty": row.qty,
                     "rate": row.rate,

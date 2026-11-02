@@ -5,7 +5,14 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "default_service_item"
+  "default_service_item",
+  "manpower_section",
+  "default_manpower_item_group",
+  "ot_multiplier",
+  "column_break_mp",
+  "working_days_per_month",
+  "working_hours_per_day",
+  "manpower_rates"
  ],
  "fields": [
   {
@@ -13,13 +20,55 @@
    "fieldtype": "Link",
    "label": "Default Service Item",
    "options": "Item"
+  },
+  {
+   "fieldname": "manpower_section",
+   "fieldtype": "Section Break",
+   "label": "Manpower Costing"
+  },
+  {
+   "fieldname": "default_manpower_item_group",
+   "fieldtype": "Link",
+   "label": "Default Manpower Item Group",
+   "options": "Item Group",
+   "description": "Budget line used for labour cost in Manpower Entries"
+  },
+  {
+   "fieldname": "ot_multiplier",
+   "fieldtype": "Float",
+   "label": "OT Multiplier",
+   "default": "1.25",
+   "description": "OT hourly rate = hourly rate x this, when no OT rate is set"
+  },
+  {
+   "fieldname": "column_break_mp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "working_days_per_month",
+   "fieldtype": "Int",
+   "label": "Working Days per Month",
+   "default": "26"
+  },
+  {
+   "fieldname": "working_hours_per_day",
+   "fieldtype": "Float",
+   "label": "Working Hours per Day",
+   "default": "8",
+   "description": "Own staff hourly cost = CTC / 12 / working days / working hours, when no Hourly Cost Rate is set on the Employee"
+  },
+  {
+   "fieldname": "manpower_rates",
+   "fieldtype": "Table",
+   "label": "Outsourced Manpower Rates",
+   "options": "Manpower Rate"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-02-02 13:06:02.830560",
+ "modified": "2026-11-02 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Altor Settings",
@@ -34,6 +83,24 @@
    "role": "System Manager",
    "share": 1,
    "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "write": 1,
+   "role": "Projects Manager",
+   "email": 1,
+   "print": 1,
+   "share": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "write": 1,
+   "role": "HR Manager",
+   "email": 1,
+   "print": 1,
+   "share": 1
   }
  ],
  "row_format": "Dynamic",

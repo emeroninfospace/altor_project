@@ -7,9 +7,13 @@ Amounts per budget line (Project Budget Item):
 
 * Committed  - submitted Purchase Orders + Subcontract Work Orders
 * Actual     - submitted Purchase Invoices + Subcontract Invoices
+* Manpower   - submitted Manpower Entries (own staff + outsourced labour)
 * Utilized   - Committed + Actual that is not against an order
-               (direct invoices), so an order and its invoice are
-               counted only once.
+               (direct invoices) + Manpower, so an order and its
+               invoice are counted only once.
+
+Purchase Invoices ticked "Outsourced Manpower Invoice" are left out: that
+labour is already counted through Manpower Entries.
 
 Spending is mapped to a budget line through the Item Group tree: an item in
 "Cables" counts against a budget line for "Electrical" if "Cables" sits under
@@ -21,6 +25,7 @@ from frappe import _
 from frappe.utils import flt
 
 UNBUDGETED = "__unbudgeted__"
+SPEND_KEYS = ("committed", "actual", "direct_actual", "pending_mr", "manpower")
 DEFAULT_WARNING_THRESHOLD = 90
 
 
@@ -50,7 +55,7 @@ def _exclude_clause(alias, doctype, exclude):
 
 
 def get_item_group_spend(project, exclude=None):
-	"""Return {item_group: {committed, actual, direct_actual, pending_mr}} for a project.
+	"""Return {item_group: {committed, actual, direct_actual, pending_mr, manpower}} for a project.
 
 	`exclude` = {"doctype": ..., "name": ...} leaves one document out (used
 	while validating that document).
@@ -61,9 +66,7 @@ def get_item_group_spend(project, exclude=None):
 	def add(rows, key):
 		for row in rows:
 			group = row.item_group or UNBUDGETED
-			spend.setdefault(
-				group, {"committed": 0.0, "actual": 0.0, "direct_actual": 0.0, "pending_mr": 0.0}
-			)
+			spend.setdefault(group, dict.fromkeys(SPEND_KEYS, 0.0))
 			spend[group][key] += flt(row.amount)
 
 	# Purchase Orders (committed)
@@ -94,6 +97,7 @@ def get_item_group_spend(project, exclude=None):
 		INNER JOIN `tabPurchase Invoice` pinv ON pinv.name = pii.parent
 		LEFT JOIN `tabItem` i ON i.name = pii.item_code
 		WHERE pinv.docstatus = 1 AND pii.project = %(project)s
+		{_manpower_invoice_clause()}
 		{_exclude_clause("pinv", "Purchase Invoice", exclude)}
 		GROUP BY i.item_group
 		""",
@@ -140,6 +144,23 @@ def get_item_group_spend(project, exclude=None):
 	add(si_rows, "actual")
 	add([frappe._dict(item_group=r.item_group, amount=r.direct) for r in si_rows], "direct_actual")
 
+	# Manpower Entries (own staff + outsourced labour)
+	add(
+		frappe.db.sql(
+			f"""
+			SELECT COALESCE(NULLIF(d.item_group, ''), me.item_group) AS item_group, SUM(d.amount) AS amount
+			FROM `tabManpower Entry Detail` d
+			INNER JOIN `tabManpower Entry` me ON me.name = d.parent
+			WHERE me.docstatus = 1 AND me.project = %(project)s
+			{_exclude_clause("me", "Manpower Entry", exclude)}
+			GROUP BY COALESCE(NULLIF(d.item_group, ''), me.item_group)
+			""",
+			values,
+			as_dict=True,
+		),
+		"manpower",
+	)
+
 	# Material Requests not yet ordered (only used for MR checks)
 	add(
 		frappe.db.sql(
@@ -156,7 +177,7 @@ def get_item_group_spend(project, exclude=None):
 			WHERE mr.docstatus = 1
 				AND mr.material_request_type = 'Purchase'
 				AND mr.status NOT IN ('Stopped', 'Cancelled')
-				AND COALESCE(NULLIF(mri.project, ''), mr.custom_project) = %(project)s
+				AND (mri.project = %(project)s OR (IFNULL(mri.project, '') = '' AND mr.custom_project = %(project)s))
 			{_exclude_clause("mr", "Material Request", exclude)}
 			GROUP BY i.item_group
 			""",
@@ -167,6 +188,34 @@ def get_item_group_spend(project, exclude=None):
 	)
 
 	return spend
+
+
+def _manpower_invoice_clause():
+	"""Leave out agency invoices for labour that Manpower Entries already cover."""
+	if frappe.db.has_column("Purchase Invoice", "custom_is_manpower_invoice"):
+		return " AND IFNULL(pinv.custom_is_manpower_invoice, 0) = 0"
+	return ""
+
+
+def utilized(amounts):
+	"""Spend that uses up the budget: orders + invoices not against an order + manpower."""
+	return flt(amounts.get("committed")) + flt(amounts.get("direct_actual")) + flt(amounts.get("manpower"))
+
+
+def get_manpower_split(project):
+	"""Own staff / outsourced labour cost of a project."""
+	row = frappe.db.sql(
+		"""
+		SELECT SUM(CASE WHEN d.worker_type = 'Outsourced' THEN d.amount ELSE 0 END) AS outsourced,
+			SUM(CASE WHEN d.worker_type = 'Outsourced' THEN 0 ELSE d.amount END) AS own
+		FROM `tabManpower Entry Detail` d
+		INNER JOIN `tabManpower Entry` me ON me.name = d.parent
+		WHERE me.docstatus = 1 AND me.project = %s
+		""",
+		project,
+		as_dict=True,
+	)
+	return flt(row[0].own) if row else 0.0, flt(row[0].outsourced) if row else 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -223,12 +272,11 @@ def get_category_spend(project, categories, exclude=None):
 	spend = get_item_group_spend(project, exclude=exclude)
 	mapper = CategoryMapper(categories)
 	bounds = _get_group_bounds(spend.keys())
-	empty = lambda: {"committed": 0.0, "actual": 0.0, "direct_actual": 0.0, "pending_mr": 0.0}  # noqa: E731
-	per_category = {c: empty() for c in categories if c}
+	per_category = {c: dict.fromkeys(SPEND_KEYS, 0.0) for c in categories if c}
 	unbudgeted = {}
 	for group, amounts in spend.items():
 		cat = mapper.resolve(group, bounds)
-		target = per_category[cat] if cat else unbudgeted.setdefault(group, empty())
+		target = per_category[cat] if cat else unbudgeted.setdefault(group, dict.fromkeys(SPEND_KEYS, 0.0))
 		for key, val in amounts.items():
 			target[key] += val
 	return per_category, unbudgeted
@@ -253,12 +301,13 @@ def calculate_budget(doc):
 	per_category, unbudgeted = get_category_spend(doc.project, categories) if doc.project else ({}, {})
 	threshold = flt(doc.warning_threshold) or DEFAULT_WARNING_THRESHOLD
 
-	totals = {"budget": 0.0, "committed": 0.0, "actual": 0.0, "utilized": 0.0}
+	totals = {"budget": 0.0, "committed": 0.0, "actual": 0.0, "manpower": 0.0, "utilized": 0.0}
 	for row in doc.budget_items:
 		amounts = per_category.get(row.category) or {}
 		row.committed_amount = flt(amounts.get("committed"))
 		row.actual_amount = flt(amounts.get("actual"))
-		row.utilized_amount = row.committed_amount + flt(amounts.get("direct_actual"))
+		row.manpower_amount = flt(amounts.get("manpower"))
+		row.utilized_amount = utilized(amounts)
 		budget = flt(row.budgeted_amount)
 		row.variance = budget - row.utilized_amount
 		row.variance_percentage = (row.variance / budget * 100) if budget else 0
@@ -272,16 +321,21 @@ def calculate_budget(doc):
 		totals["budget"] += budget
 		totals["committed"] += row.committed_amount
 		totals["actual"] += row.actual_amount
+		totals["manpower"] += row.manpower_amount
 		totals["utilized"] += row.utilized_amount
 
 	doc.total_estimated_cost = totals["budget"]
 	doc.total_committed_cost = totals["committed"]
 	doc.total_actual_cost = totals["actual"]
 	doc.total_utilized_cost = totals["utilized"]
+	own, outsourced = get_manpower_split(doc.project) if doc.project else (0.0, 0.0)
+	doc.total_manpower_cost = own + outsourced
+	doc.own_staff_manpower_cost = own
+	doc.outsourced_manpower_cost = outsourced
 	doc.variance = totals["budget"] - totals["utilized"]
 	doc.variance_percentage = (doc.variance / totals["budget"] * 100) if totals["budget"] else 0
 	doc.utilization_percentage = (totals["utilized"] / totals["budget"] * 100) if totals["budget"] else 0
-	doc.unbudgeted_amount = sum(flt(v["committed"]) + flt(v["direct_actual"]) for v in unbudgeted.values())
+	doc.unbudgeted_amount = sum(utilized(v) for v in unbudgeted.values())
 	# Overall status is the worst of the total and the individual item group lines.
 	line_statuses = {row.budget_status for row in doc.budget_items}
 	overall = get_status(doc.utilization_percentage, threshold) if totals["budget"] else ""
@@ -298,6 +352,7 @@ def calculate_budget(doc):
 ROW_FIELDS = (
 	"committed_amount",
 	"actual_amount",
+	"manpower_amount",
 	"utilized_amount",
 	"variance",
 	"variance_percentage",
@@ -309,6 +364,9 @@ PARENT_FIELDS = (
 	"total_committed_cost",
 	"total_actual_cost",
 	"total_utilized_cost",
+	"total_manpower_cost",
+	"own_staff_manpower_cost",
+	"outsourced_manpower_cost",
 	"variance",
 	"variance_percentage",
 	"utilization_percentage",
@@ -350,13 +408,39 @@ def _projects_of(doc):
 	return projects
 
 
+def _safe_update(project):
+	try:
+		update_project_budget(project)
+	except Exception:
+		frappe.log_error(title=f"Project Budget update failed for {project}")
+
+
+def queue_budget_update(project):
+	"""Recalculate the project's budget in the background after the current transaction commits.
+
+	Runs inline during tests, imports, patches and installs.
+	"""
+	if not project or frappe.flags.altor_skip_budget_update or not get_active_budget(project):
+		return
+	if frappe.flags.in_test or frappe.flags.in_import or frappe.flags.in_patch or frappe.flags.in_install:
+		_safe_update(project)
+		return
+	try:
+		frappe.enqueue(
+			"altor_project.budget._safe_update",
+			project=project,
+			queue="short",
+			enqueue_after_commit=True,
+		)
+	except Exception:
+		# No background workers / older Frappe: update now.
+		_safe_update(project)
+
+
 def on_transaction_change(doc, method=None):
 	"""doc_event: keep budget figures current when spend documents are submitted / cancelled."""
 	for project in _projects_of(doc):
-		try:
-			update_project_budget(project)
-		except Exception:
-			frappe.log_error(title=f"Project Budget update failed for {project}")
+		queue_budget_update(project)
 
 
 # ---------------------------------------------------------------------------
@@ -447,7 +531,7 @@ def _check_against_budget(doc, project, budget, action):
 	exceeded, near = [], []
 	for cat, amount in this_by_cat.items():
 		used = per_category.get(cat) or {}
-		existing = flt(used.get("committed")) + flt(used.get("direct_actual"))
+		existing = utilized(used)
 		if doc.doctype == "Material Request":
 			existing += flt(used.get("pending_mr"))
 		total = existing + amount

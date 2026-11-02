@@ -1,0 +1,141 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-02 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "worker_type",
+  "employee",
+  "employee_name",
+  "supplier",
+  "designation",
+  "column_break_6",
+  "no_of_workers",
+  "working_hours",
+  "ot_hours",
+  "column_break_10",
+  "hourly_rate",
+  "ot_hourly_rate",
+  "amount",
+  "item_group"
+ ],
+ "fields": [
+  {
+   "fieldname": "worker_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Worker Type",
+   "options": "Own Staff\nOutsourced",
+   "default": "Own Staff",
+   "reqd": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Employee",
+   "options": "Employee",
+   "columns": 2,
+   "description": "Optional for outsourced workers: leave empty and enter No. of Workers for a crew"
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Manpower Supplier",
+   "options": "Supplier",
+   "columns": 2,
+   "mandatory_depends_on": "eval:doc.worker_type=='Outsourced'",
+   "depends_on": "eval:doc.worker_type=='Outsourced'"
+  },
+  {
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "label": "Designation / Trade",
+   "options": "Designation"
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "no_of_workers",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Workers",
+   "default": "1",
+   "columns": 1
+  },
+  {
+   "fieldname": "working_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Hours",
+   "default": "8",
+   "columns": 1
+  },
+  {
+   "fieldname": "ot_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "OT Hours",
+   "columns": 1
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "hourly_rate",
+   "fieldtype": "Currency",
+   "label": "Hourly Rate",
+   "options": "Company:company:default_currency"
+  },
+  {
+   "fieldname": "ot_hourly_rate",
+   "fieldtype": "Currency",
+   "label": "OT Hourly Rate",
+   "options": "Company:company:default_currency"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount",
+   "options": "Company:company:default_currency",
+   "read_only": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Budget Item Group",
+   "options": "Item Group",
+   "description": "Overrides the Budget Item Group of the entry for this row"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-02 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Altor Project",
+ "name": "Manpower Entry Detail",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1
+}

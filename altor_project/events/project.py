@@ -33,15 +33,22 @@ def create_material_request(name):
     request.custom_project = name
     request.material_request_type = "Purchase"  
 
-    for item in project.custom_boq_items:
-        used_qty = frappe.db.sql("""
-            SELECT SUM(qty)
+    item_codes = list({item.item_code for item in project.custom_boq_items if item.item_code})
+    requested = {}
+    if item_codes:
+        requested = dict(frappe.db.sql("""
+            SELECT item_code, SUM(qty)
             FROM `tabMaterial Request Item`
-            WHERE project = %s AND item_code = %s AND docstatus != 2
-        """, (name, item.item_code), as_list=True)
+            WHERE project = %s AND item_code IN %s AND docstatus != 2
+            GROUP BY item_code
+        """, (name, tuple(item_codes))))
 
-        used_qty_val = flt(used_qty[0][0]) if used_qty and used_qty[0][0] else 0
+    for item in project.custom_boq_items:
+        # Quantity still to request: BOQ qty minus what earlier (non-cancelled) requests asked for.
+        # Repeated BOQ lines for the same item share the requested quantity.
+        used_qty_val = flt(requested.get(item.item_code))
         available_qty = flt(item.qty) - used_qty_val
+        requested[item.item_code] = max(used_qty_val - flt(item.qty), 0)
 
         if available_qty > 0:
             request.append("items", {
