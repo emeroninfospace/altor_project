@@ -87,6 +87,21 @@ CREATE_FIELDS={
                 "options": "BOQ Items"
             },
             {
+                "fieldname": "custom_manpower_crew_section",
+                "fieldtype": "Section Break",
+                "insert_after": "custom_boq_items",
+                "label": "Daily Manpower Crew",
+                "collapsible": 1,
+                "description": "Agency crews working on this project every day. Booked automatically in Manpower Entries (when automation is on in Altor Settings).",
+            },
+            {
+                "fieldname": "custom_manpower_crew",
+                "fieldtype": "Table",
+                "insert_after": "custom_manpower_crew_section",
+                "label": "Daily Manpower Crew",
+                "options": "Project Manpower Crew",
+            },
+            {
                 "fieldname": "custom_bill_of_quantity",
                 "fieldtype": "Link",
                 "insert_after": "department",
@@ -216,6 +231,25 @@ CREATE_FIELDS={
             "fieldtype": "Currency",
             "description": "Leave empty to use Hourly Cost Rate x OT Multiplier",
             "insert_after": "custom_hourly_cost_rate",
+        },
+        {
+            "fieldname": "custom_current_project",
+            "label": "Assigned Project",
+            "fieldtype": "Link",
+            "options": "Project",
+            "in_standard_filter": 1,
+            "description": "Project this worker is deployed on. Used to create Manpower Entries automatically from attendance.",
+            "insert_after": "custom_manpower_supplier",
+        },
+    ],
+    "Employee Checkin": [
+        {
+            "fieldname": "custom_project",
+            "label": "Project",
+            "fieldtype": "Link",
+            "options": "Project",
+            "description": "Site / project of this check-in. Leave empty to use the employee's Assigned Project.",
+            "insert_after": "log_type",
         },
     ],
     "Purchase Invoice": [

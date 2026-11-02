@@ -12,7 +12,13 @@
   "column_break_mp",
   "working_days_per_month",
   "working_hours_per_day",
-  "manpower_rates"
+  "manpower_rates",
+  "manpower_automation_section",
+  "auto_create_manpower_entries",
+  "manpower_entry_source",
+  "column_break_auto",
+  "auto_submit_manpower_entries",
+  "skip_holidays_for_crews"
  ],
  "fields": [
   {
@@ -62,13 +68,54 @@
    "fieldtype": "Table",
    "label": "Outsourced Manpower Rates",
    "options": "Manpower Rate"
+  },
+  {
+   "fieldname": "manpower_automation_section",
+   "fieldtype": "Section Break",
+   "label": "Manpower Entry Automation",
+   "description": "Every night, create Manpower Entries for the previous day: named workers from Attendance or Employee Checkins (charged to the employee's Assigned Project, or the project on the checkin), and agency crews from each project's Daily Manpower Crew."
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_create_manpower_entries",
+   "fieldtype": "Check",
+   "label": "Create Manpower Entries Automatically"
+  },
+  {
+   "default": "Attendance",
+   "depends_on": "auto_create_manpower_entries",
+   "fieldname": "manpower_entry_source",
+   "fieldtype": "Select",
+   "label": "Hours Source",
+   "options": "Attendance\nEmployee Checkin",
+   "description": "Attendance: uses Working Hours on the attendance (or the standard day). Employee Checkin: first IN to last OUT."
+  },
+  {
+   "fieldname": "column_break_auto",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "depends_on": "auto_create_manpower_entries",
+   "fieldname": "auto_submit_manpower_entries",
+   "fieldtype": "Check",
+   "label": "Submit Automatically",
+   "description": "Leave unticked to create drafts for the site supervisor to check and submit."
+  },
+  {
+   "default": "1",
+   "depends_on": "auto_create_manpower_entries",
+   "fieldname": "skip_holidays_for_crews",
+   "fieldtype": "Check",
+   "label": "Skip Holidays for Crews",
+   "description": "Crews are not booked on holidays of the company's default Holiday List."
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-11-02 10:00:00.000000",
+ "modified": "2026-11-03 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Altor Settings",

@@ -1,0 +1,97 @@
+{
+ "actions": [],
+ "creation": "2026-11-03 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "supplier",
+  "designation",
+  "no_of_workers",
+  "working_hours",
+  "ot_hours",
+  "column_break_6",
+  "from_date",
+  "to_date",
+  "item_group"
+ ],
+ "fields": [
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Manpower Supplier",
+   "options": "Supplier",
+   "reqd": 1,
+   "columns": 3
+  },
+  {
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Designation / Trade",
+   "options": "Designation",
+   "columns": 2
+  },
+  {
+   "fieldname": "no_of_workers",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Workers",
+   "default": "1",
+   "reqd": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "working_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Hours",
+   "default": "8",
+   "columns": 1
+  },
+  {
+   "fieldname": "ot_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "OT Hours",
+   "columns": 1
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "From Date",
+   "columns": 1
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "To Date",
+   "columns": 1
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Budget Item Group",
+   "options": "Item Group"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-11-03 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Altor Project",
+ "name": "Project Manpower Crew",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

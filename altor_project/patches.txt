@@ -6,3 +6,4 @@
 # Patches added in this section will be executed after doctypes are migrated
 altor_project.patches.patch  24/03/2026-04
 altor_project.patches.patch  02/11/2026-manpower-costing
+altor_project.patches.patch  03/11/2026-manpower-automation
