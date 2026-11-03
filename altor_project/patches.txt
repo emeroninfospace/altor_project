@@ -7,3 +7,4 @@
 altor_project.patches.patch  24/03/2026-04
 altor_project.patches.patch  02/11/2026-manpower-costing
 altor_project.patches.patch  03/11/2026-manpower-automation
+altor_project.patches.patch  03/11/2026-print-settings

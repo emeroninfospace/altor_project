@@ -73,6 +73,29 @@ bench --site <site> execute altor_project.demo.delete_demo_data
 Creates (and removes) projects, tasks, item group budgets, purchase orders and invoices, own and outsourced
 employees, manpower entries, attendance and leave requests. Every record starts with `DEMO`.
 
+### Print Formats
+
+All Altor print formats share one design (`altor_project/templates/print/altor_print.html`) and read the company
+details from the site, not from code:
+
+- **Company**: name, logo, TRN (Tax ID), phone, email, website; **Company > Print Settings** tab: Arabic name, accent
+  colour, stamp, authorised signature and signatory, footer note.
+- **Address** linked to the Company, and the company **Bank Account** (Is Company Account; the default one first).
+
+| Print format | Document |
+|---|---|
+| Quotation | Quotation, letter style, item wise |
+| Quotation Altor | Quotation, letter style, by BOQ work package |
+| Boq | Quotation with BOQ summary, detailed BOQ, VAT totals, terms, bank details |
+| Bill of Quantity | Quotation as a bill of quantities (no VAT) |
+| Proforma Invoice | Proforma Invoice (bilingual, VAT per line) |
+| Altor Tax Invoice | Sales Invoice: UAE tax invoice / tax credit note (bilingual, VAT per line, bank details) |
+| Altor Purchase Order | Purchase Order |
+| Altor Manpower Sheet | Manpower Entry (daily manpower sheet) |
+| Altor Project Budget | Project Budget (item group wise) |
+
+Helpers used by the templates are in `altor_project/print_utils.py` (registered as Jinja methods in `hooks.py`).
+
 ### Contributing
 
 This app uses `pre-commit` for code formatting and linting. Please [install pre-commit](https://pre-commit.com/#installation) and enable it for this repository:
