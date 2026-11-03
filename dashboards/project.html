@@ -1,0 +1,21 @@
+<div class="dash" style="--hero:#2f7ff0;--hero2:#7c5cff">
+    <div class="hero anim">
+        <div class="hero-title">
+            <div class="hero-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h20M4 18v-3a8 8 0 0 1 16 0v3"/><path d="M10 7V5h4v2"/></svg></div>
+            <div><h1>Project Overview</h1><p>Progress, deadlines, item group budgets and manpower across your projects</p></div>
+        </div>
+        <div class="filters">
+            <select id="fCompany" aria-label="Company"></select>
+            <select id="fStatus" aria-label="Status">
+                <option value="Open" selected>Open projects</option>
+                <option value="">All statuses</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
+            <select id="fProject" aria-label="Project"></select>
+            <button class="btn-refresh" type="button" title="Refresh"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/></svg></button>
+        </div>
+        <div class="updated"></div>
+    </div>
+    <div id="body"></div>
+</div>

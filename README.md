@@ -14,14 +14,20 @@ bench install-app altor_project
 
 ### Dashboards & Workspaces
 
-- **Project Overview** workspace: KPIs (projects, overdue, due soon, progress, open tasks), contract value,
-  budget / committed / actual / balance, projects by status, budget vs utilized per project,
-  item group wise budget table, budget warnings and a project list.
-- **HR Dashboard** workspace: headcount, attendance today and last 7 days, leave today and pending approvals,
-  department / gender / employment type / designation breakdowns, birthdays, work anniversaries,
-  passports expiring and new joiners.
+Four animated dashboards, each with its own workspace (shortcuts with live counts, link cards, links to the other dashboards):
 
-Both are Custom HTML Blocks (fixtures) backed by `altor_project/api/dashboard.py`.
+- **Project Overview**: active / overdue projects, progress, open tasks, budget health (orders, manpower, direct invoices,
+  remaining), own vs outsourced labour, budget used by project, and tabs for projects, item group budgets and budget warnings.
+- **HR Dashboard**: headcount (own / outsourced), attendance today and last 7 days, leave, workers on site, labour cost,
+  department / gender / employment type, agencies, and tabs for leave, birthdays, anniversaries, expiring passports, new joiners.
+- **Stock Overview**: stock value, stock in / out, pending receipts, material issued to projects, value by item group and
+  warehouse, and tabs for top items, reorder alerts, pending receipts, slow-moving stock and recent stock entries.
+- **Accounts Overview**: cash & bank, receivables and payables with ageing, net profit year to date, income vs expenses
+  for 6 months, this month's margin, where the money went, and tabs for overdue invoices and recent payments.
+
+Sources live in `dashboards/` (`kit.css` / `kit.js` shared design kit plus one `.html` / `.js` per dashboard).
+After editing, run `python3 dashboards/build.py` to pack them into `altor_project/fixtures/custom_html_block.json`,
+then `bench --site <site> migrate`. Data comes from `altor_project/api/dashboard.py`.
 
 ### Item Group wise Project Budget
 

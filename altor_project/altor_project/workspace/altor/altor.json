@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\": \"8a76138315\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Altor</b></span>\", \"col\": 12}}, {\"id\": \"380aae53b9\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Dashboards</b></span>\", \"col\": 12}}, {\"id\": \"7cb80125f8\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Overview\", \"col\": 3}}, {\"id\": \"2239f81278\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"HR Dashboard\", \"col\": 3}}, {\"id\": \"0df4cfe979\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Sales & Pre-Sales</b></span>\", \"col\": 12}}, {\"id\": \"398809b74e\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Lead\", \"col\": 3}}, {\"id\": \"805de48b13\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Site Visit\", \"col\": 3}}, {\"id\": \"af58305f80\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Bill of Quantity\", \"col\": 3}}, {\"id\": \"76d74cb6b3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Quotation\", \"col\": 3}}, {\"id\": \"10555643a5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Proforma Invoice\", \"col\": 3}}, {\"id\": \"7c93db9a38\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customer\", \"col\": 3}}, {\"id\": \"1388da4c2d\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Invoice\", \"col\": 3}}, {\"id\": \"b1c0524f0e\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Projects</b></span>\", \"col\": 12}}, {\"id\": \"7c5eb7653e\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project\", \"col\": 3}}, {\"id\": \"734432f6cd\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Task\", \"col\": 3}}, {\"id\": \"3415ecd5c0\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Schedule\", \"col\": 3}}, {\"id\": \"084c49e2f4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Budget\", \"col\": 3}}, {\"id\": \"576ea9b90e\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Manpower Entry\", \"col\": 3}}, {\"id\": \"5ab41d6864\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Procurement & Subcontract</b></span>\", \"col\": 12}}, {\"id\": \"f50eebf63f\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Material Request\", \"col\": 3}}, {\"id\": \"a51ef13689\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Order\", \"col\": 3}}, {\"id\": \"6f3df0d479\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Invoice\", \"col\": 3}}, {\"id\": \"601504d21c\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Subcontract Work Order\", \"col\": 3}}, {\"id\": \"6198790ad9\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Subcontract Invoice\", \"col\": 3}}, {\"id\": \"4e84b8e24f\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Expense Entry\", \"col\": 3}}, {\"id\": \"e19fc1941f\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"be8a1dcf2f\", \"type\": \"card\", \"data\": {\"card_name\": \"Sales & Pre-Sales\", \"col\": 4}}, {\"id\": \"27777eff4c\", \"type\": \"card\", \"data\": {\"card_name\": \"Project Management\", \"col\": 4}}, {\"id\": \"a1eb1eb989\", \"type\": \"card\", \"data\": {\"card_name\": \"Procurement & Subcontract\", \"col\": 4}}, {\"id\": \"98233873ba\", \"type\": \"card\", \"data\": {\"card_name\": \"Manpower\", \"col\": 4}}, {\"id\": \"2360a31b53\", \"type\": \"card\", \"data\": {\"card_name\": \"Reports & Analytics\", \"col\": 4}}, {\"id\": \"a381928707\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"e4455f4f80\", \"type\": \"custom_block\", \"data\": {\"custom_block_name\": \"Task Dashboard\", \"col\": 12}}]",
+ "content": "[{\"id\": \"8a76138315\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Altor</b></span>\", \"col\": 12}}, {\"id\": \"380aae53b9\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Dashboards</b></span>\", \"col\": 12}}, {\"id\": \"7cb80125f8\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Overview\", \"col\": 3}}, {\"id\": \"2239f81278\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"HR Dashboard\", \"col\": 3}}, {\"id\": \"ad803b1388\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Overview\", \"col\": 3}}, {\"id\": \"61debfba83\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Accounts Overview\", \"col\": 3}}, {\"id\": \"0df4cfe979\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Sales & Pre-Sales</b></span>\", \"col\": 12}}, {\"id\": \"398809b74e\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Lead\", \"col\": 3}}, {\"id\": \"805de48b13\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Site Visit\", \"col\": 3}}, {\"id\": \"af58305f80\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Bill of Quantity\", \"col\": 3}}, {\"id\": \"76d74cb6b3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Quotation\", \"col\": 3}}, {\"id\": \"10555643a5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Proforma Invoice\", \"col\": 3}}, {\"id\": \"7c93db9a38\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customer\", \"col\": 3}}, {\"id\": \"1388da4c2d\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Invoice\", \"col\": 3}}, {\"id\": \"b1c0524f0e\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Projects</b></span>\", \"col\": 12}}, {\"id\": \"7c5eb7653e\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project\", \"col\": 3}}, {\"id\": \"734432f6cd\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Task\", \"col\": 3}}, {\"id\": \"3415ecd5c0\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Schedule\", \"col\": 3}}, {\"id\": \"084c49e2f4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Budget\", \"col\": 3}}, {\"id\": \"576ea9b90e\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Manpower Entry\", \"col\": 3}}, {\"id\": \"5ab41d6864\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Procurement & Subcontract</b></span>\", \"col\": 12}}, {\"id\": \"f50eebf63f\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Material Request\", \"col\": 3}}, {\"id\": \"a51ef13689\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Order\", \"col\": 3}}, {\"id\": \"6f3df0d479\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Invoice\", \"col\": 3}}, {\"id\": \"601504d21c\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Subcontract Work Order\", \"col\": 3}}, {\"id\": \"6198790ad9\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Subcontract Invoice\", \"col\": 3}}, {\"id\": \"4e84b8e24f\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Expense Entry\", \"col\": 3}}, {\"id\": \"e19fc1941f\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"be8a1dcf2f\", \"type\": \"card\", \"data\": {\"card_name\": \"Sales & Pre-Sales\", \"col\": 4}}, {\"id\": \"27777eff4c\", \"type\": \"card\", \"data\": {\"card_name\": \"Project Management\", \"col\": 4}}, {\"id\": \"a1eb1eb989\", \"type\": \"card\", \"data\": {\"card_name\": \"Procurement & Subcontract\", \"col\": 4}}, {\"id\": \"98233873ba\", \"type\": \"card\", \"data\": {\"card_name\": \"Manpower\", \"col\": 4}}, {\"id\": \"2360a31b53\", \"type\": \"card\", \"data\": {\"card_name\": \"Reports & Analytics\", \"col\": 4}}, {\"id\": \"a381928707\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"e4455f4f80\", \"type\": \"custom_block\", \"data\": {\"custom_block_name\": \"Task Dashboard\", \"col\": 12}}]",
  "creation": "2026-02-03 12:56:44.746047",
  "custom_blocks": [
   {
@@ -344,7 +344,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-11-03 12:00:00.000000",
+ "modified": "2026-11-03 14:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Altor",
@@ -357,7 +357,7 @@
  "sequence_id": 2.0,
  "shortcuts": [
   {
-   "color": "Cyan",
+   "color": "Blue",
    "doc_view": "",
    "label": "Project Overview",
    "link_to": null,
@@ -366,13 +366,31 @@
    "url": "/app/project-overview"
   },
   {
-   "color": "Cyan",
+   "color": "Green",
    "doc_view": "",
    "label": "HR Dashboard",
    "link_to": null,
    "stats_filter": "[]",
    "type": "URL",
    "url": "/app/hr-dashboard"
+  },
+  {
+   "color": "Cyan",
+   "doc_view": "",
+   "label": "Stock Overview",
+   "link_to": null,
+   "stats_filter": "[]",
+   "type": "URL",
+   "url": "/app/stock-overview"
+  },
+  {
+   "color": "Purple",
+   "doc_view": "",
+   "label": "Accounts Overview",
+   "link_to": null,
+   "stats_filter": "[]",
+   "type": "URL",
+   "url": "/app/accounts-overview"
   },
   {
    "color": "Blue",
@@ -498,12 +516,13 @@
    "format": "{} To Bill"
   },
   {
-   "color": "Grey",
+   "color": "Orange",
    "doc_view": "List",
    "label": "Purchase Invoice",
    "link_to": "Purchase Invoice",
-   "stats_filter": "[]",
-   "type": "DocType"
+   "stats_filter": "[[\"Purchase Invoice\", \"status\", \"in\", [\"Unpaid\", \"Overdue\", \"Partly Paid\"], false]]",
+   "type": "DocType",
+   "format": "{} Unpaid"
   },
   {
    "color": "Grey",

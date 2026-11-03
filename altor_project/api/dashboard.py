@@ -652,3 +652,450 @@ def get_hr_overview(filters=None):
 			for e in exits
 		],
 	}
+
+
+# ---------------------------------------------------------------------------
+# Shared
+# ---------------------------------------------------------------------------
+
+
+def _company(filters):
+	return (
+		filters.get("company")
+		or frappe.defaults.get_user_default("Company")
+		or frappe.defaults.get_global_default("company")
+		or frappe.db.get_value("Company", {}, "name")
+	)
+
+
+def _currency(company):
+	return (
+		frappe.get_cached_value("Company", company, "default_currency")
+		if company
+		else frappe.defaults.get_global_default("currency")
+	)
+
+
+# ---------------------------------------------------------------------------
+# Stock Overview
+# ---------------------------------------------------------------------------
+
+
+@frappe.whitelist()
+def get_stock_overview(filters=None):
+	filters = _parse(filters)
+	frappe.has_permission("Stock Ledger Entry", "read", throw=True)
+	today = getdate(nowdate())
+	month_start = get_first_day(today)
+	company = filters.get("company")
+	v = {
+		"company": company,
+		"today": today,
+		"month_start": month_start,
+		"d14": add_days(today, -13),
+		"d90": add_days(today, -90),
+		"warehouse": filters.get("warehouse"),
+	}
+	wh = " AND w.company = %(company)s" if company else ""
+	if filters.get("warehouse"):
+		wh += " AND b.warehouse = %(warehouse)s"
+	sle_c = (" AND sle.company = %(company)s" if company else "") + (
+		" AND sle.warehouse = %(warehouse)s" if filters.get("warehouse") else ""
+	)
+
+	totals = frappe.db.sql(
+		f"""
+		SELECT SUM(b.stock_value) AS value,
+			COUNT(DISTINCT CASE WHEN b.actual_qty > 0 THEN b.item_code END) AS items,
+			COUNT(DISTINCT CASE WHEN b.actual_qty > 0 THEN b.warehouse END) AS warehouses,
+			SUM(b.actual_qty < 0) AS negative
+		FROM `tabBin` b INNER JOIN `tabWarehouse` w ON w.name = b.warehouse
+		WHERE 1 = 1 {wh}
+		""",
+		v,
+		as_dict=True,
+	)[0]
+
+	by_warehouse = frappe.db.sql(
+		f"""
+		SELECT b.warehouse AS label, SUM(b.stock_value) AS value
+		FROM `tabBin` b INNER JOIN `tabWarehouse` w ON w.name = b.warehouse
+		WHERE b.stock_value != 0 {wh} GROUP BY b.warehouse ORDER BY value DESC LIMIT 8
+		""",
+		v,
+		as_dict=True,
+	)
+
+	by_group = frappe.db.sql(
+		f"""
+		SELECT i.item_group AS label, SUM(b.stock_value) AS value
+		FROM `tabBin` b INNER JOIN `tabWarehouse` w ON w.name = b.warehouse
+		INNER JOIN `tabItem` i ON i.name = b.item_code
+		WHERE b.stock_value > 0 {wh} GROUP BY i.item_group ORDER BY value DESC
+		""",
+		v,
+		as_dict=True,
+	)
+	if len(by_group) > 6:
+		others = sum(flt(g.value) for g in by_group[5:])
+		by_group = [*by_group[:5], frappe._dict(label=_("Others"), value=others)]
+
+	top_items = frappe.db.sql(
+		f"""
+		SELECT b.item_code, i.item_name, i.stock_uom, SUM(b.actual_qty) AS qty, SUM(b.stock_value) AS value,
+			COUNT(DISTINCT b.warehouse) AS warehouses
+		FROM `tabBin` b INNER JOIN `tabWarehouse` w ON w.name = b.warehouse
+		INNER JOIN `tabItem` i ON i.name = b.item_code
+		WHERE b.actual_qty > 0 {wh} GROUP BY b.item_code ORDER BY value DESC LIMIT 15
+		""",
+		v,
+		as_dict=True,
+	)
+
+	reorder = frappe.db.sql(
+		f"""
+		SELECT ir.parent AS item_code, i.item_name, b.warehouse, b.actual_qty, b.projected_qty,
+			ir.warehouse_reorder_level AS reorder_level, ir.warehouse_reorder_qty AS reorder_qty
+		FROM `tabItem Reorder` ir
+		INNER JOIN `tabBin` b ON b.item_code = ir.parent AND b.warehouse = ir.warehouse
+		INNER JOIN `tabWarehouse` w ON w.name = b.warehouse
+		INNER JOIN `tabItem` i ON i.name = ir.parent
+		WHERE ir.parenttype = 'Item' AND i.disabled = 0 AND b.projected_qty < ir.warehouse_reorder_level {wh}
+		ORDER BY (ir.warehouse_reorder_level - b.projected_qty) DESC LIMIT 50
+		""",
+		v,
+		as_dict=True,
+	)
+
+	slow = frappe.db.sql(
+		f"""
+		SELECT b.item_code, i.item_name, SUM(b.actual_qty) AS qty, SUM(b.stock_value) AS value
+		FROM `tabBin` b INNER JOIN `tabWarehouse` w ON w.name = b.warehouse
+		INNER JOIN `tabItem` i ON i.name = b.item_code
+		WHERE b.actual_qty > 0 {wh}
+			AND NOT EXISTS (
+				SELECT 1 FROM `tabStock Ledger Entry` s
+				WHERE s.item_code = b.item_code AND s.warehouse = b.warehouse
+					AND s.posting_date >= %(d90)s AND s.is_cancelled = 0)
+		GROUP BY b.item_code ORDER BY value DESC LIMIT 15
+		""",
+		v,
+		as_dict=True,
+	)
+
+	movement = {
+		str(r.day): r
+		for r in frappe.db.sql(
+			f"""
+		SELECT sle.posting_date AS day,
+			SUM(CASE WHEN sle.actual_qty > 0 THEN sle.stock_value_difference ELSE 0 END) AS stock_in,
+			SUM(CASE WHEN sle.actual_qty < 0 THEN -sle.stock_value_difference ELSE 0 END) AS stock_out
+		FROM `tabStock Ledger Entry` sle
+		WHERE sle.is_cancelled = 0 AND sle.posting_date BETWEEN %(d14)s AND %(today)s {sle_c}
+		GROUP BY sle.posting_date
+		""",
+			v,
+			as_dict=True,
+		)
+	}
+	trend = []
+	for i in range(14):
+		day = str(add_days(v["d14"], i))
+		r = movement.get(day) or {}
+		trend.append({"date": day, "in": flt(r.get("stock_in")), "out": flt(r.get("stock_out"))})
+
+	month = frappe.db.sql(
+		f"""
+		SELECT SUM(CASE WHEN sle.actual_qty > 0 THEN sle.stock_value_difference ELSE 0 END) AS stock_in,
+			SUM(CASE WHEN sle.actual_qty < 0 THEN -sle.stock_value_difference ELSE 0 END) AS stock_out
+		FROM `tabStock Ledger Entry` sle
+		WHERE sle.is_cancelled = 0 AND sle.posting_date BETWEEN %(month_start)s AND %(today)s {sle_c}
+		""",
+		v,
+		as_dict=True,
+	)[0]
+
+	co = " AND po.company = %(company)s" if company else ""
+	receipts = frappe.db.sql(
+		f"""
+		SELECT po.name, po.supplier, poi.item_code, poi.item_name, poi.schedule_date,
+			(poi.qty - IFNULL(poi.received_qty, 0)) AS pending_qty, poi.uom,
+			(poi.qty - IFNULL(poi.received_qty, 0)) * poi.base_rate AS value
+		FROM `tabPurchase Order Item` poi INNER JOIN `tabPurchase Order` po ON po.name = poi.parent
+		INNER JOIN `tabItem` i ON i.name = poi.item_code
+		WHERE po.docstatus = 1 AND po.status NOT IN ('Closed', 'Completed', 'On Hold')
+			AND IFNULL(poi.delivered_by_supplier, 0) = 0 AND i.is_stock_item = 1
+			AND poi.received_qty < poi.qty {co}
+		ORDER BY poi.schedule_date ASC
+		""",
+		v,
+		as_dict=True,
+	)
+
+	mr_c = " AND mr.company = %(company)s" if company else ""
+	pending_mr = frappe.db.sql(
+		f"""
+		SELECT COUNT(*) FROM `tabMaterial Request` mr
+		WHERE mr.docstatus = 1 AND mr.status IN ('Pending', 'Partially Ordered') {mr_c}
+		""",
+		v,
+	)[0][0]
+
+	se_c = " AND se.company = %(company)s" if company else ""
+	by_project = frappe.db.sql(
+		f"""
+		SELECT se.project AS label, SUM(sed.amount) AS value
+		FROM `tabStock Entry Detail` sed INNER JOIN `tabStock Entry` se ON se.name = sed.parent
+		WHERE se.docstatus = 1 AND IFNULL(se.project, '') != '' AND IFNULL(sed.s_warehouse, '') != ''
+			AND se.posting_date BETWEEN %(month_start)s AND %(today)s {se_c}
+		GROUP BY se.project ORDER BY value DESC LIMIT 8
+		""",
+		v,
+		as_dict=True,
+	)
+	recent = frappe.db.sql(
+		f"""
+		SELECT se.name, se.stock_entry_type, se.purpose, se.posting_date, se.project, se.total_outgoing_value,
+			se.total_incoming_value, se.value_difference
+		FROM `tabStock Entry` se WHERE se.docstatus = 1 {se_c}
+		ORDER BY se.posting_date DESC, se.creation DESC LIMIT 12
+		""",
+		v,
+		as_dict=True,
+	)
+
+	overdue_receipts = [r for r in receipts if r.schedule_date and getdate(r.schedule_date) < today]
+	summary = frappe._dict(
+		stock_value=flt(totals.value),
+		items=int(totals.items or 0),
+		warehouses=int(totals.warehouses or 0),
+		negative=int(totals.negative or 0),
+		below_reorder=len(reorder),
+		pending_receipt_value=sum(flt(r.value) for r in receipts),
+		pending_receipt_pos=len({r.name for r in receipts}),
+		overdue_receipts=len({r.name for r in overdue_receipts}),
+		pending_mr=int(pending_mr or 0),
+		stock_in_month=flt(month.stock_in),
+		stock_out_month=flt(month.stock_out),
+		issued_to_projects=sum(flt(p.value) for p in by_project),
+		slow_value=sum(flt(s.value) for s in slow),
+	)
+	return {
+		"summary": summary,
+		"by_warehouse": by_warehouse,
+		"by_group": by_group,
+		"top_items": top_items,
+		"reorder": reorder[:20],
+		"slow": slow,
+		"trend": trend,
+		"receipts": receipts[:20],
+		"by_project": by_project,
+		"recent": recent,
+		"currency": _currency(company or _company(filters)),
+	}
+
+
+@frappe.whitelist()
+def get_warehouses(company=None):
+	filters = {"is_group": 0, "disabled": 0}
+	if company:
+		filters["company"] = company
+	return frappe.get_list("Warehouse", filters=filters, pluck="name", order_by="name", limit_page_length=500)
+
+
+# ---------------------------------------------------------------------------
+# Accounts Overview
+# ---------------------------------------------------------------------------
+
+AGEING = (
+	(None, 0, "Not due"),
+	(1, 30, "1-30 days"),
+	(31, 60, "31-60 days"),
+	(61, 90, "61-90 days"),
+	(91, None, "90+ days"),
+)
+
+
+def _ageing(rows, today):
+	buckets = {label: 0.0 for _x, _y, label in AGEING}
+	for r in rows:
+		days = (today - getdate(r.due_date or r.posting_date)).days
+		for lo, hi, label in AGEING:
+			if (lo is None or days >= lo) and (hi is None or days <= hi):
+				buckets[label] += flt(r.outstanding)
+				break
+	return [{"label": _(k), "value": v} for k, v in buckets.items()]
+
+
+@frappe.whitelist()
+def get_accounts_overview(filters=None):
+	filters = _parse(filters)
+	frappe.has_permission("GL Entry", "read", throw=True)
+	company = _company(filters)
+	today = getdate(nowdate())
+	month_start = get_first_day(today)
+	prev_start = get_first_day(add_days(month_start, -1))
+	six_start = get_first_day(add_days(month_start, -150))
+	try:
+		from erpnext.accounts.utils import get_fiscal_year
+
+		fy_start = get_fiscal_year(today, company=company)[1]
+	except Exception:
+		fy_start = today.replace(month=1, day=1)
+	v = {
+		"company": company,
+		"today": today,
+		"month_start": month_start,
+		"prev_start": prev_start,
+		"six_start": six_start,
+		"fy_start": fy_start,
+	}
+
+	def open_invoices(doctype, party):
+		return frappe.db.sql(
+			f"""
+			SELECT name, {party} AS party, posting_date, due_date, grand_total, outstanding_amount AS outstanding
+			FROM `tab{doctype}`
+			WHERE docstatus = 1 AND company = %(company)s AND outstanding_amount > 0
+			ORDER BY due_date ASC
+			""",
+			v,
+			as_dict=True,
+		)
+
+	receivables = open_invoices("Sales Invoice", "customer")
+	payables = open_invoices("Purchase Invoice", "supplier")
+
+	def party_totals(rows):
+		out = {}
+		for r in rows:
+			out[r.party] = out.get(r.party, 0) + flt(r.outstanding)
+		return [{"label": k, "value": val} for k, val in sorted(out.items(), key=lambda x: -x[1])[:8]]
+
+	def overdue(rows):
+		return [r for r in rows if r.due_date and getdate(r.due_date) < today]
+
+	cash = frappe.db.sql(
+		"""
+		SELECT a.name AS account, a.account_name AS label, a.account_type, SUM(g.debit - g.credit) AS value
+		FROM `tabGL Entry` g INNER JOIN `tabAccount` a ON a.name = g.account
+		WHERE g.company = %(company)s AND g.is_cancelled = 0 AND a.account_type IN ('Bank', 'Cash')
+		GROUP BY a.name ORDER BY value DESC
+		""",
+		v,
+		as_dict=True,
+	)
+
+	pl = frappe.db.sql(
+		"""
+		SELECT DATE_FORMAT(g.posting_date, '%%Y-%%m') AS month, a.root_type,
+			SUM(CASE WHEN a.root_type = 'Income' THEN g.credit - g.debit ELSE g.debit - g.credit END) AS amount
+		FROM `tabGL Entry` g INNER JOIN `tabAccount` a ON a.name = g.account
+		WHERE g.company = %(company)s AND g.is_cancelled = 0 AND a.root_type IN ('Income', 'Expense')
+			AND g.voucher_type != 'Period Closing Voucher'
+			AND g.posting_date BETWEEN %(six_start)s AND %(today)s
+		GROUP BY month, a.root_type
+		""",
+		v,
+		as_dict=True,
+	)
+	months = []
+	cursor = six_start
+	for _i in range(6):
+		months.append(cursor.strftime("%Y-%m"))
+		cursor = get_first_day(add_days(get_last_day(cursor), 1))
+	by_month = {m: {"income": 0.0, "expense": 0.0} for m in months}
+	for r in pl:
+		if r.month in by_month:
+			by_month[r.month]["income" if r.root_type == "Income" else "expense"] += flt(r.amount)
+	trend = [{"month": m, **by_month[m]} for m in months]
+	this_m = by_month.get(today.strftime("%Y-%m"), {"income": 0, "expense": 0})
+	prev_m = by_month.get(prev_start.strftime("%Y-%m"), {"income": 0, "expense": 0})
+
+	ytd = frappe.db.sql(
+		"""
+		SELECT SUM(CASE WHEN a.root_type = 'Income' THEN g.credit - g.debit ELSE 0 END) AS income,
+			SUM(CASE WHEN a.root_type = 'Expense' THEN g.debit - g.credit ELSE 0 END) AS expense
+		FROM `tabGL Entry` g INNER JOIN `tabAccount` a ON a.name = g.account
+		WHERE g.company = %(company)s AND g.is_cancelled = 0 AND a.root_type IN ('Income', 'Expense')
+			AND g.voucher_type != 'Period Closing Voucher' AND g.posting_date BETWEEN %(fy_start)s AND %(today)s
+		""",
+		v,
+		as_dict=True,
+	)[0]
+
+	expense_split = frappe.db.sql(
+		"""
+		SELECT COALESCE(p.account_name, a.account_name) AS label, SUM(g.debit - g.credit) AS value
+		FROM `tabGL Entry` g INNER JOIN `tabAccount` a ON a.name = g.account
+		LEFT JOIN `tabAccount` p ON p.name = a.parent_account
+		WHERE g.company = %(company)s AND g.is_cancelled = 0 AND a.root_type = 'Expense'
+			AND g.voucher_type != 'Period Closing Voucher' AND g.posting_date BETWEEN %(month_start)s AND %(today)s
+		GROUP BY label HAVING value > 0 ORDER BY value DESC
+		""",
+		v,
+		as_dict=True,
+	)
+	if len(expense_split) > 6:
+		expense_split = [
+			*expense_split[:5],
+			frappe._dict(label=_("Others"), value=sum(flt(e.value) for e in expense_split[5:])),
+		]
+
+	payments = frappe.db.sql(
+		"""
+		SELECT name, payment_type, party_type, party, posting_date, mode_of_payment,
+			CASE WHEN payment_type = 'Receive' THEN base_received_amount ELSE base_paid_amount END AS amount
+		FROM `tabPayment Entry`
+		WHERE docstatus = 1 AND company = %(company)s
+		ORDER BY posting_date DESC, creation DESC LIMIT 12
+		""",
+		v,
+		as_dict=True,
+	)
+	flows = frappe.db.sql(
+		"""
+		SELECT SUM(CASE WHEN payment_type = 'Receive' THEN base_received_amount ELSE 0 END) AS received,
+			SUM(CASE WHEN payment_type = 'Pay' THEN base_paid_amount ELSE 0 END) AS paid
+		FROM `tabPayment Entry`
+		WHERE docstatus = 1 AND company = %(company)s AND posting_date BETWEEN %(month_start)s AND %(today)s
+		""",
+		v,
+		as_dict=True,
+	)[0]
+
+	rec_overdue, pay_overdue = overdue(receivables), overdue(payables)
+	summary = frappe._dict(
+		cash=sum(flt(c.value) for c in cash),
+		receivable=sum(flt(r.outstanding) for r in receivables),
+		receivable_overdue=sum(flt(r.outstanding) for r in rec_overdue),
+		receivable_overdue_count=len(rec_overdue),
+		payable=sum(flt(r.outstanding) for r in payables),
+		payable_overdue=sum(flt(r.outstanding) for r in pay_overdue),
+		payable_overdue_count=len(pay_overdue),
+		income_month=flt(this_m["income"]),
+		expense_month=flt(this_m["expense"]),
+		income_prev=flt(prev_m["income"]),
+		expense_prev=flt(prev_m["expense"]),
+		income_ytd=flt(ytd.income),
+		expense_ytd=flt(ytd.expense),
+		profit_ytd=flt(ytd.income) - flt(ytd.expense),
+		received_month=flt(flows.received),
+		paid_month=flt(flows.paid),
+		fy_start=str(fy_start),
+	)
+	return {
+		"company": company,
+		"summary": summary,
+		"trend": trend,
+		"cash": cash,
+		"receivable_ageing": _ageing(receivables, today),
+		"payable_ageing": _ageing(payables, today),
+		"top_customers": party_totals(receivables),
+		"top_suppliers": party_totals(payables),
+		"overdue_sales": rec_overdue[:15],
+		"overdue_purchases": pay_overdue[:15],
+		"expense_split": expense_split,
+		"payments": payments,
+		"currency": _currency(company),
+	}
