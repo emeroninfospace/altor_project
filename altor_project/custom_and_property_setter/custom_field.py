@@ -261,4 +261,59 @@ CREATE_FIELDS={
             "insert_after": "supplier",
         },
     ],
+    # Print settings used by the Altor print formats
+    "Company": [
+        {
+            "fieldname": "custom_print_settings_tab",
+            "label": "Print Settings",
+            "fieldtype": "Tab Break",
+            "insert_after": "custom_subcontract_account",
+        },
+        {
+            "fieldname": "custom_company_name_in_arabic",
+            "label": "Company Name in Arabic",
+            "fieldtype": "Data",
+            "insert_after": "custom_print_settings_tab",
+        },
+        {
+            "fieldname": "custom_print_accent_color",
+            "label": "Print Accent Colour",
+            "fieldtype": "Color",
+            "default": "#1f4e8c",
+            "description": "Brand colour used for headings and table headers in the Altor print formats",
+            "insert_after": "custom_company_name_in_arabic",
+        },
+        {
+            "fieldname": "custom_print_footer_note",
+            "label": "Print Footer Note",
+            "fieldtype": "Small Text",
+            "description": "Shown at the bottom of every printed document, e.g. branches or registration details",
+            "insert_after": "custom_print_accent_color",
+        },
+        {
+            "fieldname": "custom_print_column_break",
+            "fieldtype": "Column Break",
+            "insert_after": "custom_print_footer_note",
+        },
+        {
+            "fieldname": "custom_company_stamp",
+            "label": "Company Stamp",
+            "fieldtype": "Attach Image",
+            "description": "PNG with transparent background works best",
+            "insert_after": "custom_print_column_break",
+        },
+        {
+            "fieldname": "custom_authorised_signature",
+            "label": "Authorised Signature",
+            "fieldtype": "Attach Image",
+            "insert_after": "custom_company_stamp",
+        },
+        {
+            "fieldname": "custom_authorised_signatory",
+            "label": "Authorised Signatory",
+            "fieldtype": "Data",
+            "description": "Name and title printed under the signature",
+            "insert_after": "custom_authorised_signature",
+        },
+    ],
 }

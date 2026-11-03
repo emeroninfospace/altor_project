@@ -1,0 +1,297 @@
+{#-
+  Altor print kit: shared styles and building blocks for the Altor print formats.
+  Usage in a print format:
+    {% import "altor_project/templates/print/altor_print.html" as ap with context %}
+  Layout uses tables (not flex/grid) so it renders the same in wkhtmltopdf PDFs.
+-#}
+
+{%- macro money(value, doc) -%}{{ frappe.utils.fmt_money(value or 0, currency=doc.get("currency")) }}{%- endmacro -%}
+{%- macro amt(value) -%}{{ frappe.utils.fmt_money(value or 0, precision=2) }}{%- endmacro -%}
+{%- macro num(value) -%}{{ frappe.utils.fmt_money(value or 0, precision=2) if value and (value % 1) else frappe.utils.cint(value or 0) }}{%- endmacro -%}
+{%- macro date(value) -%}{{ frappe.utils.formatdate(value) if value else "" }}{%- endmacro -%}
+
+{%- macro styles(c) -%}
+<style>
+  .ap { font-family: "Inter", "Helvetica Neue", Arial, "Noto Sans Arabic", "DejaVu Sans", sans-serif; font-size: 9.5pt; color: #1f2933; line-height: 1.45; }
+  .ap * { box-sizing: border-box; }
+  .ap table { width: 100%; border-collapse: collapse; font-size: inherit; color: inherit; }
+  .ap td, .ap th { font-size: inherit; }
+  .ap .ar { font-family: "Noto Naskh Arabic", "Noto Sans Arabic", "Geeza Pro", Tahoma, "DejaVu Sans", sans-serif; direction: rtl; unicode-bidi: embed; }
+  .ap div.ar { text-align: left; }
+  .ap .hd div.ar { text-align: right; }
+  .ap .muted { color: #6b7785; }
+  .ap .right { text-align: right; } .ap .center { text-align: center; }
+  .ap .nowrap { white-space: nowrap; }
+  /* header */
+  .ap .hd td { vertical-align: top; }
+  .ap .logo { max-height: 70px; max-width: 220px; }
+  .ap .co-name { font-size: 14pt; font-weight: 700; color: {{ c.accent }}; letter-spacing: .2px; }
+  .ap .co-ar { font-size: 12.5pt; font-weight: 700; color: {{ c.accent }}; }
+  .ap .co-line { font-size: 8.5pt; color: #52606d; }
+  .ap .bar { height: 4px; background: {{ c.accent }}; margin: 10px 0 0; }
+  .ap .bar2 { height: 1px; background: #d9e2ec; margin: 0 0 14px; }
+  /* title band */
+  .ap .title td { vertical-align: bottom; padding-top: 12px; }
+  .ap .doc-title { font-size: 17pt; font-weight: 800; color: #102a43; letter-spacing: .5px; line-height: 1.1; }
+  .ap .doc-title-ar { font-size: 12pt; color: {{ c.accent }}; font-weight: 700; }
+  .ap .meta { width: auto; margin-left: auto; }
+  .ap .meta td { padding: 2px 0 2px 14px; font-size: 9pt; }
+  .ap .meta td.k { color: #6b7785; text-align: right; white-space: nowrap; }
+  .ap .meta td.v { font-weight: 600; text-align: right; white-space: nowrap; }
+  /* boxes */
+  .ap .boxes { margin: 14px 0 12px; }
+  .ap .boxes > tbody > tr > td { width: 50%; vertical-align: top; }
+  .ap .boxes > tbody > tr > td.gap { width: 2%; }
+  .ap .box { border: 1px solid #d9e2ec; border-radius: 6px; padding: 9px 12px; background: #f8fafc; }
+  .ap .box-title { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: {{ c.accent }}; margin-bottom: 4px; }
+  .ap .box-name { font-size: 10.5pt; font-weight: 700; }
+  .ap .box table td { padding: 1.5px 0; font-size: 9pt; vertical-align: top; }
+  .ap .box table td.k { color: #6b7785; width: 38%; white-space: nowrap; padding-right: 8px; }
+  /* items */
+  .ap .items { margin-top: 4px; }
+  .ap .items thead { display: table-header-group; }
+  .ap .items th { background: {{ c.accent }}; color: #fff; font-weight: 600; font-size: 8.5pt; padding: 6px 7px; text-align: left; border: 1px solid {{ c.accent }}; }
+  .ap .items th .ar { display: block; font-weight: 400; font-size: 8pt; opacity: .9; }
+  .ap .items th.right, .ap .items td.right { text-align: right; }
+  .ap .items th.center, .ap .items td.center { text-align: center; }
+  .ap .items td { padding: 6px 7px; border: 1px solid #e4e7eb; vertical-align: top; font-size: 9pt; }
+  .ap .items tbody tr:nth-child(even) td { background: #fbfcfe; }
+  .ap .items tr { page-break-inside: avoid; }
+  .ap .items .grp td { background: #eef3f9 !important; font-weight: 700; color: #102a43; }
+  .ap .items .sub td { background: #f8fafc !important; font-weight: 600; }
+  .ap .items ul { margin: 3px 0 0 0; padding-left: 16px; }
+  .ap .items li { margin: 1px 0; }
+  .ap .item-name { font-weight: 600; }
+  /* totals */
+  .ap .sum { margin-top: 10px; }
+  .ap .sum > tbody > tr > td { vertical-align: top; }
+  .ap .totals td { padding: 4px 8px; font-size: 9.5pt; border-bottom: 1px solid #edf0f3; }
+  .ap .totals td.k { color: #52606d; }
+  .ap .totals td.k .ar { font-size: 8.5pt; margin-left: 6px; color: #8a96a3; }
+  .ap .totals td.v { text-align: right; font-weight: 600; white-space: nowrap; }
+  .ap .totals tr.grand td { background: {{ c.accent }}; color: #fff; font-weight: 700; font-size: 10.5pt; border: 0; }
+  .ap .totals tr.grand td .ar { color: #fff; opacity: .85; }
+  .ap .words { border-left: 3px solid {{ c.accent }}; background: #f8fafc; padding: 7px 10px; font-size: 9pt; margin-right: 14px; }
+  /* sections */
+  .ap .sec { margin-top: 14px; page-break-inside: avoid; }
+  .ap .sec-title { font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: {{ c.accent }}; border-bottom: 1px solid #d9e2ec; padding-bottom: 3px; margin-bottom: 6px; }
+  .ap .sec ol, .ap .sec ul { margin: 0; padding-left: 18px; }
+  .ap .sec li { margin: 2px 0; }
+  .ap .letter p { margin: 0 0 8px; }
+  .ap .subject { font-weight: 700; margin: 4px 0 10px; }
+  /* bank / signatures / footer */
+  .ap .bank td { font-size: 9pt; padding: 1.5px 0; }
+  .ap .bank td.k { color: #6b7785; width: 32%; }
+  .ap .sign { margin-top: 26px; page-break-inside: avoid; }
+  .ap .sign td { width: 33%; vertical-align: bottom; text-align: center; padding: 0 10px; font-size: 9pt; }
+  .ap .sign .art { height: 62px; position: relative; }
+  .ap .sign .art img { max-height: 60px; max-width: 150px; }
+  .ap .sign .line { border-top: 1px solid #9aa5b1; padding-top: 4px; font-weight: 600; }
+  .ap .sign .who { min-height: 14px; }
+  .ap .footer { margin-top: 20px; border-top: 2px solid {{ c.accent }}; padding-top: 6px; font-size: 7.8pt; color: #6b7785; text-align: center; }
+  .ap .pill { display: inline-block; padding: 1px 7px; border-radius: 9px; font-size: 8pt; font-weight: 700; }
+  .ap .pill.green { background: #e3f6ea; color: #1e7d45; } .ap .pill.orange { background: #fff1de; color: #b35c00; } .ap .pill.red { background: #fde8e8; color: #b42318; }
+  .ap .kpi td { border: 1px solid #e4e7eb; padding: 7px 9px; width: 14%; vertical-align: top; }
+  .ap .kpi .k { font-size: 7.5pt; color: #6b7785; text-transform: uppercase; letter-spacing: .5px; }
+  .ap .kpi .v { font-size: 10.5pt; font-weight: 700; white-space: nowrap; }
+</style>
+{%- endmacro -%}
+
+{#- Company header + document title. meta: list of [label, value] -#}
+{%- macro header(c, title, title_ar=None, meta=[]) -%}
+<table class="hd"><tr>
+  <td style="width:45%">
+    {%- if c.logo %}<img class="logo" src="{{ c.logo }}">{% else %}<div class="co-name">{{ c.name }}</div>{% endif -%}
+  </td>
+  <td class="right">
+    {%- if c.logo %}<div class="co-name">{{ c.name }}</div>{% endif %}
+    {%- if c.name_ar %}<div class="co-ar ar">{{ c.name_ar }}</div>{% endif %}
+    {%- if c.address %}<div class="co-line">{{ c.address | join(", ") }}</div>{% endif %}
+    <div class="co-line">
+      {%- set bits = [] -%}
+      {%- if c.phone %}{% set _ = bits.append("Tel: " ~ c.phone) %}{% endif -%}
+      {%- if c.email %}{% set _ = bits.append(c.email) %}{% endif -%}
+      {%- if c.website %}{% set _ = bits.append(c.website) %}{% endif -%}
+      {{ bits | join(" &nbsp;|&nbsp; ") }}
+    </div>
+    {%- if c.trn %}<div class="co-line"><b>TRN:</b> {{ c.trn }}</div>{% endif %}
+  </td>
+</tr></table>
+<div class="bar"></div><div class="bar2"></div>
+<table class="title"><tr>
+  <td>
+    <div class="doc-title">{{ title }}</div>
+    {%- if title_ar %}<div class="doc-title-ar ar">{{ title_ar }}</div>{% endif %}
+  </td>
+  <td class="right">
+    <table class="meta">
+      {%- for row in meta if row[1] %}
+      <tr><td class="k">{{ row[0] }}</td><td class="v">{{ row[1] }}</td></tr>
+      {%- endfor %}
+    </table>
+  </td>
+</tr></table>
+{%- endmacro -%}
+
+{#- Party box (customer / supplier) -#}
+{%- macro party_box(title, p) -%}
+<div class="box">
+  <div class="box-title">{{ title }}</div>
+  <div class="box-name">{{ p.name }}</div>
+  {%- if p.name_ar %}<div class="ar">{{ p.name_ar }}</div>{% endif %}
+  {%- if p.address %}<div class="muted">{{ p.address | join("<br>") }}</div>{% endif %}
+  <table>
+    {%- if p.trn %}<tr><td class="k">TRN</td><td><b>{{ p.trn }}</b></td></tr>{% endif %}
+    {%- if p.contact %}<tr><td class="k">Attention</td><td>{{ p.contact }}</td></tr>{% endif %}
+    {%- if p.phone %}<tr><td class="k">Phone</td><td>{{ p.phone }}</td></tr>{% endif %}
+    {%- if p.email %}<tr><td class="k">Email</td><td>{{ p.email }}</td></tr>{% endif %}
+  </table>
+</div>
+{%- endmacro -%}
+
+{#- Key / value box. rows: list of [label, value] (empty values are skipped) -#}
+{%- macro info_box(title, rows) -%}
+<div class="box">
+  <div class="box-title">{{ title }}</div>
+  <table>
+    {%- set ns = namespace(n=0) -%}
+    {%- for row in rows if row[1] %}{% set ns.n = ns.n + 1 %}
+    <tr><td class="k">{{ row[0] }}</td><td>{{ row[1] }}</td></tr>
+    {%- endfor %}
+    {%- if not ns.n %}<tr><td class="muted">&ndash;</td></tr>{% endif %}
+  </table>
+</div>
+{%- endmacro -%}
+
+{%- macro two_boxes(left, right) -%}
+<table class="boxes"><tr><td>{{ left }}</td><td class="gap"></td><td>{{ right }}</td></tr></table>
+{%- endmacro -%}
+
+{#- Bullet list from multi-line text -#}
+{%- macro bullets(text) -%}
+{%- set lines = altor_lines(text) -%}
+{%- if lines %}<ul>{% for line in lines %}<li>{{ line }}</li>{% endfor %}</ul>{% endif -%}
+{%- endmacro -%}
+
+{#- Totals block with amount in words on the left -#}
+{%- macro totals(doc, show_words=True, extra=[]) -%}
+<table class="sum"><tr>
+  <td style="width:55%">
+    {%- if show_words and (doc.get("in_words") or doc.get("grand_total")) %}
+    <div class="words"><span class="muted">Amount in words:</span><br><b>{{ doc.get("in_words") or frappe.utils.money_in_words(doc.get("rounded_total") or doc.get("grand_total"), doc.get("currency")) }}</b></div>
+    {%- endif %}
+  </td>
+  <td style="width:45%">
+    <table class="totals">
+      <tr><td class="k">Total <span class="ar">المجموع</span></td><td class="v">{{ money(doc.get("total"), doc) }}</td></tr>
+      {%- if doc.get("discount_amount") %}
+      <tr><td class="k">Discount <span class="ar">الخصم</span></td><td class="v">- {{ money(doc.get("discount_amount"), doc) }}</td></tr>
+      <tr><td class="k">Taxable Amount <span class="ar">المبلغ الخاضع للضريبة</span></td><td class="v">{{ money(doc.get("net_total"), doc) }}</td></tr>
+      {%- endif %}
+      {%- for tax in doc.get("taxes") or [] if tax.tax_amount %}
+      <tr><td class="k">{{ tax.description }} <span class="ar">ضريبة القيمة المضافة</span></td><td class="v">{{ money(tax.tax_amount_after_discount_amount or tax.tax_amount, doc) }}</td></tr>
+      {%- endfor %}
+      {%- for row in extra if row[1] %}
+      <tr><td class="k">{{ row[0] }}</td><td class="v">{{ row[1] }}</td></tr>
+      {%- endfor %}
+      {%- if doc.get("rounding_adjustment") %}
+      <tr><td class="k">Rounding</td><td class="v">{{ money(doc.get("rounding_adjustment"), doc) }}</td></tr>
+      {%- endif %}
+      <tr class="grand"><td class="k">Grand Total ({{ doc.get("currency") }}) <span class="ar">الإجمالي</span></td><td class="v">{{ money(doc.get("rounded_total") or doc.get("grand_total"), doc) }}</td></tr>
+    </table>
+  </td>
+</tr></table>
+{%- endmacro -%}
+
+{%- macro section(title, body) -%}
+{%- if body and body | striptags | trim %}<div class="sec"><div class="sec-title">{{ title }}</div>{{ body }}</div>{% endif -%}
+{%- endmacro -%}
+
+{%- macro payment_terms(doc) -%}
+{%- if doc.get("payment_schedule") -%}
+<table class="items"><thead><tr><th>Payment Term</th><th class="right">Portion</th><th>Due Date</th><th class="right">Amount ({{ doc.get("currency") }})</th></tr></thead><tbody>
+{%- for row in doc.payment_schedule %}
+<tr><td>{{ row.description or row.payment_term or ("Instalment " ~ loop.index) }}</td><td class="right">{{ frappe.utils.flt(row.invoice_portion, 2) }}%</td><td>{{ date(row.due_date) }}</td><td class="right">{{ amt(row.payment_amount) }}</td></tr>
+{%- endfor %}
+</tbody></table>
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro bank(c) -%}
+{%- if c.bank -%}
+<div class="sec"><div class="sec-title">Bank Details <span class="ar">التفاصيل البنكية</span></div>
+<table class="bank">
+  <tr><td class="k">Account Name</td><td><b>{{ c.bank.account_name or c.name }}</b></td></tr>
+  {%- if c.bank.bank %}<tr><td class="k">Bank</td><td>{{ c.bank.bank }}</td></tr>{% endif %}
+  {%- if c.bank.bank_account_no %}<tr><td class="k">Account No.</td><td>{{ c.bank.bank_account_no }}</td></tr>{% endif %}
+  {%- if c.bank.iban %}<tr><td class="k">IBAN</td><td><b>{{ c.bank.iban }}</b></td></tr>{% endif %}
+  {%- if c.bank.swift %}<tr><td class="k">SWIFT</td><td>{{ c.bank.swift }}</td></tr>{% endif %}
+  {%- if c.bank.branch_code %}<tr><td class="k">Branch</td><td>{{ c.bank.branch_code }}</td></tr>{% endif %}
+</table></div>
+{%- endif -%}
+{%- endmacro -%}
+
+{#- Signature row. labels: list of captions; the company signature / stamp go on the first one -#}
+{%- macro signatures(c, labels, company_index=0) -%}
+<table class="sign"><tr>
+  {%- for label in labels %}
+  <td>
+    <div class="art">
+      {%- if loop.index0 == company_index %}
+        {%- if c.signature %}<img src="{{ c.signature }}">{% endif %}
+        {%- if c.stamp %}<img src="{{ c.stamp }}" style="margin-left:-30px;opacity:.9">{% endif %}
+      {%- endif %}
+    </div>
+    <div class="line">{{ label }}</div>
+    <div class="muted who">{% if loop.index0 == company_index %}{{ c.signatory or ("For " ~ c.name) }}{% else %}&nbsp;{% endif %}</div>
+  </td>
+  {%- endfor %}
+</tr></table>
+{%- endmacro -%}
+
+{%- macro footer(c) -%}
+<div class="footer">
+  {%- if c.footer_note %}{{ c.footer_note | replace("\n", " &nbsp;|&nbsp; ") }}{% else %}{{ c.name }}{% if c.address %} &nbsp;|&nbsp; {{ c.address | join(", ") }}{% endif %}{% if c.phone %} &nbsp;|&nbsp; {{ c.phone }}{% endif %}{% if c.email %} &nbsp;|&nbsp; {{ c.email }}{% endif %}{% endif -%}
+</div>
+{%- endmacro -%}
+
+{%- macro boq_summary(groups, doc) -%}
+<table class="items">
+  <thead><tr><th style="width:8%">#</th><th>Work Package</th><th class="right" style="width:24%">Amount ({{ doc.get("currency") }})</th></tr></thead>
+  <tbody>
+  {%- set ns = namespace(t=0) %}
+  {%- for g in groups %}{% set ns.t = ns.t + (g.total or 0) %}
+  <tr><td>{{ loop.index }}</td><td class="item-name">{{ g.title }}</td><td class="right">{{ amt(g.total) }}</td></tr>
+  {%- endfor %}
+  <tr class="sub"><td></td><td class="right">Total</td><td class="right">{{ amt(ns.t) }}</td></tr>
+  </tbody>
+</table>
+{%- endmacro -%}
+
+{%- macro boq_detail(groups, doc, show_rates=True) -%}
+<table class="items">
+  <thead><tr>
+    <th style="width:7%">Sr.</th><th>Description</th><th style="width:8%">Unit</th><th class="right" style="width:8%">Qty</th>
+    {%- if show_rates %}<th class="right" style="width:13%">Rate</th><th class="right" style="width:15%">Amount ({{ doc.get("currency") }})</th>{% endif %}
+  </tr></thead>
+  <tbody>
+  {%- set ns = namespace(grand=0) %}
+  {%- for g in groups %}
+    <tr class="grp"><td>{{ loop.index }}</td><td colspan="{{ 5 if show_rates else 3 }}">{{ g.title }}</td></tr>
+    {%- set sub = namespace(t=0) %}
+    {%- set gi = loop.index %}
+    {%- for it in g["items"] %}{% set sub.t = sub.t + (it.amount or 0) %}
+    <tr>
+      <td>{{ gi }}.{{ loop.index }}</td>
+      <td>{% if it.lines | length > 1 %}<ul style="margin:0">{% for l in it.lines %}<li>{{ l }}</li>{% endfor %}</ul>{% else %}{{ it.lines[0] if it.lines else (it.description or "") }}{% endif %}</td>
+      <td>{{ it.uom or "" }}</td><td class="right">{{ num(it.qty) }}</td>
+      {%- if show_rates %}<td class="right">{{ amt(it.rate) }}</td><td class="right">{{ amt(it.amount) }}</td>{% endif %}
+    </tr>
+    {%- endfor %}
+    {%- set ns.grand = ns.grand + sub.t %}
+    {%- if show_rates %}<tr class="sub"><td></td><td colspan="4" class="right">Sub Total &mdash; {{ g.title }}</td><td class="right">{{ amt(sub.t) }}</td></tr>{% endif %}
+  {%- endfor %}
+  {%- if show_rates %}<tr class="grp"><td></td><td colspan="4" class="right">Total of Bill of Quantities</td><td class="right">{{ money(ns.grand, doc) }}</td></tr>{% endif %}
+  </tbody>
+</table>
+{%- endmacro -%}

@@ -88,6 +88,17 @@ doctype_list_js = {
 # ----------
 
 # add methods and filters to jinja environment
+jinja = {
+	"methods": [
+		"altor_project.print_utils.altor_company",
+		"altor_project.print_utils.altor_party",
+		"altor_project.print_utils.altor_lines",
+		"altor_project.print_utils.altor_item_taxes",
+		"altor_project.print_utils.altor_boq",
+		"altor_project.print_utils.altor_validity_days",
+	]
+}
+
 # jinja = {
 # 	"methods": "altor_project.utils.jinja_methods",
 # 	"filters": "altor_project.utils.jinja_filters"
