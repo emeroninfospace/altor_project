@@ -1,4 +1,4 @@
-const state = { company: "", warehouse: "" };
+const state = { company: default_company(), warehouse: "" };
 
 function render(d) {
     const s = d.summary || {};
@@ -71,10 +71,12 @@ function load_warehouses() {
     } });
 }
 frappe.call({ method: "altor_project.api.dashboard.get_filter_options", callback(r) {
-    fill_select("#fCompany", (r.message || {}).companies || [], __("All companies"), state.company);
+    const o = r.message || {};
+    apply_default_company(state, o, () => { state.warehouse = ""; load_warehouses(); load(); });
+    fill_select("#fCompany", o.companies || [], __("All companies"), state.company);
 } });
 q("#fCompany").addEventListener("change", (e) => { state.company = e.target.value; state.warehouse = ""; load_warehouses(); load(); });
 q("#fWarehouse").addEventListener("change", (e) => { state.warehouse = e.target.value; load(); });
 q(".btn-refresh").addEventListener("click", load);
-load_warehouses();
-load();
+// with a known default company load now; otherwise wait for the company list (apply_default_company)
+if (state.company) { load_warehouses(); load(); }

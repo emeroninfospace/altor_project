@@ -2,7 +2,7 @@
 const C = { blue: "#2f7ff0", green: "#23a15b", orange: "#ef8a17", red: "#e5484d", violet: "#7c5cff", teal: "#12a4a4", pink: "#d6407a", slate: "#8692a0", amber: "#f5b301", indigo: "#4f5bd5" };
 const PALETTE = [C.blue, C.green, C.orange, C.violet, C.teal, C.pink, C.amber, C.red, C.indigo, C.slate];
 const REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const KIT = { currency: null };
+const KIT = { currency: null, started: false };
 
 function esc(v) { return frappe.utils.escape_html(v == null ? "" : String(v)); }
 function q(sel) { return root_element.querySelector(sel); }
@@ -183,6 +183,22 @@ function skeleton() {
         <div class="skel tall span-7"></div><div class="skel tall span-5"></div></div>`;
 }
 
+/* The user's default company (User default, else the system default). */
+function default_company() {
+    return (frappe.defaults.get_user_default && frappe.defaults.get_user_default("Company")) || frappe.defaults.get_default("company") || "";
+}
+
+/* After the company list arrives: keep the default only if the user can see it, fall back to the
+   server's default, and reload when that changes the company the dashboard was loaded with. */
+function apply_default_company(state, options, reload) {
+    const list = options.companies || [];
+    const before = state.company;
+    if (state.company && !list.includes(state.company)) state.company = "";
+    if (!state.company && options.default_company && list.includes(options.default_company)) state.company = options.default_company;
+    // reload if the company changed, or load for the first time if we were waiting for the list
+    if (reload && (state.company !== before || !KIT.started)) reload();
+}
+
 function fill_select(sel, values, placeholder, current) {
     const el = q(sel);
     if (!el) return;
@@ -230,6 +246,7 @@ function animate(container) {
 
 /* standard loader: shows skeleton, calls method, renders, animates */
 function load_dashboard(o) {
+    KIT.started = true;
     const body = q(o.body);
     const btn = q(".btn-refresh");
     if (!body.dataset.loaded) body.innerHTML = skeleton();

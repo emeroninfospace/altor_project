@@ -1,4 +1,4 @@
-const state = { company: "", status: "Open", project: "" };
+const state = { company: default_company(), status: "Open", project: "" };
 
 function render(d) {
     const s = d.summary || {};
@@ -137,6 +137,7 @@ frappe.call({
     method: "altor_project.api.dashboard.get_filter_options",
     callback(r) {
         const o = r.message || {};
+        apply_default_company(state, o, load);
         fill_select("#fCompany", o.companies || [], __("All companies"), state.company);
         fill_select("#fProject", (o.projects || []).map((p) => ({ value: p.name, label: p.project_name || p.name })), __("All projects"), state.project);
     }
@@ -145,4 +146,5 @@ q("#fCompany").addEventListener("change", (e) => { state.company = e.target.valu
 q("#fStatus").addEventListener("change", (e) => { state.status = e.target.value; load(); });
 q("#fProject").addEventListener("change", (e) => { state.project = e.target.value; load(); });
 q(".btn-refresh").addEventListener("click", load);
-load();
+// with a known default company load now; otherwise wait for the company list (apply_default_company)
+if (state.company) load();
