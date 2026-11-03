@@ -1,0 +1,377 @@
+{
+ "charts": [],
+ "creation": "2026-11-03 14:00:00.000000",
+ "custom_blocks": [
+  {
+   "custom_block_name": "Stock Overview Dashboard",
+   "label": "Stock Overview Dashboard"
+  }
+ ],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "stock",
+ "idx": 0,
+ "indicator_color": "cyan",
+ "is_hidden": 0,
+ "label": "Stock Overview",
+ "module": "Altor Project",
+ "name": "Stock Overview",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Stock Manager"
+  },
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Purchase Manager"
+  }
+ ],
+ "sequence_id": 4.0,
+ "title": "Stock Overview",
+ "modified_by": "Administrator",
+ "content": "[{\"id\": \"917d6ea9a1\", \"type\": \"custom_block\", \"data\": {\"custom_block_name\": \"Stock Overview Dashboard\", \"col\": 12}}, {\"id\": \"a855fb1542\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Stock</b></span>\", \"col\": 12}}, {\"id\": \"5923fe06b5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Item\", \"col\": 3}}, {\"id\": \"632a4d0f35\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Warehouse\", \"col\": 3}}, {\"id\": \"f75218d706\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Entry\", \"col\": 3}}, {\"id\": \"961e22300e\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Material Request\", \"col\": 3}}, {\"id\": \"03a8dcaf21\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Receipt\", \"col\": 3}}, {\"id\": \"bef941476f\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Delivery Note\", \"col\": 3}}, {\"id\": \"725e0154a1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Reconciliation\", \"col\": 3}}, {\"id\": \"1235dc87cd\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Order\", \"col\": 3}}, {\"id\": \"5c1b443a61\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Reports</b></span>\", \"col\": 12}}, {\"id\": \"2c01da1b27\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Balance\", \"col\": 3}}, {\"id\": \"00b387f527\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Ledger\", \"col\": 3}}, {\"id\": \"958dfc8833\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Ageing\", \"col\": 3}}, {\"id\": \"b6b79729de\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Other Dashboards</b></span>\", \"col\": 12}}, {\"id\": \"7f163204f2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Overview\", \"col\": 3}}, {\"id\": \"a809098e2d\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"HR Dashboard\", \"col\": 3}}, {\"id\": \"d73f907651\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Accounts Overview\", \"col\": 3}}, {\"id\": \"3a153b1ffd\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Altor Home\", \"col\": 3}}, {\"id\": \"b04fd846a4\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"40b32fdbae\", \"type\": \"card\", \"data\": {\"card_name\": \"Stock Transactions\", \"col\": 4}}, {\"id\": \"be289a9bf0\", \"type\": \"card\", \"data\": {\"card_name\": \"Items & Warehouses\", \"col\": 4}}, {\"id\": \"c401c5f816\", \"type\": \"card\", \"data\": {\"card_name\": \"Stock Reports\", \"col\": 4}}]",
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "label": "Item",
+   "link_to": "Item",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Warehouse",
+   "link_to": "Warehouse",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "doc_view": "List",
+   "label": "Stock Entry",
+   "link_to": "Stock Entry",
+   "stats_filter": "[[\"Stock Entry\", \"docstatus\", \"=\", 0, false]]",
+   "type": "DocType",
+   "format": "{} Draft"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Material Request",
+   "link_to": "Material Request",
+   "stats_filter": "[[\"Material Request\", \"status\", \"=\", \"Pending\", false]]",
+   "type": "DocType",
+   "format": "{} Pending"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Purchase Receipt",
+   "link_to": "Purchase Receipt",
+   "stats_filter": "[[\"Purchase Receipt\", \"docstatus\", \"=\", 0, false]]",
+   "type": "DocType",
+   "format": "{} Draft"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Delivery Note",
+   "link_to": "Delivery Note",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Stock Reconciliation",
+   "link_to": "Stock Reconciliation",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Purchase Order",
+   "link_to": "Purchase Order",
+   "stats_filter": "[[\"Purchase Order\", \"status\", \"in\", [\"To Receive and Bill\", \"To Bill\"], false]]",
+   "type": "DocType",
+   "format": "{} To Bill"
+  },
+  {
+   "color": "Cyan",
+   "doc_view": "",
+   "label": "Stock Balance",
+   "link_to": "Stock Balance",
+   "stats_filter": "[]",
+   "type": "Report",
+   "report_ref_doctype": "Stock Ledger Entry"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "",
+   "label": "Stock Ledger",
+   "link_to": "Stock Ledger",
+   "stats_filter": "[]",
+   "type": "Report",
+   "report_ref_doctype": "Stock Ledger Entry"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "",
+   "label": "Stock Ageing",
+   "link_to": "Stock Ageing",
+   "stats_filter": "[]",
+   "type": "Report",
+   "report_ref_doctype": "Stock Ledger Entry"
+  },
+  {
+   "color": "Blue",
+   "doc_view": "",
+   "label": "Project Overview",
+   "link_to": null,
+   "stats_filter": "[]",
+   "type": "URL",
+   "url": "/app/project-overview"
+  },
+  {
+   "color": "Green",
+   "doc_view": "",
+   "label": "HR Dashboard",
+   "link_to": null,
+   "stats_filter": "[]",
+   "type": "URL",
+   "url": "/app/hr-dashboard"
+  },
+  {
+   "color": "Purple",
+   "doc_view": "",
+   "label": "Accounts Overview",
+   "link_to": null,
+   "stats_filter": "[]",
+   "type": "URL",
+   "url": "/app/accounts-overview"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "",
+   "label": "Altor Home",
+   "link_to": null,
+   "stats_filter": "[]",
+   "type": "URL",
+   "url": "/app/altor"
+  }
+ ],
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock Transactions",
+   "link_count": 5,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Material Request",
+   "link_count": 0,
+   "link_to": "Material Request",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock Entry",
+   "link_count": 0,
+   "link_to": "Stock Entry",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Purchase Receipt",
+   "link_count": 0,
+   "link_to": "Purchase Receipt",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Delivery Note",
+   "link_count": 0,
+   "link_to": "Delivery Note",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock Reconciliation",
+   "link_count": 0,
+   "link_to": "Stock Reconciliation",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Items & Warehouses",
+   "link_count": 6,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Item",
+   "link_count": 0,
+   "link_to": "Item",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Item Group",
+   "link_count": 0,
+   "link_to": "Item Group",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Warehouse",
+   "link_count": 0,
+   "link_to": "Warehouse",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "UOM",
+   "link_count": 0,
+   "link_to": "UOM",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Batch",
+   "link_count": 0,
+   "link_to": "Batch",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Serial No",
+   "link_count": 0,
+   "link_to": "Serial No",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock Reports",
+   "link_count": 6,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Stock Balance",
+   "link_count": 0,
+   "link_to": "Stock Balance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Stock Ledger",
+   "link_count": 0,
+   "link_to": "Stock Ledger",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Stock Projected Qty",
+   "link_count": 0,
+   "link_to": "Stock Projected Qty",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Stock Ageing",
+   "link_count": 0,
+   "link_to": "Stock Ageing",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Itemwise Recommended Reorder Level",
+   "link_count": 0,
+   "link_to": "Itemwise Recommended Reorder Level",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Warehouse wise Item Balance Age and Value",
+   "link_count": 0,
+   "link_to": "Warehouse wise Item Balance Age and Value",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-11-03 14:00:00.000000"
+}

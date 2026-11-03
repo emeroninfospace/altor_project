@@ -215,7 +215,9 @@ fixtures = [
             ["name", "in", [
                 "Task Dashboard",
                 "Project Overview Dashboard",
-                "HR Dashboard"
+                "HR Dashboard",
+                "Stock Overview Dashboard",
+                "Accounts Overview Dashboard"
             ]]
         ]
     }
