@@ -30,8 +30,11 @@ def _doctype_exists(doctype):
 
 @frappe.whitelist()
 def get_filter_options():
+	companies = frappe.get_list("Company", pluck="name", order_by="name")
+	default = _company({})
 	return {
-		"companies": frappe.get_list("Company", pluck="name", order_by="name"),
+		"companies": companies,
+		"default_company": default if default in companies else (companies[0] if len(companies) == 1 else None),
 		"projects": frappe.get_list(
 			"Project", fields=["name", "project_name"], order_by="modified desc", limit_page_length=500
 		),

@@ -1,4 +1,4 @@
-const state = { company: "" };
+const state = { company: default_company() };
 
 function change(now, before, lower_is_better) {
     if (!flt(before)) return "";
@@ -88,10 +88,12 @@ function load() {
     load_dashboard({ body: "#body", method: "altor_project.api.dashboard.get_accounts_overview", filters: () => ({ company: state.company }), render });
 }
 frappe.call({ method: "altor_project.api.dashboard.get_filter_options", callback(r) {
-    const companies = (r.message || {}).companies || [];
-    state.company = state.company || frappe.defaults.get_user_default("Company") || companies[0] || "";
+    const o = r.message || {};
+    const companies = o.companies || [];
+    apply_default_company(state, { ...o, default_company: o.default_company || companies[0] }, load);
     fill_select("#fCompany", companies, null, state.company);
 } });
 q("#fCompany").addEventListener("change", (e) => { state.company = e.target.value; load(); });
 q(".btn-refresh").addEventListener("click", load);
-load();
+// with a known default company load now; otherwise wait for the company list (apply_default_company)
+if (state.company) load();

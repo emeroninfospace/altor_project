@@ -1,4 +1,4 @@
-const state = { company: "", department: "" };
+const state = { company: default_company(), department: "" };
 
 function in_days(n) {
     if (n === 0) return pill(__("Today"), "green");
@@ -98,6 +98,7 @@ frappe.call({
     method: "altor_project.api.dashboard.get_filter_options",
     callback(r) {
         const o = r.message || {};
+        apply_default_company(state, o, load);
         fill_select("#fCompany", o.companies || [], __("All companies"), state.company);
         fill_select("#fDepartment", o.departments || [], __("All departments"), state.department);
     }
@@ -105,4 +106,5 @@ frappe.call({
 q("#fCompany").addEventListener("change", (e) => { state.company = e.target.value; load(); });
 q("#fDepartment").addEventListener("change", (e) => { state.department = e.target.value; load(); });
 q(".btn-refresh").addEventListener("click", load);
-load();
+// with a known default company load now; otherwise wait for the company list (apply_default_company)
+if (state.company) load();
