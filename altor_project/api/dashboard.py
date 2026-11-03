@@ -706,7 +706,7 @@ def get_stock_overview(filters=None):
 	totals = frappe.db.sql(
 		f"""
 		SELECT SUM(b.stock_value) AS value,
-			COUNT(DISTINCT CASE WHEN b.actual_qty > 0 THEN b.item_code END) AS items,
+			COUNT(DISTINCT CASE WHEN b.actual_qty > 0 THEN b.item_code END) AS item_count,
 			COUNT(DISTINCT CASE WHEN b.actual_qty > 0 THEN b.warehouse END) AS warehouses,
 			SUM(b.actual_qty < 0) AS negative
 		FROM `tabBin` b INNER JOIN `tabWarehouse` w ON w.name = b.warehouse
@@ -867,7 +867,7 @@ def get_stock_overview(filters=None):
 	overdue_receipts = [r for r in receipts if r.schedule_date and getdate(r.schedule_date) < today]
 	summary = frappe._dict(
 		stock_value=flt(totals.value),
-		items=int(totals.items or 0),
+		items=int(totals.item_count or 0),
 		warehouses=int(totals.warehouses or 0),
 		negative=int(totals.negative or 0),
 		below_reorder=len(reorder),
