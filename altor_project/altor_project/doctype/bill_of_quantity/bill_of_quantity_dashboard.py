@@ -10,7 +10,7 @@ def get_data():
 			"Subcontract Work Order": "bill_of_quantity",
 			"Subcontract Invoice": "bill_of_quantity",
 		},
-		"internal_links": {"Site Visit": ["site_visit"]},
+		"internal_links": {"Site Visit": "site_visit"},
 		"transactions": [
 			{"label": _("Pre-Sales"), "items": ["Site Visit"]},
 			{"label": _("Selling"), "items": ["Quotation"]},

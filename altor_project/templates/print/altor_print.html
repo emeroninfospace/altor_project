@@ -5,7 +5,8 @@
   Layout uses tables (not flex/grid) so it renders the same in wkhtmltopdf PDFs.
 -#}
 
-{%- macro money(value, doc) -%}{{ frappe.utils.fmt_money(value or 0, currency=doc.get("currency")) }}{%- endmacro -%}
+{#- currency code + amount ("AED 1,250.00"); the Arabic symbol mixes badly with left-to-right text -#}
+{%- macro money(value, doc) -%}<span class="nowrap">{{ doc.get("currency") or "" }} {{ frappe.utils.fmt_money(value or 0, precision=2) }}</span>{%- endmacro -%}
 {%- macro amt(value) -%}{{ frappe.utils.fmt_money(value or 0, precision=2) }}{%- endmacro -%}
 {%- macro num(value) -%}{{ frappe.utils.fmt_money(value or 0, precision=2) if value and (value % 1) else frappe.utils.cint(value or 0) }}{%- endmacro -%}
 {%- macro date(value) -%}{{ frappe.utils.formatdate(value) if value else "" }}{%- endmacro -%}
@@ -75,7 +76,7 @@
   /* sections */
   .ap .sec { margin-top: 14px; page-break-inside: avoid; }
   .ap .sec-title { font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: {{ c.accent }}; border-bottom: 1px solid #d9e2ec; padding-bottom: 3px; margin-bottom: 6px; }
-  .ap .sec ol, .ap .sec ul { margin: 0; padding-left: 18px; }
+  .ap .sec ol, .ap .sec ul, .ap ol, .ap .items ul { margin: 0; padding-left: 26px; list-style-position: outside; }
   .ap .sec li { margin: 2px 0; }
   .ap .letter p { margin: 0 0 8px; }
   .ap .subject { font-weight: 700; margin: 4px 0 10px; }
@@ -243,7 +244,9 @@
       {%- endif %}
     </div>
     <div class="line">{{ label }}</div>
-    <div class="muted who">{% if loop.index0 == company_index %}{{ c.signatory or ("For " ~ c.name) }}{% else %}&nbsp;{% endif %}</div>
+    {%- set who = c.signatory if loop.index0 == company_index else "" %}
+    {%- if loop.index0 == company_index and not who and not label.startswith("For ") %}{% set who = "For " ~ c.name %}{% endif %}
+    <div class="muted who">{{ who or "&nbsp;" }}</div>
   </td>
   {%- endfor %}
 </tr></table>

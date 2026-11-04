@@ -30,10 +30,10 @@ def project(data):
 		data,
 		_("Planning"),
 		["Project Schedule", "Bill of Quantity"],
-		internal={"Bill of Quantity": ["custom_bill_of_quantity"]},
+		internal={"Bill of Quantity": "custom_bill_of_quantity"},
 	)
 	_add(data, _("Subcontract"), ["Subcontract Work Order", "Subcontract Invoice"])
-	_add(data, _("Selling"), ["Quotation"], internal={"Quotation": ["quotation"]})
+	_add(data, _("Selling"), ["Quotation"], internal={"Quotation": "quotation"})
 	# Material Requests made from a project carry it in the header field custom_project
 	data["non_standard_fieldnames"].setdefault("Material Request", "custom_project")
 	return data
@@ -46,7 +46,7 @@ def quotation(data):
 		data,
 		_("Bill of Quantity"),
 		["Bill of Quantity"],
-		internal={"Bill of Quantity": ["custom_bill_of_quantity"]},
+		internal={"Bill of Quantity": "custom_bill_of_quantity"},
 	)
 	_add(
 		data,
