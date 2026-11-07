@@ -84,6 +84,25 @@ and Project -> Project Budget / Manpower Entry. Item rows take the document's di
 Create one Cost Center per division under the company (e.g. Scaffolding, Equipment Rental, Cradle, Rope Access,
 Construction Hoist, Mast Climber, Trading, Manpower).
 
+#### Division numbering
+
+Lead, Quotation, Sales Order and Project are numbered by division, and one enquiry keeps one number:
+
+| Document | Default format | Example |
+|---|---|---|
+| Lead | `CRM-{division}-LEAD-{year}-{seq}` | CRM-SCF-LEAD-2026-0007 |
+| Quotation (from that lead) | `QT-{division}-{year}-{seq}` | QT-SCF-2026-0007 |
+| Sales Order (from that quotation) | `SO-{division}-{year}-{seq}` | SO-SCF-2026-0007 |
+| Project (from that sales order / quotation) | `PRJ-{division}-{year}-{seq}` | PRJ-SCF-2026-0007 |
+
+- `{division}` is the **Division Code** on the Cost Center (e.g. SCF, CRD). Without one, known division names map
+  to SCF, CRD, EQR, RPA, CHS, MCL, TRD, MPW, otherwise the initials are used.
+- Each division has its own counter per year. Documents not made from an earlier step (a direct quotation to a
+  customer) take the next number. A second quotation from the same lead gets `-V2`; revisions stay `-R1`, `-R2`.
+- The shared part is stored as **Division Ref No.** (SCF-2026-0007) on all four documents.
+- Formats, digits and on/off: **Altor Settings > Division Numbering**. Documents without a division keep the
+  standard naming series.
+
 ### Print Formats
 
 All Altor print formats share one design (`altor_project/templates/print/altor_print.html`) and read the company
