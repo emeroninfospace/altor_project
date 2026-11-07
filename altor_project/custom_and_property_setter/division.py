@@ -99,6 +99,36 @@ def setup_division_fields():
 	if to_create:
 		create_custom_fields(to_create, ignore_validate=True, update=True)
 
+	# Division numbering: code per division, shared reference number per enquiry
+	numbering_fields = {
+		"Cost Center": [
+			{
+				"fieldname": "custom_division_code",
+				"label": "Division Code",
+				"fieldtype": "Data",
+				"insert_after": "cost_center_name",
+				"in_list_view": 1,
+				"description": "Short code used in document numbers, e.g. SCF for Scaffolding, CRD for Cradle",
+			}
+		]
+	}
+	for doctype in ("Lead", "Quotation", "Sales Order", "Project"):
+		if _exists(doctype):
+			numbering_fields[doctype] = [
+				{
+					"fieldname": "custom_division_ref",
+					"label": "Division Ref No.",
+					"fieldtype": "Data",
+					"insert_after": "cost_center",
+					"read_only": 1,
+					"no_copy": 1,
+					"in_standard_filter": 1,
+					"search_index": 1,
+					"description": "Division, year and sequence shared by the Lead, Quotation, Sales Order and Project of one enquiry",
+				}
+			]
+	create_custom_fields(numbering_fields, ignore_validate=True, update=True)
+
 	for doctype in ROW_DOCTYPES:
 		if _exists(doctype) and frappe.get_meta(doctype).has_field("cost_center"):
 			_label(doctype)
@@ -109,6 +139,7 @@ def setup_division_fields():
 def remove_division_fields():
 	"""For uninstall: drop added fields and label overrides."""
 	frappe.db.delete("Custom Field", {"fieldname": "cost_center", "dt": ["in", list(HEADER_DOCTYPES)], "label": LABEL})
+	frappe.db.delete("Custom Field", {"fieldname": ["in", ["custom_division_code", "custom_division_ref"]]})
 	frappe.db.delete(
 		"Property Setter",
 		{"field_name": "cost_center", "property": ["in", ["label", "reqd"]], "doc_type": ["in", list(HEADER_DOCTYPES) + ROW_DOCTYPES]},

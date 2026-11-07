@@ -211,6 +211,15 @@ doc_events = {
     },
 }
 
+# Division numbering: CRM-SCF-LEAD-2026-0001 -> QT-SCF-2026-0001 -> SO-... -> PRJ-...
+for _doctype in ("Lead", "Quotation", "Sales Order", "Project"):
+    _events = doc_events.setdefault(_doctype, {})
+    _events["autoname"] = "altor_project.custom_and_property_setter.division_naming.set_division_name"
+    _existing = _events.get("validate") or []
+    _events["validate"] = ["altor_project.custom_and_property_setter.division_naming.keep_ref_on_amend"] + (
+        [_existing] if isinstance(_existing, str) else list(_existing)
+    )
+
 # Division (Cost Center): rows without their own division take the document's.
 # Runs first in validate so the budget checks see the final rows.
 for _doctype in ("Sales Order", "Delivery Note", "Sales Invoice", "Material Request", "Purchase Order",

@@ -18,7 +18,15 @@
   "manpower_entry_source",
   "column_break_auto",
   "auto_submit_manpower_entries",
-  "skip_holidays_for_crews"
+  "skip_holidays_for_crews",
+  "division_numbering_section",
+  "enable_division_numbering",
+  "division_series_digits",
+  "column_break_dn1",
+  "lead_number_format",
+  "quotation_number_format",
+  "sales_order_number_format",
+  "project_number_format"
  ],
  "fields": [
   {
@@ -109,13 +117,64 @@
    "fieldtype": "Check",
    "label": "Skip Holidays for Crews",
    "description": "Crews are not booked on holidays of the company's default Holiday List."
+  },
+  {
+   "fieldname": "division_numbering_section",
+   "fieldtype": "Section Break",
+   "label": "Division Numbering",
+   "description": "Document numbers by division. A Quotation made from a Lead, a Sales Order made from that Quotation and a Project made from that Sales Order keep the same number. Placeholders: {division} = Division Code of the Cost Center, {year}, {seq}."
+  },
+  {
+   "fieldname": "enable_division_numbering",
+   "fieldtype": "Check",
+   "label": "Number Documents by Division",
+   "default": "1"
+  },
+  {
+   "fieldname": "division_series_digits",
+   "fieldtype": "Int",
+   "label": "Sequence Digits",
+   "default": "4",
+   "depends_on": "enable_division_numbering"
+  },
+  {
+   "fieldname": "column_break_dn1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "lead_number_format",
+   "fieldtype": "Data",
+   "label": "Lead Number Format",
+   "default": "CRM-{division}-LEAD-{year}-{seq}",
+   "depends_on": "enable_division_numbering"
+  },
+  {
+   "fieldname": "quotation_number_format",
+   "fieldtype": "Data",
+   "label": "Quotation Number Format",
+   "default": "QT-{division}-{year}-{seq}",
+   "depends_on": "enable_division_numbering"
+  },
+  {
+   "fieldname": "sales_order_number_format",
+   "fieldtype": "Data",
+   "label": "Sales Order Number Format",
+   "default": "SO-{division}-{year}-{seq}",
+   "depends_on": "enable_division_numbering"
+  },
+  {
+   "fieldname": "project_number_format",
+   "fieldtype": "Data",
+   "label": "Project Number Format",
+   "default": "PRJ-{division}-{year}-{seq}",
+   "depends_on": "enable_division_numbering"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-11-03 10:00:00.000000",
+ "modified": "2026-11-08 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Altor Settings",
