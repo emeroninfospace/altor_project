@@ -8,8 +8,8 @@
  "field_order": [
   "naming_series",
   "project",
+  "cost_center",
   "company",
-  "boq_reference",
   "column_break_2",
   "posting_date",
   "budget_status",
@@ -70,13 +70,6 @@
    "fieldtype": "Link",
    "label": "Company",
    "options": "Company",
-   "read_only": 1
-  },
-  {
-   "fieldname": "boq_reference",
-   "fieldtype": "Link",
-   "label": "BOQ Reference",
-   "options": "Bill of Quantity",
    "read_only": 1
   },
   {
@@ -312,13 +305,25 @@
    "label": "Outsourced Manpower Cost",
    "options": "Company:company:default_currency",
    "read_only": 1
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "Cost Center",
+   "in_standard_filter": 1,
+   "link_filters": "[[\"Cost Center\",\"is_group\",\"=\",0]]",
+   "description": "Division (Cost Center) this document belongs to",
+   "fetch_from": "project.cost_center",
+   "fetch_if_empty": 1,
+   "in_list_view": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-02 10:00:00.000000",
+ "modified": "2026-11-07 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Project Budget",

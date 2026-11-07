@@ -73,6 +73,17 @@ bench --site <site> execute altor_project.demo.delete_demo_data
 Creates (and removes) projects, tasks, item group budgets, purchase orders and invoices, own and outsourced
 employees, manpower entries, attendance and leave requests. Every record starts with `DEMO`.
 
+### Division (Cost Center)
+
+Divisions are Cost Centers. Every document carries its division in the `cost_center` field, labelled
+**Division**: Lead and Quotation (mandatory), Sales Order, Delivery Note, Sales Invoice, Project, Project Budget,
+Project Schedule, Manpower Entry, Site Visit, Proforma Invoice, Expense Entry, Material Request, Purchase Order /
+Receipt / Invoice, Subcontract Work Order / Invoice, Stock Entry, Payment Entry and Expense Claim. Because the
+fieldname is the same everywhere, it is carried along Lead -> Quotation -> Sales Order -> Project / Sales Invoice,
+and Project -> Project Budget / Manpower Entry. Item rows take the document's division unless set otherwise.
+Create one Cost Center per division under the company (e.g. Scaffolding, Equipment Rental, Cradle, Rope Access,
+Construction Hoist, Mast Climber, Trading, Manpower).
+
 ### Print Formats
 
 All Altor print formats share one design (`altor_project/templates/print/altor_print.html`) and read the company
@@ -85,9 +96,7 @@ details from the site, not from code:
 | Print format | Document |
 |---|---|
 | Quotation | Quotation, letter style, item wise |
-| Quotation Altor | Quotation, letter style, by BOQ work package |
-| Boq | Quotation with BOQ summary, detailed BOQ, VAT totals, terms, bank details |
-| Bill of Quantity | Quotation as a bill of quantities (no VAT) |
+| Quotation Altor | Quotation, letter style, grouped by work package (item group) |
 | Proforma Invoice | Proforma Invoice (bilingual, VAT per line) |
 | Altor Tax Invoice | Sales Invoice: UAE tax invoice / tax credit note (bilingual, VAT per line, bank details) |
 | Altor Purchase Order | Purchase Order |

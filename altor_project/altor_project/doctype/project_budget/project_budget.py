@@ -93,14 +93,14 @@ class ProjectBudget(Document):
 
 	def show_warnings(self, unbudgeted):
 		zero = [row.category for row in self.budget_items if flt(row.budgeted_amount) == 0]
-		over_boq = [
-			_("{0} (budget {1} > BOQ {2})").format(
+		over_quoted = [
+			_("{0} (budget {1} > quoted {2})").format(
 				row.category,
 				frappe.format(row.budgeted_amount, "Currency"),
-				frappe.format(row.boq_amount, "Currency"),
+				frappe.format(row.quoted_amount, "Currency"),
 			)
 			for row in self.budget_items
-			if flt(row.boq_amount) and flt(row.budgeted_amount) > flt(row.boq_amount)
+			if flt(row.quoted_amount) and flt(row.budgeted_amount) > flt(row.quoted_amount)
 		]
 		exceeded = [
 			row for row in self.budget_items if row.budget_status == "Exceeded" and flt(row.budgeted_amount)
@@ -110,8 +110,10 @@ class ProjectBudget(Document):
 		messages = []
 		if zero:
 			messages.append(_("No budget entered yet for: {0}").format(", ".join(zero)))
-		if over_boq:
-			messages.append(_("Budget is higher than the BOQ value for: {0}").format(", ".join(over_boq)))
+		if over_quoted:
+			messages.append(
+				_("Budget (cost) is higher than the quoted selling value for: {0}").format(", ".join(over_quoted))
+			)
 		if exceeded:
 			messages.append(
 				_("Budget exceeded for: {0}").format(

@@ -8,8 +8,7 @@ frappe.listview_settings["Lead"] = {
             "Interested": "blue",
             "Converted": "purple",
             "Do Not Contact": "red",
-            "Site Visit Completed": "orange",
-            "Bill of Quantity Completed": "yellow"
+            "Site Visit Completed": "orange"
         };
         const color = statusMap[doc.status] || "gray";
         return [__(doc.status), color, "status,=," + doc.status];

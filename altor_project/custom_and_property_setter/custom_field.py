@@ -1,13 +1,6 @@
 CREATE_FIELDS={
         "Quotation": [
             {
-                "fieldname": "custom_bill_of_quantity",
-                "label": "Bill of Quantity",
-                "fieldtype": "Link",
-                "options": "Bill of Quantity",
-                "insert_after": "valid_till"
-            },
-            {
                 "fieldname": "custom_project",
                 "label": "Project",
                 "fieldtype": "Data",
@@ -49,7 +42,7 @@ CREATE_FIELDS={
                 "fieldtype": "Link",
                 "options": "Quotation",
                 "read_only":1,
-                "insert_after": "custom_bill_of_quantity"
+                "insert_after": "department"
             },
             {
                 "fieldname": "location",
@@ -73,23 +66,9 @@ CREATE_FIELDS={
             
          
             {
-                "fieldname": "custom_section_break003",
-                "fieldtype": "Section Break",
-                "insert_after": "scope_of_work",
-                "label": "BOQ Items",
-                "collapsible": 1
-            },
-            {
-                "fieldname": "custom_boq_items",
-                "fieldtype": "Table",
-                "insert_after": "custom_section_break003",
-                "label": "BOQ Items",
-                "options": "BOQ Items"
-            },
-            {
                 "fieldname": "custom_manpower_crew_section",
                 "fieldtype": "Section Break",
-                "insert_after": "custom_boq_items",
+                "insert_after": "scope_of_work",
                 "label": "Daily Manpower Crew",
                 "collapsible": 1,
                 "description": "Agency crews working on this project every day. Booked automatically in Manpower Entries (when automation is on in Altor Settings).",
@@ -100,14 +79,6 @@ CREATE_FIELDS={
                 "insert_after": "custom_manpower_crew_section",
                 "label": "Daily Manpower Crew",
                 "options": "Project Manpower Crew",
-            },
-            {
-                "fieldname": "custom_bill_of_quantity",
-                "fieldtype": "Link",
-                "insert_after": "department",
-                "label": "Bill of Quantity",
-                "options": "Bill of Quantity",
-                "read_only":1
             },
             {
                 "fieldname": "lpo_ref",
@@ -160,20 +131,12 @@ CREATE_FIELDS={
     ],
     "Task": [
             {
-                "fieldname": "custom_bill_of_quantity",
-                "label": "Bill of Quantity",
-                "fieldtype": "Link",
-                "options" : "Bill of Quantity",
-                "read_only": 1,
-                "insert_after": "parent_task"
-            },
-            {
                 "fieldname": "custom_project_schedule",
                 "label": "Project Schedule",
                 "fieldtype": "Link",
                 "options" : "Project Schedule",
                 "read_only": 1,
-                "insert_after": "custom_bill_of_quantity",
+                "insert_after": "parent_task",
             },
         ],
     "Journal Entry": [

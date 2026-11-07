@@ -8,7 +8,7 @@
  "field_order": [
   "section_break_5qrw",
   "project",
-  "bill_of_quantity",
+  "cost_center",
   "column_break_qjem",
   "posting_date",
   "section_break_trwt",
@@ -26,13 +26,6 @@
    "in_list_view": 1,
    "label": "Project",
    "options": "Project"
-  },
-  {
-   "fieldname": "bill_of_quantity",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Bill of Quantity",
-   "options": "Bill of Quantity"
   },
   {
    "fieldname": "section_break_trwt",
@@ -63,13 +56,24 @@
    "fieldname": "posting_date",
    "fieldtype": "Date",
    "label": "Posting Date"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "Cost Center",
+   "in_standard_filter": 1,
+   "link_filters": "[[\"Cost Center\",\"is_group\",\"=\",0]]",
+   "description": "Division (Cost Center) this document belongs to",
+   "fetch_from": "project.cost_center",
+   "fetch_if_empty": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-06 09:49:24.916086",
+ "modified": "2026-11-07 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Project Schedule",

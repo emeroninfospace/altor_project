@@ -43,7 +43,7 @@ def execute(filters=None):
 			fields=[
 				"parent",
 				"category",
-				"boq_amount",
+				"quoted_amount",
 				"budgeted_amount",
 				"committed_amount",
 				"actual_amount",
@@ -78,7 +78,7 @@ def get_columns():
 			"options": "Item Group",
 			"width": 160,
 		},
-		{"fieldname": "boq_amount", "label": _("BOQ Amount"), **currency},
+		{"fieldname": "quoted_amount", "label": _("Quoted Amount"), **currency},
 		{"fieldname": "budgeted_amount", "label": _("Budget"), **currency},
 		{"fieldname": "committed_amount", "label": _("Committed"), **currency},
 		{"fieldname": "actual_amount", "label": _("Actual"), **currency},

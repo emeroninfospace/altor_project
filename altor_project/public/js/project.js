@@ -61,7 +61,7 @@ frappe.ui.form.on('Project', {
 					});
 				}, __('Create'));
 
-				if (frm.doc.custom_boq_items) {
+				if (frm.doc.sales_order || frm.doc.quotation) {
 					frm.add_custom_button(__('Material Request'), () => {
 						frappe.call({
 							method:   'altor_project.events.project.create_material_request',
@@ -105,7 +105,7 @@ function create_subcontracting_order(frm) {
 		project:          frm.doc.name,
 		company:          frm.doc.company || frappe.defaults.get_default('company'),
 		transaction_date: frappe.datetime.nowdate(),
-		bill_of_quantity: frm.doc.custom_bill_of_quantity
+		cost_center:      frm.doc.cost_center
 	});
 }
 

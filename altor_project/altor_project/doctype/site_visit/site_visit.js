@@ -3,9 +3,12 @@
 
 frappe.ui.form.on("Site Visit", {
 	refresh(frm) {
-		if (frm.doc.docstatus === 1) {
-			frm.add_custom_button(__("Bill of Quantity"), () => {
-				make_bill_of_quantity(frm);
+		if (frm.doc.docstatus === 1 && frm.doc.lead) {
+			frm.add_custom_button(__("Quotation"), () => {
+				frappe.model.open_mapped_doc({
+					method: "erpnext.crm.doctype.lead.lead.make_quotation",
+					source_name: frm.doc.lead,
+				});
 			}, __("Create"));
 		}
 	},
@@ -22,26 +25,3 @@ frappe.ui.form.on("Site Visit", {
 		}
 	},
 });
-
-function make_bill_of_quantity(frm) {
-	frappe.model.with_doctype("Bill of Quantity", function () {
-		let doc = frappe.model.get_new_doc("Bill of Quantity");
-		doc.site_visit = frm.doc.name;
-
-		if (!frm.doc.lead) {
-			frappe.set_route("Form", "Bill of Quantity", doc.name);
-			return;
-		}
-
-		frappe.db.get_value("Customer", { lead_name: frm.doc.lead }, "name", function (r) {
-			if (r && r.name) {
-				doc.party_type = "Customer";
-				doc.party_name = r.name;
-			} else {
-				doc.party_type = "Lead";
-				doc.party_name = frm.doc.lead;
-			}
-			frappe.set_route("Form", "Bill of Quantity", doc.name);
-		});
-	});
-}

@@ -10,7 +10,7 @@
   "description",
   "budget_status",
   "column_break_3",
-  "boq_amount",
+  "quoted_amount",
   "budgeted_amount",
   "column_break_6",
   "committed_amount",
@@ -54,10 +54,10 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "Value from the Bill of Quantity (reference only)",
-   "fieldname": "boq_amount",
+   "description": "Selling value from the Sales Order / Quotation (reference only)",
+   "fieldname": "quoted_amount",
    "fieldtype": "Currency",
-   "label": "BOQ Amount",
+   "label": "Quoted Amount",
    "options": "Company:company:default_currency",
    "read_only": 1
   },
@@ -159,7 +159,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-11-02 10:00:00.000000",
+ "modified": "2026-11-07 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Project Budget Item",

@@ -12,7 +12,6 @@
   "status",
   "column_break_hrkg",
   "company",
-  "bill_of_quantity",
   "start_date",
   "end_date",
   "accounting_dimensions_section_section",
@@ -98,8 +97,11 @@
   {
    "fieldname": "cost_center",
    "fieldtype": "Link",
-   "label": "Cost Center",
-   "options": "Cost Center"
+   "label": "Division",
+   "options": "Cost Center",
+   "fetch_from": "project.cost_center",
+   "fetch_if_empty": 1,
+   "link_filters": "[[\"Cost Center\",\"is_group\",\"=\",0]]"
   },
   {
    "fieldname": "section_break_kxsv",
@@ -110,12 +112,6 @@
    "fieldtype": "Table",
    "label": "Items",
    "options": "Subcontract Work Item"
-  },
-  {
-   "fieldname": "bill_of_quantity",
-   "fieldtype": "Link",
-   "label": "Bill of Quantity",
-   "options": "Bill of Quantity"
   },
   {
    "fieldname": "section_break_huvx",
@@ -309,7 +305,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-04-13 14:12:49.928311",
+ "modified": "2026-11-07 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Subcontract Work Order",
