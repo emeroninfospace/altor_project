@@ -95,7 +95,7 @@ def setup_division_fields():
 					"in_standard_filter": 1,
 					"in_list_view": 1 if doctype in ("Lead", "Quotation") else 0,
 					"link_filters": LINK_FILTERS,
-					"description": "Division (Cost Center) this document belongs to",
+					"description": "",
 				}
 			]
 	if to_create:
@@ -123,10 +123,11 @@ def setup_division_fields():
 					"fieldtype": "Data",
 					"insert_after": "cost_center",
 					"read_only": 1,
+					"hidden": 1,
+					"in_standard_filter": 0,
 					"no_copy": 1,
-					"in_standard_filter": 1,
 					"search_index": 1,
-					"description": "Division, year and sequence shared by the Lead, Quotation, Sales Order and Project of one enquiry",
+					"description": "",
 				}
 			]
 	create_custom_fields(numbering_fields, ignore_validate=True, update=True)
