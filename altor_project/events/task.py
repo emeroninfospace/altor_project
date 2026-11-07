@@ -1,27 +1,31 @@
-import frappe
 import json
+
+import frappe
+
 
 @frappe.whitelist()
 def get_my_tasks(filters=None):
-    user = frappe.session.user
+	frappe.has_permission("Task", "read", throw=True)
+	user = frappe.session.user
 
-    if isinstance(filters, str):
-        try:
-            filters = json.loads(filters)
-        except Exception:
-            filters = {}
+	if isinstance(filters, str):
+		try:
+			filters = json.loads(filters)
+		except Exception:
+			filters = {}
 
-    filters = filters or {}
+	filters = filters or {}
 
-    conditions = ""
-    values = {}
+	conditions = ""
+	values = {}
 
-    if filters.get("project"):
-        conditions += " AND t.project = %(project)s"
-        values["project"] = filters["project"]
+	if filters.get("project"):
+		conditions += " AND t.project = %(project)s"
+		values["project"] = filters["project"]
 
-    if user == "Administrator" or "System Manager" in frappe.get_roles(user):
-        return frappe.db.sql(f"""
+	if user == "Administrator" or "System Manager" in frappe.get_roles(user):
+		return frappe.db.sql(
+			f"""
             SELECT
                 t.name,
                 t.subject,
@@ -38,11 +42,15 @@ def get_my_tasks(filters=None):
             WHERE 1=1
             {conditions}
             ORDER BY t.parent_task, t.idx
-        """, values, as_dict=True)
+        """,
+			values,
+			as_dict=True,
+		)
 
-    values["user"] = user
+	values["user"] = user
 
-    return frappe.db.sql(f"""
+	return frappe.db.sql(
+		f"""
         SELECT DISTINCT
             t.name,
             t.subject,
@@ -64,45 +72,33 @@ def get_my_tasks(filters=None):
             AND td.status != 'Cancelled'
             {conditions}
         ORDER BY t.parent_task, t.idx
-    """, values, as_dict=True)
+    """,
+		values,
+		as_dict=True,
+	)
 
 
+def update_parent_task_progress(doc, method=None):
+	if not doc.parent_task:
+		return
 
+	parent_task = doc.parent_task
 
-@frappe.whitelist()
-def update_parent_task_progress(doc, method):
-    if not doc.parent_task:
-        return
+	child_tasks = frappe.get_all(
+		"Task", filters={"parent_task": parent_task, "status": ["!=", "Cancelled"]}, fields=["progress"]
+	)
 
-    parent_task = doc.parent_task
+	if not child_tasks:
+		return
 
-    child_tasks = frappe.get_all(
-        "Task",
-        filters={
-            "parent_task": parent_task,
-            "status": ["!=", "Cancelled"]
-        },
-        fields=["progress"]
-    )
+	total_progress = sum(t.progress or 0 for t in child_tasks)
+	avg_progress = round(total_progress / len(child_tasks), 2)
 
-    if not child_tasks:
-        return
+	if avg_progress == 0:
+		parent_status = "Open"
+	elif avg_progress >= 100:
+		parent_status = "Completed"
+	else:
+		parent_status = "Working"
 
-    total_progress = sum(t.progress or 0 for t in child_tasks)
-    avg_progress = round(total_progress / len(child_tasks), 2)
-
-    if avg_progress == 0:
-        parent_status = "Open"
-    elif avg_progress >= 100:
-        parent_status = "Completed"
-    else:
-        parent_status = "Working"
-
-    frappe.db.set_value(
-        "Task",
-        parent_task,
-        {
-            "progress": avg_progress,
-            "status": parent_status
-        }
-    )
+	frappe.db.set_value("Task", parent_task, {"progress": avg_progress, "status": parent_status})

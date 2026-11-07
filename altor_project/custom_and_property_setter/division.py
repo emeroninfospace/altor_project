@@ -79,7 +79,9 @@ def setup_division_fields():
 		if _standard_field(doctype):
 			_label(doctype)
 			if reqd:
-				make_property_setter(doctype, "cost_center", "reqd", 1, "Check", validate_fields_for_doctype=False)
+				make_property_setter(
+					doctype, "cost_center", "reqd", 1, "Check", validate_fields_for_doctype=False
+				)
 		else:
 			meta = frappe.get_meta(doctype)
 			to_create[doctype] = [
@@ -138,11 +140,17 @@ def setup_division_fields():
 
 def remove_division_fields():
 	"""For uninstall: drop added fields and label overrides."""
-	frappe.db.delete("Custom Field", {"fieldname": "cost_center", "dt": ["in", list(HEADER_DOCTYPES)], "label": LABEL})
+	frappe.db.delete(
+		"Custom Field", {"fieldname": "cost_center", "dt": ["in", list(HEADER_DOCTYPES)], "label": LABEL}
+	)
 	frappe.db.delete("Custom Field", {"fieldname": ["in", ["custom_division_code", "custom_division_ref"]]})
 	frappe.db.delete(
 		"Property Setter",
-		{"field_name": "cost_center", "property": ["in", ["label", "reqd"]], "doc_type": ["in", list(HEADER_DOCTYPES) + ROW_DOCTYPES]},
+		{
+			"field_name": "cost_center",
+			"property": ["in", ["label", "reqd"]],
+			"doc_type": ["in", list(HEADER_DOCTYPES) + ROW_DOCTYPES],
+		},
 	)
 
 

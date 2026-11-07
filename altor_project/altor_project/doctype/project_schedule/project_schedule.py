@@ -11,6 +11,8 @@ class ProjectSchedule(Document):
 	@frappe.whitelist()
 	def create_tasks(self):
 		"""One parent task per work package, one child task per schedule row."""
+		self.check_permission("write")
+		frappe.has_permission("Task", "create", throw=True)
 		if frappe.db.exists("Task", {"custom_project_schedule": self.name}):
 			frappe.throw(_("Tasks already created for this Project Schedule"))
 

@@ -2,16 +2,80 @@
 # For license information, please see license.txt
 
 import json
+from collections import defaultdict
 
 import frappe
+from erpnext.controllers.selling_controller import SellingController
+from erpnext.controllers.taxes_and_totals import calculate_taxes_and_totals as _ERPNextTaxesAndTotals
 from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt, getdate, nowdate
-from collections import defaultdict
-
-from erpnext.controllers.selling_controller import SellingController
 
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
+
+
+class ProformaTaxesAndTotals(_ERPNextTaxesAndTotals):
+	"""ERPNext's tax and totals calculator; only calculate_totals differs (selling treatment)."""
+
+	def calculate_totals(self):
+		"""ERPNext's calculate_totals, with Proforma Invoice treated as a selling document."""
+		from frappe.utils import flt
+
+		grand_total_diff = getattr(self, "grand_total_diff", 0)
+
+		if self.doc.get("taxes"):
+			self.doc.grand_total = flt(self.doc.get("taxes")[-1].total) + grand_total_diff
+		else:
+			self.doc.grand_total = flt(self.doc.net_total)
+
+		if self.doc.get("taxes"):
+			self.doc.total_taxes_and_charges = flt(
+				self.doc.grand_total - self.doc.net_total - grand_total_diff,
+				self.doc.precision("total_taxes_and_charges"),
+			)
+		else:
+			self.doc.total_taxes_and_charges = 0.0
+
+		self._set_in_company_currency(self.doc, ["total_taxes_and_charges"])
+
+		# Add Proforma Invoice to the list of selling doctypes
+		if self.doc.doctype in [
+			"Quotation",
+			"Sales Order",
+			"Delivery Note",
+			"Sales Invoice",
+			"POS Invoice",
+			"Proforma Invoice",  # Added here
+		]:
+			self.doc.base_grand_total = (
+				flt(self.doc.grand_total * self.doc.conversion_rate, self.doc.precision("base_grand_total"))
+				if self.doc.total_taxes_and_charges
+				else self.doc.base_net_total
+			)
+		else:
+			self.doc.taxes_and_charges_added = self.doc.taxes_and_charges_deducted = 0.0
+			for tax in self.doc.get("taxes"):
+				# Safely check for category attribute
+				tax_category = getattr(tax, "category", None)
+				if tax_category and tax_category in ["Valuation and Total", "Total"]:
+					if tax.add_deduct_tax == "Add":
+						self.doc.taxes_and_charges_added += flt(tax.tax_amount_after_discount_amount)
+					else:
+						self.doc.taxes_and_charges_deducted += flt(tax.tax_amount_after_discount_amount)
+
+			self.doc.round_floats_in(self.doc, ["taxes_and_charges_added", "taxes_and_charges_deducted"])
+
+			self.doc.base_grand_total = (
+				flt(self.doc.grand_total * self.doc.conversion_rate)
+				if (self.doc.taxes_and_charges_added or self.doc.taxes_and_charges_deducted)
+				else self.doc.base_net_total
+			)
+
+			self._set_in_company_currency(self.doc, ["taxes_and_charges_added", "taxes_and_charges_deducted"])
+
+		self.doc.round_floats_in(self.doc, ["grand_total", "base_grand_total"])
+
+		self.set_rounded_total()
 
 
 class ProformaInvoice(SellingController):
@@ -21,21 +85,21 @@ class ProformaInvoice(SellingController):
 	from typing import TYPE_CHECKING
 
 	if TYPE_CHECKING:
-		from frappe.types import DF
-
 		from erpnext.accounts.doctype.payment_schedule.payment_schedule import PaymentSchedule
 		from erpnext.accounts.doctype.pricing_rule_detail.pricing_rule_detail import PricingRuleDetail
 		from erpnext.accounts.doctype.sales_taxes_and_charges.sales_taxes_and_charges import (
 			SalesTaxesandCharges,
 		)
 		from erpnext.crm.doctype.competitor_detail.competitor_detail import CompetitorDetail
-		from altor_project.altor_project.doctype.proforma_invoice_item.proforma_invoice_item import (
-			ProformaInvoiceItem,
-		)
 		from erpnext.setup.doctype.quotation_lost_reason_detail.quotation_lost_reason_detail import (
 			QuotationLostReasonDetail,
 		)
 		from erpnext.stock.doctype.packed_item.packed_item import PackedItem
+		from frappe.types import DF
+
+		from altor_project.altor_project.doctype.proforma_invoice_item.proforma_invoice_item import (
+			ProformaInvoiceItem,
+		)
 
 		additional_discount_percentage: DF.Float
 		address_display: DF.SmallText | None
@@ -151,83 +215,12 @@ class ProformaInvoice(SellingController):
 		make_packing_list(self)
 
 	def calculate_taxes_and_totals(self):
+		"""Tax / totals calculation that treats Proforma Invoice like a Quotation.
+
+		Uses a subclass of ERPNext's calculator for this doctype only. (It used to replace
+		ERPNext's calculate_totals for every doctype in the process.)
 		"""
-		Override to ensure Proforma Invoice is treated like Quotation for tax calculations.
-		This prevents the AttributeError when tax.category doesn't exist.
-		"""
-		from erpnext.controllers.taxes_and_totals import calculate_taxes_and_totals as calc_taxes
-		from erpnext.controllers import taxes_and_totals
-		
-		# Store original calculate_totals if not already patched
-		if not hasattr(taxes_and_totals.calculate_taxes_and_totals, '_proforma_patched'):
-			original_calculate_totals = taxes_and_totals.calculate_taxes_and_totals.calculate_totals
-			
-			def patched_calculate_totals(self):
-				"""Patched version that includes Proforma Invoice in selling doctypes"""
-				from frappe.utils import flt
-				
-				grand_total_diff = getattr(self, "grand_total_diff", 0)
-
-				if self.doc.get("taxes"):
-					self.doc.grand_total = flt(self.doc.get("taxes")[-1].total) + grand_total_diff
-				else:
-					self.doc.grand_total = flt(self.doc.net_total)
-
-				if self.doc.get("taxes"):
-					self.doc.total_taxes_and_charges = flt(
-						self.doc.grand_total - self.doc.net_total - grand_total_diff,
-						self.doc.precision("total_taxes_and_charges"),
-					)
-				else:
-					self.doc.total_taxes_and_charges = 0.0
-
-				self._set_in_company_currency(self.doc, ["total_taxes_and_charges"])
-
-				# Add Proforma Invoice to the list of selling doctypes
-				if self.doc.doctype in [
-					"Quotation",
-					"Sales Order",
-					"Delivery Note",
-					"Sales Invoice",
-					"POS Invoice",
-					"Proforma Invoice",  # Added here
-				]:
-					self.doc.base_grand_total = (
-						flt(self.doc.grand_total * self.doc.conversion_rate, self.doc.precision("base_grand_total"))
-						if self.doc.total_taxes_and_charges
-						else self.doc.base_net_total
-					)
-				else:
-					self.doc.taxes_and_charges_added = self.doc.taxes_and_charges_deducted = 0.0
-					for tax in self.doc.get("taxes"):
-						# Safely check for category attribute
-						tax_category = getattr(tax, "category", None)
-						if tax_category and tax_category in ["Valuation and Total", "Total"]:
-							if tax.add_deduct_tax == "Add":
-								self.doc.taxes_and_charges_added += flt(tax.tax_amount_after_discount_amount)
-							else:
-								self.doc.taxes_and_charges_deducted += flt(tax.tax_amount_after_discount_amount)
-
-					self.doc.round_floats_in(self.doc, ["taxes_and_charges_added", "taxes_and_charges_deducted"])
-
-					self.doc.base_grand_total = (
-						flt(self.doc.grand_total * self.doc.conversion_rate)
-						if (self.doc.taxes_and_charges_added or self.doc.taxes_and_charges_deducted)
-						else self.doc.base_net_total
-					)
-
-					self._set_in_company_currency(self.doc, ["taxes_and_charges_added", "taxes_and_charges_deducted"])
-
-				self.doc.round_floats_in(self.doc, ["grand_total", "base_grand_total"])
-
-				self.set_rounded_total()
-			
-			# Apply the patch
-			taxes_and_totals.calculate_taxes_and_totals.calculate_totals = patched_calculate_totals
-			taxes_and_totals.calculate_taxes_and_totals._proforma_patched = True
-		
-		# Now call the standard calculation
-		calc_taxes(self)
+		ProformaTaxesAndTotals(self)
 
 	def before_submit(self):
 		self.set_has_alternative_item()
@@ -362,7 +355,7 @@ class ProformaInvoice(SellingController):
 		ordered_items = self.get_ordered_items(self.name)
 		if not ordered_items:
 			return False
-		
+
 		self._items = (
 			self.get_valid_items()
 			if any(row.is_alternative for row in self.get("items"))
@@ -379,7 +372,7 @@ class ProformaInvoice(SellingController):
 		ordered_items = self.get_ordered_items(self.name)
 		if not ordered_items:
 			return False
-		
+
 		self._items = (
 			self.get_valid_items()
 			if any(row.is_alternative for row in self.get("items"))
@@ -429,118 +422,115 @@ class ProformaInvoice(SellingController):
 		if not self.quotation:
 			return
 
-		quotation_total = frappe.db.get_value(
-			"Quotation", self.quotation, "grand_total"
-		) or 0
+		quotation_total = frappe.db.get_value("Quotation", self.quotation, "grand_total") or 0
 
-		billed = frappe.db.sql("""
+		billed = (
+			frappe.db.sql(
+				"""
 			SELECT SUM(grand_total)
 			FROM `tabProforma Invoice`
 			WHERE quotation = %s
 			AND docstatus = 1
 			AND name != %s
-		""", (self.quotation, self.name))[0][0] or 0
+		""",
+				(self.quotation, self.name),
+			)[0][0]
+			or 0
+		)
 
 		if billed + self.grand_total > quotation_total:
-			frappe.throw(
-				"Proforma Invoice amount exceeds remaining Quotation balance."
-			)
-		
-		
-
+			frappe.throw("Proforma Invoice amount exceeds remaining Quotation balance.")
 
 
 @frappe.whitelist()
 def load_target_items(docname):
-    """
-    Load checked target items from items table to custom_service_item table
-    """
-    doc = frappe.get_doc('Proforma Invoice', docname)
-    
-    # Get checked items
-    checked_items = [item for item in doc.items if item.custom_target_items == 1]
-    
-    if not checked_items:
-        frappe.msgprint(_('No items are marked as target items'))
-        return
-    
-    # Get existing item codes in custom_service_item to avoid duplicates
-    existing_item_codes = [row.item_code for row in doc.custom_service_item if row.item_code]
-    
-    # Add to service items table (append to existing items)
-    added_count = 0
-    for item in checked_items:
-        # Skip if item already exists in custom_service_item table
-        if item.item_code in existing_item_codes:
-            continue
-            
-        service_item = doc.append('custom_service_item', {})
-        service_item.item_code = item.item_code
-        service_item.item_name = item.item_name
-        service_item.description = item.description
-        service_item.qty = item.qty
-        service_item.warehouse = item.warehouse
-        service_item.uom = item.uom
-        service_item.rate = item.rate
-        service_item.amount = item.amount
-        
-        # Required fields for custom_service_item
-        # UOM Conversion Factor
-        service_item.conversion_factor = getattr(item, 'conversion_factor', None) or 1.0
-        
-        # Rate (Company Currency) - use base_rate if available, otherwise use rate
-        service_item.base_rate = getattr(item, 'base_rate', None) or item.rate
-        
-        # Amount (Company Currency) - use base_amount if available, otherwise use amount
-        service_item.base_amount = getattr(item, 'base_amount', None) or item.amount
-        
-        # Income Account - try to get from item, or fetch from item defaults
-        income_account = getattr(item, 'income_account', None)
-        if not income_account and item.item_code:
-            # Try to get income account from item defaults for the company
-            try:
-                income_account = frappe.get_value(
-                    'Item Default',
-                    {'parent': item.item_code, 'company': doc.company},
-                    'income_account'
-                )
-                # If not found in item defaults, try to get from item group or brand
-                if not income_account:
-                    item_doc = frappe.get_doc('Item', item.item_code)
-                    if hasattr(item_doc, 'item_group') and item_doc.item_group:
-                        income_account = frappe.get_value('Item Group', item_doc.item_group, 'income_account')
-            except:
-                pass
-        
-        service_item.income_account = income_account
-        added_count += 1
-    
-    # Calculate totals from custom_service_item table
-    total_qty = sum(flt(item.qty) or 0 for item in doc.custom_service_item)
-    total_amount = sum(flt(item.amount) or 0 for item in doc.custom_service_item)
-    
-    doc.consumable_total_quantity = total_qty
-    doc.consumable_total = total_amount
-    
-    if added_count == 0:
-        frappe.msgprint(_('No new items to add. All selected items already exist in service items table.'))
-    else:
-        doc.save()
-        frappe.msgprint(_(f'{added_count} item(s) added successfully'))
-    
-    return doc.as_dict()
+	"""
+	Load checked target items from items table to custom_service_item table
+	"""
+	doc = frappe.get_doc("Proforma Invoice", docname)
+	doc.check_permission("write")
 
+	# Get checked items
+	checked_items = [item for item in doc.items if item.custom_target_items == 1]
 
+	if not checked_items:
+		frappe.msgprint(_("No items are marked as target items"))
+		return
+
+	# Get existing item codes in custom_service_item to avoid duplicates
+	existing_item_codes = [row.item_code for row in doc.custom_service_item if row.item_code]
+
+	# Add to service items table (append to existing items)
+	added_count = 0
+	for item in checked_items:
+		# Skip if item already exists in custom_service_item table
+		if item.item_code in existing_item_codes:
+			continue
+
+		service_item = doc.append("custom_service_item", {})
+		service_item.item_code = item.item_code
+		service_item.item_name = item.item_name
+		service_item.description = item.description
+		service_item.qty = item.qty
+		service_item.warehouse = item.warehouse
+		service_item.uom = item.uom
+		service_item.rate = item.rate
+		service_item.amount = item.amount
+
+		# Required fields for custom_service_item
+		# UOM Conversion Factor
+		service_item.conversion_factor = getattr(item, "conversion_factor", None) or 1.0
+
+		# Rate (Company Currency) - use base_rate if available, otherwise use rate
+		service_item.base_rate = getattr(item, "base_rate", None) or item.rate
+
+		# Amount (Company Currency) - use base_amount if available, otherwise use amount
+		service_item.base_amount = getattr(item, "base_amount", None) or item.amount
+
+		# Income Account - try to get from item, or fetch from item defaults
+		income_account = getattr(item, "income_account", None)
+		if not income_account and item.item_code:
+			# Try to get income account from item defaults for the company
+			try:
+				income_account = frappe.get_value(
+					"Item Default", {"parent": item.item_code, "company": doc.company}, "income_account"
+				)
+				# If not found in item defaults, try to get from item group or brand
+				if not income_account:
+					item_doc = frappe.get_doc("Item", item.item_code)
+					if hasattr(item_doc, "item_group") and item_doc.item_group:
+						income_account = frappe.get_value("Item Group", item_doc.item_group, "income_account")
+			except Exception:
+				pass
+
+		service_item.income_account = income_account
+		added_count += 1
+
+	# Calculate totals from custom_service_item table
+	total_qty = sum(flt(item.qty) or 0 for item in doc.custom_service_item)
+	total_amount = sum(flt(item.amount) or 0 for item in doc.custom_service_item)
+
+	doc.consumable_total_quantity = total_qty
+	doc.consumable_total = total_amount
+
+	if added_count == 0:
+		frappe.msgprint(_("No new items to add. All selected items already exist in service items table."))
+	else:
+		doc.save()
+		frappe.msgprint(_(f"{added_count} item(s) added successfully"))
+
+	return doc.as_dict()
 
 
 @frappe.whitelist()
 def make_proforma_invoice(quotation):
 
-    quotation_doc = frappe.get_doc("Quotation", quotation)
+	frappe.get_doc("Quotation", quotation).check_permission("read")
 
-    billed_qty_map = defaultdict(float)
+	billed_qty_map = defaultdict(float)
 
-    billed_items = frappe.db.sql("""
+	billed_items = frappe.db.sql(
+		"""
     SELECT
         pii.item_code,
         SUM(pii.qty) AS billed_qty
@@ -550,63 +540,44 @@ def make_proforma_invoice(quotation):
     WHERE pi.quotation = %s
     AND pi.docstatus = 1
     GROUP BY pii.item_code
-""", quotation, as_dict=True)
+""",
+		quotation,
+		as_dict=True,
+	)
 
+	for row in billed_items:
+		billed_qty_map[row.item_code] = row.billed_qty or 0
 
-    for row in billed_items:
-        billed_qty_map[row.item_code] = row.billed_qty or 0
+	pi = get_mapped_doc(
+		"Quotation",
+		quotation,
+		{
+			"Quotation": {"doctype": "Proforma Invoice", "field_map": {"name": "quotation"}},
+			"Quotation Item": {"doctype": "Proforma Invoice Item", "field_map": {"name": "quotation_item"}},
+		},
+	)
 
+	remaining_items = []
 
-    pi = get_mapped_doc(
-        "Quotation",
-        quotation,
-        {
-            "Quotation": {
-                "doctype": "Proforma Invoice",
-                "field_map": {
-                    "name": "quotation"
-                }
-            },
-            "Quotation Item": {
-                "doctype": "Proforma Invoice Item",
-                "field_map": {
-                    "name": "quotation_item"
-                }
-            }
-        }
-    )
+	for item in pi.items:
+		quotation_item_qty = (
+			frappe.db.get_value("Quotation Item", {"parent": quotation, "item_code": item.item_code}, "qty")
+			or 0
+		)
 
+		billed_qty = billed_qty_map.get(item.item_code, 0)
+		remaining_qty = quotation_item_qty - billed_qty
 
-    remaining_items = []
+		if remaining_qty > 0:
+			item.qty = remaining_qty
+			item.amount = remaining_qty * item.rate
+			remaining_items.append(item)
 
-    for item in pi.items:
-        quotation_item_qty = frappe.db.get_value(
-			"Quotation Item",
-			{
-				"parent": quotation,
-				"item_code": item.item_code
-			},
-			"qty"
-		) or 0
+	pi.set("items", remaining_items)
 
-        billed_qty = billed_qty_map.get(item.item_code, 0)
-        remaining_qty = quotation_item_qty - billed_qty
+	if not pi.items:
+		frappe.throw("All items in this Quotation are already fully billed.")
 
+	pi.run_method("calculate_taxes_and_totals")
 
-        if remaining_qty > 0:
-            item.qty = remaining_qty
-            item.amount = remaining_qty * item.rate
-            remaining_items.append(item)
-
-    pi.set("items", remaining_items)
-
-    if not pi.items:
-        frappe.throw(
-            "All items in this Quotation are already fully billed."
-        )
-
-
-    pi.run_method("calculate_taxes_and_totals")
-
-    return pi
-
+	return pi

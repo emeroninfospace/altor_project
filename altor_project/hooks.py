@@ -43,21 +43,17 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {"Quotation" : "public/js/quotation.js",
-              "Project": "public/js/project.js",
-              "Material Request": "public/js/material_request.js",
-              "Task": "public/js/task.js",
-              "Lead": "public/js/lead.js"
-              }
-
-override_doctype_class = {
-    "Quotation": "altor_project.events.quotation.CustomQuotation"
+doctype_js = {
+	"Quotation": "public/js/quotation.js",
+	"Project": "public/js/project.js",
+	"Material Request": "public/js/material_request.js",
+	"Task": "public/js/task.js",
+	"Lead": "public/js/lead.js",
 }
 
-doctype_list_js = {
-    'Project': 'public/js/project_list.js',
-    'Lead': 'public/js/lead_list.js'
-}
+override_doctype_class = {"Quotation": "altor_project.events.quotation.CustomQuotation"}
+
+doctype_list_js = {"Project": "public/js/project_list.js", "Lead": "public/js/lead_list.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -107,8 +103,8 @@ jinja = {
 # Installation
 # ------------
 
-after_install="altor_project.setup.after_install"
-before_uninstall="altor_project.setup.before_uninstall"
+after_install = "altor_project.setup.after_install"
+before_uninstall = "altor_project.setup.before_uninstall"
 
 # Uninstallation
 # ------------
@@ -151,7 +147,7 @@ before_uninstall="altor_project.setup.before_uninstall"
 # }
 
 permission_query_conditions = {
-    "Task": "altor_project.altor_project.permissions.task_permission.get_permission_query_conditions"
+	"Task": "altor_project.altor_project.permissions.task_permission.get_permission_query_conditions"
 }
 
 # has_permission = {
@@ -178,76 +174,82 @@ permission_query_conditions = {
 # 	}
 # }
 doc_events = {
-    "Sales Invoice": {
-        "on_submit": "altor_project.events.sales_invoice.on_submit",
-        "on_cancel": "altor_project.events.sales_invoice.on_cancel"
-    },
-    "Task": {
-        "on_update": "altor_project.events.task.update_parent_task_progress"
-    },
-    "Site Visit": {
-        "on_submit": "altor_project.events.lead.on_site_visit_submit"
-    },
-    # Item Group wise Project Budget: checks and live figures
-    "Material Request": {
-        "validate": "altor_project.budget.validate_budget"
-    },
-    "Purchase Order": {
-        "validate": "altor_project.budget.validate_budget",
-        "on_submit": "altor_project.budget.on_transaction_change",
-        "on_cancel": "altor_project.budget.on_transaction_change"
-    },
-    "Purchase Invoice": {
-        "on_submit": "altor_project.budget.on_transaction_change",
-        "on_cancel": "altor_project.budget.on_transaction_change"
-    },
-    "Subcontract Work Order": {
-        "on_submit": "altor_project.budget.on_transaction_change",
-        "on_cancel": "altor_project.budget.on_transaction_change"
-    },
-    "Subcontract Invoice": {
-        "on_submit": "altor_project.budget.on_transaction_change",
-        "on_cancel": "altor_project.budget.on_transaction_change"
-    },
+	"Sales Invoice": {
+		"on_submit": "altor_project.events.sales_invoice.on_submit",
+		"on_cancel": "altor_project.events.sales_invoice.on_cancel",
+	},
+	"Task": {"on_update": "altor_project.events.task.update_parent_task_progress"},
+	"Site Visit": {"on_submit": "altor_project.events.lead.on_site_visit_submit"},
+	# Item Group wise Project Budget: checks and live figures
+	"Material Request": {"validate": "altor_project.budget.validate_budget"},
+	"Purchase Order": {
+		"validate": "altor_project.budget.validate_budget",
+		"on_submit": "altor_project.budget.on_transaction_change",
+		"on_cancel": "altor_project.budget.on_transaction_change",
+	},
+	"Purchase Invoice": {
+		"on_submit": "altor_project.budget.on_transaction_change",
+		"on_cancel": "altor_project.budget.on_transaction_change",
+	},
+	"Subcontract Work Order": {
+		"on_submit": "altor_project.budget.on_transaction_change",
+		"on_cancel": "altor_project.budget.on_transaction_change",
+	},
+	"Subcontract Invoice": {
+		"on_submit": "altor_project.budget.on_transaction_change",
+		"on_cancel": "altor_project.budget.on_transaction_change",
+	},
 }
 
 # Division numbering: CRM-SCF-LEAD-2026-0001 -> QT-SCF-2026-0001 -> SO-... -> PRJ-...
 for _doctype in ("Lead", "Quotation", "Sales Order", "Project"):
-    _events = doc_events.setdefault(_doctype, {})
-    _events["autoname"] = "altor_project.custom_and_property_setter.division_naming.set_division_name"
-    _existing = _events.get("validate") or []
-    _events["validate"] = ["altor_project.custom_and_property_setter.division_naming.keep_ref_on_amend"] + (
-        [_existing] if isinstance(_existing, str) else list(_existing)
-    )
+	_events = doc_events.setdefault(_doctype, {})
+	_events["autoname"] = "altor_project.custom_and_property_setter.division_naming.set_division_name"
+	_existing = _events.get("validate") or []
+	_events["validate"] = ["altor_project.custom_and_property_setter.division_naming.keep_ref_on_amend"] + (
+		[_existing] if isinstance(_existing, str) else list(_existing)
+	)
 
 # Division (Cost Center): rows without their own division take the document's.
 # Runs first in validate so the budget checks see the final rows.
-for _doctype in ("Sales Order", "Delivery Note", "Sales Invoice", "Material Request", "Purchase Order",
-                 "Purchase Receipt", "Purchase Invoice", "Stock Entry"):
-    _events = doc_events.setdefault(_doctype, {})
-    _existing = _events.get("validate") or []
-    _events["validate"] = ["altor_project.custom_and_property_setter.division.apply_division_to_rows"] + (
-        [_existing] if isinstance(_existing, str) else list(_existing)
-    )
+for _doctype in (
+	"Sales Order",
+	"Delivery Note",
+	"Sales Invoice",
+	"Material Request",
+	"Purchase Order",
+	"Purchase Receipt",
+	"Purchase Invoice",
+	"Stock Entry",
+):
+	_events = doc_events.setdefault(_doctype, {})
+	_existing = _events.get("validate") or []
+	_events["validate"] = ["altor_project.custom_and_property_setter.division.apply_division_to_rows"] + (
+		[_existing] if isinstance(_existing, str) else list(_existing)
+	)
 
 app_include_js = [
-    "/assets/altor_project/js/project_calendar.js",
-    "/assets/altor_project/js/workspace_supervisor.js"
+	"/assets/altor_project/js/project_calendar.js",
+	"/assets/altor_project/js/workspace_supervisor.js",
 ]
 
 fixtures = [
-    {
-        "dt": "Custom HTML Block",
-        "filters": [
-            ["name", "in", [
-                "Task Dashboard",
-                "Project Overview Dashboard",
-                "HR Dashboard",
-                "Stock Overview Dashboard",
-                "Accounts Overview Dashboard"
-            ]]
-        ]
-    }
+	{
+		"dt": "Custom HTML Block",
+		"filters": [
+			[
+				"name",
+				"in",
+				[
+					"Task Dashboard",
+					"Project Overview Dashboard",
+					"HR Dashboard",
+					"Stock Overview Dashboard",
+					"Accounts Overview Dashboard",
+				],
+			]
+		],
+	}
 ]
 
 
@@ -255,15 +257,11 @@ fixtures = [
 # ---------------
 
 scheduler_events = {
-    "daily": [
-        "altor_project.budget.refresh_all_budgets"
-    ],
-    "cron": {
-        # 01:30 every night: book yesterday's manpower (only when enabled in Altor Settings)
-        "30 1 * * *": [
-            "altor_project.manpower_automation.scheduled_create"
-        ]
-    }
+	"daily": ["altor_project.budget.refresh_all_budgets"],
+	"cron": {
+		# 01:30 every night: book yesterday's manpower (only when enabled in Altor Settings)
+		"30 1 * * *": ["altor_project.manpower_automation.scheduled_create"]
+	},
 }
 
 # scheduler_events = {
@@ -368,4 +366,3 @@ override_doctype_dashboards = {
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-

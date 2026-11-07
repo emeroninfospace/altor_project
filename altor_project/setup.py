@@ -3,53 +3,59 @@
 
 import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
-from frappe.custom.doctype.property_setter.property_setter import  make_property_setter
+from frappe.custom.doctype.property_setter.property_setter import make_property_setter
+
 from altor_project.custom_and_property_setter.custom_field import CREATE_FIELDS
+from altor_project.custom_and_property_setter.division import remove_division_fields, setup_division_fields
 from altor_project.custom_and_property_setter.property_setter import get_property_setters
-from altor_project.custom_and_property_setter.division import setup_division_fields, remove_division_fields
+from altor_project.custom_and_property_setter.settings_defaults import apply_single_defaults
+
 
 def after_install():
-    create_custom_fields(CREATE_FIELDS, ignore_validate=True)
-    setup_division_fields()
+	create_custom_fields(CREATE_FIELDS, ignore_validate=True)
+	setup_division_fields()
+	apply_single_defaults("Altor Settings")
 
 
 def before_uninstall():
-    
-    print('delete custom field')
-    delete_custom_fields(CREATE_FIELDS)
-    delete_property_setters()
-    remove_division_fields()
+
+	print("delete custom field")
+	delete_custom_fields(CREATE_FIELDS)
+	delete_property_setters()
+	remove_division_fields()
+
 
 def delete_custom_fields(custom_fields):
-    for doctypes, fields in custom_fields.items():
-        if isinstance(fields, dict):
-            # only one field
-            fields = [fields]
+	for doctypes, fields in custom_fields.items():
+		if isinstance(fields, dict):
+			# only one field
+			fields = [fields]
 
-        if isinstance(doctypes, str):
-            # only one doctype
-            doctypes = (doctypes,)
+		if isinstance(doctypes, str):
+			# only one doctype
+			doctypes = (doctypes,)
 
-        for doctype in doctypes:
-            frappe.db.delete(
-                "Custom Field",
-                {
-                    "fieldname": ("in", [field["fieldname"] for field in fields]),
-                    "dt": doctype,
-                },
-            )
+		for doctype in doctypes:
+			frappe.db.delete(
+				"Custom Field",
+				{
+					"fieldname": ("in", [field["fieldname"] for field in fields]),
+					"dt": doctype,
+				},
+			)
 
-            frappe.clear_cache(doctype=doctype)
+			frappe.clear_cache(doctype=doctype)
+
 
 def delete_property_setters():
-    field_map = {
-        "doctype": "doc_type",
-        "fieldname": "field_name",
-    }
+	field_map = {
+		"doctype": "doc_type",
+		"fieldname": "field_name",
+	}
 
-    for property_setter in get_property_setters():
-        for key, fieldname in field_map.items():
-            if key in property_setter:
-                property_setter[fieldname] = property_setter.pop(key)
+	for property_setter in get_property_setters():
+		for key, fieldname in field_map.items():
+			if key in property_setter:
+				property_setter[fieldname] = property_setter.pop(key)
 
-        frappe.db.delete("Property Setter", property_setter)
+		frappe.db.delete("Property Setter", property_setter)

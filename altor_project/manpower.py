@@ -105,6 +105,7 @@ def get_worker_details(employee=None, worker_type=None, supplier=None, designati
 
 @frappe.whitelist()
 def get_default_item_group():
+	frappe.has_permission("Manpower Entry", "read", throw=True)
 	return get_settings().item_group
 
 

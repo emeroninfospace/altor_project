@@ -112,7 +112,9 @@ class ProjectBudget(Document):
 			messages.append(_("No budget entered yet for: {0}").format(", ".join(zero)))
 		if over_quoted:
 			messages.append(
-				_("Budget (cost) is higher than the quoted selling value for: {0}").format(", ".join(over_quoted))
+				_("Budget (cost) is higher than the quoted selling value for: {0}").format(
+					", ".join(over_quoted)
+				)
 			)
 		if exceeded:
 			messages.append(
@@ -148,6 +150,7 @@ class ProjectBudget(Document):
 	@frappe.whitelist()
 	def refresh_actuals(self):
 		"""Recalculate committed / actual figures (button on the form)."""
+		self.check_permission("write" if self.docstatus == 0 else "read")
 		if self.docstatus == 1:
 			update_submitted_budget(self.name)
 		elif self.docstatus == 0:
