@@ -17,7 +17,12 @@ from altor_project.custom_and_property_setter.custom_field import CREATE_FIELDS
 from altor_project.custom_and_property_setter.division import setup_division_fields
 
 BOQ_DOCTYPES = ["Bill of Quantity", "Bill of Quantity Item", "BOQ Template Child", "BOQ Items"]
-BOQ_FIELDNAMES = ["custom_bill_of_quantity", "custom_boq_items", "custom_show_boq_items", "custom_show_boq_template_title"]
+BOQ_FIELDNAMES = [
+	"custom_bill_of_quantity",
+	"custom_boq_items",
+	"custom_show_boq_items",
+	"custom_show_boq_template_title",
+]
 BOQ_PRINT_FORMATS = ["Boq", "Bill of Quantity"]
 
 
@@ -57,7 +62,9 @@ def copy_column(doctype, old, new):
 def reset_lead_status():
 	for lead in frappe.get_all("Lead", filters={"status": "Bill of Quantity Completed"}, pluck="name"):
 		visited = frappe.db.exists("Site Visit", {"lead": lead, "docstatus": 1})
-		frappe.db.set_value("Lead", lead, "status", "Site Visit Completed" if visited else "Open", update_modified=False)
+		frappe.db.set_value(
+			"Lead", lead, "status", "Site Visit Completed" if visited else "Open", update_modified=False
+		)
 
 
 def delete_boq_customizations():
@@ -90,7 +97,10 @@ def delete_boq_customizations():
 
 def delete_boq_print_formats():
 	for name in BOQ_PRINT_FORMATS:
-		if frappe.db.exists("Print Format", name) and frappe.db.get_value("Print Format", name, "module") == "Altor Project":
+		if (
+			frappe.db.exists("Print Format", name)
+			and frappe.db.get_value("Print Format", name, "module") == "Altor Project"
+		):
 			frappe.delete_doc("Print Format", name, force=True, ignore_permissions=True)
 
 

@@ -61,9 +61,10 @@ KNOWN_CODES = {
 
 def get_settings():
 	s = frappe.get_cached_doc("Altor Settings")
-	enabled = s.get("enable_division_numbering")
+	# Never configured (no format stored yet) counts as on, the field's default
+	configured = any(s.get(field) for field in SETTING_FIELDS.values())
 	return frappe._dict(
-		enabled=1 if enabled is None else cint(enabled),
+		enabled=cint(s.get("enable_division_numbering")) if configured else 1,
 		digits=cint(s.get("division_series_digits")) or 4,
 		formats={dt: (s.get(field) or DEFAULT_FORMATS[dt]) for dt, field in SETTING_FIELDS.items()},
 	)

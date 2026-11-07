@@ -34,7 +34,9 @@ def get_filter_options():
 	default = _company({})
 	return {
 		"companies": companies,
-		"default_company": default if default in companies else (companies[0] if len(companies) == 1 else None),
+		"default_company": default
+		if default in companies
+		else (companies[0] if len(companies) == 1 else None),
 		"projects": frappe.get_list(
 			"Project", fields=["name", "project_name"], order_by="modified desc", limit_page_length=500
 		),

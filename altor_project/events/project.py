@@ -30,6 +30,8 @@ def get_project_source_items(project_doc):
 @frappe.whitelist()
 def create_project_schedule(project):
 	project_doc = frappe.get_doc("Project", project)
+	project_doc.check_permission("read")
+	frappe.has_permission("Project Schedule", "create", throw=True)
 	_doctype, _name, items = get_project_source_items(project_doc)
 
 	ps = frappe.new_doc("Project Schedule")
@@ -50,6 +52,8 @@ def create_project_schedule(project):
 @frappe.whitelist()
 def create_material_request(name):
 	project = frappe.get_doc("Project", name)
+	project.check_permission("read")
+	frappe.has_permission("Material Request", "create", throw=True)
 	source_doctype, source_name, items = get_project_source_items(project)
 
 	# Only stock / purchase items can be requested (not hire or service lines)
@@ -58,14 +62,19 @@ def create_material_request(name):
 		purchasable = set(
 			frappe.get_all(
 				"Item",
-				filters={"name": ["in", list({i.item_code for i in items if i.item_code})], "is_purchase_item": 1},
+				filters={
+					"name": ["in", list({i.item_code for i in items if i.item_code})],
+					"is_purchase_item": 1,
+				},
 				pluck="name",
 			)
 		)
 	items = [i for i in items if i.item_code in purchasable]
 	if not items:
 		frappe.throw(
-			_("No purchasable items found on the project's Sales Order or Quotation. Create the Material Request manually.")
+			_(
+				"No purchasable items found on the project's Sales Order or Quotation. Create the Material Request manually."
+			)
 		)
 
 	request = frappe.new_doc("Material Request")
@@ -108,7 +117,9 @@ def create_material_request(name):
 			)
 
 	if not request.items:
-		frappe.throw(_("Everything on {0} {1} has already been requested.").format(_(source_doctype), source_name))
+		frappe.throw(
+			_("Everything on {0} {1} has already been requested.").format(_(source_doctype), source_name)
+		)
 
 	request.save(ignore_permissions=True)
 	return request.name
@@ -117,6 +128,8 @@ def create_material_request(name):
 @frappe.whitelist()
 def make_project_budget(project):
 	project_doc = frappe.get_doc("Project", project)
+	project_doc.check_permission("read")
+	frappe.has_permission("Project Budget", "create", throw=True)
 
 	existing = frappe.db.get_value("Project Budget", {"project": project, "docstatus": ["<", 2]}, "name")
 	if existing:
@@ -143,7 +156,9 @@ def make_project_budget(project):
 
 	if not ps.budget_items:
 		frappe.throw(
-			_("The project has no Sales Order or Quotation items. Create the Project Budget manually and add Item Group lines.")
+			_(
+				"The project has no Sales Order or Quotation items. Create the Project Budget manually and add Item Group lines."
+			)
 		)
 
 	ps.flags.ignore_budget_warnings = True
