@@ -27,7 +27,6 @@ def create_subcontract_invoice(docname):
     invoice = frappe.new_doc("Subcontract Invoice")
     invoice.supplier = doc.supplier
     invoice.company = doc.company
-    invoice.bill_of_quantity = doc.bill_of_quantity
     invoice.transaction_date = doc.transaction_date
     invoice.project = doc.project
     invoice.cost_center = doc.cost_center

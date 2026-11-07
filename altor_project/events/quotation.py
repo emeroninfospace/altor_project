@@ -27,26 +27,7 @@ def make_project(source_name, target_doc=None):
             customer_name = source.party_name
 
         target.customer = customer_name
-
-        if source.custom_bill_of_quantity:
-            boq = frappe.get_doc("Bill of Quantity", source.custom_bill_of_quantity)
-            target.set("custom_boq_items", [])
-            item_names = dict(frappe.get_all(
-                "Item",
-                filters={"name": ["in", list({r.item_code for r in boq.table_kfog if r.item_code})]},
-                fields=["name", "item_name"],
-                as_list=True,
-            )) if boq.table_kfog else {}
-            for row in boq.table_kfog:
-                target.append("custom_boq_items", {
-                    "item_code": row.item_code,
-                    "item_name": item_names.get(row.item_code),
-                    "uom": row.uom,
-                    "qty": row.qty,
-                    "rate": row.rate,
-                    "amount": row.amount,
-                    "boq_template_id": row.boq_template_id
-                })
+        target.quotation = source.name
 
     doclist = get_mapped_doc(
         "Quotation",
@@ -57,7 +38,6 @@ def make_project(source_name, target_doc=None):
                 "field_map": {
                     "custom_project": "project_name",
                     "remarks": "notes",
-                    "custom_bill_of_quantity": "custom_bill_of_quantity",
                     "custom_scope_of_work": "scope_of_work",
                     "custom_location": "location",
                 }
@@ -95,7 +75,6 @@ def make_sales_invoice(source_name, target_doc=None):
 
         target.posting_date = nowdate()
         target.customer = customer_name
-        target.custom_bill_of_quantity = source.custom_bill_of_quantity
         target.remarks = f"Sales Invoice created from Quotation {source.name}"
 
         default_income_account = frappe.get_cached_value("Company", source.company, "default_income_account")
@@ -115,7 +94,6 @@ def make_sales_invoice(source_name, target_doc=None):
                 "doctype": "Sales Invoice",
                 "field_map": {
                     "name": "custom_quotation",
-                    "custom_bill_of_quantity": "custom_bill_of_quantity",
                 }
             },
             "Quotation Item": {

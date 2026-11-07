@@ -6,8 +6,7 @@ const LEAD_STATUS_COLORS = {
     "Interested": "blue",
     "Converted": "purple",
     "Do Not Contact": "red",
-    "Site Visit Completed": "orange",
-    "Bill of Quantity Completed": "yellow"
+    "Site Visit Completed": "orange"
 };
 
 frappe.ui.form.on("Lead", {
@@ -27,17 +26,6 @@ frappe.ui.form.on("Lead", {
                 });
             }, __("Create"));
 
-            frm.add_custom_button(__("Bill of Quantity"), () => {
-                frappe.model.with_doctype("Bill of Quantity", function () {
-                    let doc = frappe.model.get_new_doc("Bill of Quantity");
-                    doc.party_type = "Lead";
-                    doc.party_name = frm.doc.name;
-                    doc.project_name = frm.doc.custom_project
-                    doc.posting_date = frappe.datetime.get_today();
-                    doc.scope_of_work = frm.doc.custom_scope_of_work;
-                    frappe.set_route("Form", "Bill of Quantity", doc.name);
-                });
-            }, __("Create"));
         }
 
         setTimeout(() => {

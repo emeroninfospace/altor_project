@@ -12,7 +12,3 @@ def update_lead_status(lead_name, status):
 def on_site_visit_submit(doc, method=None):
     update_lead_status(doc.lead, "Site Visit Completed")
 
-
-def on_boq_submit(doc, method=None):
-    if doc.party_type == "Lead" and doc.party_name:
-        update_lead_status(doc.party_name, "Bill of Quantity Completed")

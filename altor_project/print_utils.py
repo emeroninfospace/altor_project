@@ -179,47 +179,12 @@ def altor_item_taxes(doc):
 	return out
 
 
-def altor_boq(doc, fallback_to_items=False):
-	"""BOQ linked to a Quotation, grouped by BOQ template (item group).
+def altor_item_groups(doc):
+	"""Document items grouped by item group (work package).
 
 	Returns [{title, total, items: [{description, lines, uom, qty, rate, amount}]}].
-	Without a linked Bill of Quantity: [] or, with fallback_to_items, the document
-	items grouped by item group.
 	"""
-	name = doc.get("custom_bill_of_quantity")
-	if not name or not frappe.db.exists("Bill of Quantity", name):
-		return _items_as_groups(doc) if fallback_to_items else []
-	boq = frappe.get_doc("Bill of Quantity", name)
-	groups, order = {}, []
-	for tpl in boq.get("boq_template") or []:
-		key = tpl.boq_template
-		if key not in groups:
-			order.append(key)
-			groups[key] = frappe._dict(
-				title=tpl.get("template_name") or key, total=flt(tpl.total_amount), items=[]
-			)
-	for item in boq.get("table_kfog") or []:
-		key = item.get("boq_template_id")
-		if key not in groups:
-			order.append(key)
-			groups[key] = frappe._dict(title=key or "", total=0, items=[])
-		groups[key]["items"].append(
-			frappe._dict(
-				description=item.get("description"),
-				lines=altor_lines(item.get("description")),
-				uom=item.get("uom"),
-				qty=flt(item.get("qty")),
-				rate=flt(item.get("rate")),
-				amount=flt(item.get("amount")),
-			)
-		)
-	result = []
-	for key in order:
-		g = groups[key]
-		if not g.total:
-			g.total = sum(i.amount for i in g["items"])
-		result.append(g)
-	return result
+	return _items_as_groups(doc)
 
 
 def altor_validity_days(doc):

@@ -333,7 +333,7 @@
    "property": "options",
    "property_type": "Text",
    "row_name": null,
-   "value": "Lead\nOpen\nReplied\nOpportunity\nInterested\nConverted\nDo Not Contact\nSite Visit Completed\nBill of Quantity Completed"
+   "value": "Lead\nOpen\nReplied\nOpportunity\nInterested\nConverted\nDo Not Contact\nSite Visit Completed"
   }
  ],
  "sync_on_migrate": 1

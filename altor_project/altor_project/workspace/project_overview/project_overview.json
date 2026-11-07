@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\": \"a70708f67f\", \"type\": \"custom_block\", \"data\": {\"custom_block_name\": \"Project Overview Dashboard\", \"col\": 12}}, {\"id\": \"f6fa884169\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Projects</b></span>\", \"col\": 12}}, {\"id\": \"7e6d730c89\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project\", \"col\": 3}}, {\"id\": \"5d4da0ecc5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Task\", \"col\": 3}}, {\"id\": \"81c6885c69\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Schedule\", \"col\": 3}}, {\"id\": \"07f29acba7\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Bill of Quantity\", \"col\": 3}}, {\"id\": \"2a3ff79b97\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Budget & Cost</b></span>\", \"col\": 12}}, {\"id\": \"39c6233a87\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Budget\", \"col\": 3}}, {\"id\": \"e13dbb370e\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Manpower Entry\", \"col\": 3}}, {\"id\": \"6f9916740c\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Material Request\", \"col\": 3}}, {\"id\": \"e8c529b3b9\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Order\", \"col\": 3}}, {\"id\": \"ef8ec1b1ba\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Invoice\", \"col\": 3}}, {\"id\": \"cb149915e6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Subcontract Work Order\", \"col\": 3}}, {\"id\": \"30fa5fbea6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Subcontract Invoice\", \"col\": 3}}, {\"id\": \"51dbc1da84\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Expense Entry\", \"col\": 3}}, {\"id\": \"8ce11ed34e\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Reports</b></span>\", \"col\": 12}}, {\"id\": \"aaed51b01a\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Budget Variance\", \"col\": 3}}, {\"id\": \"83e1334de8\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Manpower Cost Summary\", \"col\": 3}}, {\"id\": \"c3cb3ebd44\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Wise\", \"col\": 3}}, {\"id\": \"a257b91877\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Other Dashboards</b></span>\", \"col\": 12}}, {\"id\": \"2ee44a60e6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"HR Dashboard\", \"col\": 3}}, {\"id\": \"409226ba0a\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Overview\", \"col\": 3}}, {\"id\": \"99d83d2956\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Accounts Overview\", \"col\": 3}}, {\"id\": \"b16dd22314\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Altor Home\", \"col\": 3}}, {\"id\": \"633d4b3644\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"7bf75d6881\", \"type\": \"card\", \"data\": {\"card_name\": \"Project Management\", \"col\": 4}}, {\"id\": \"3ac80ff363\", \"type\": \"card\", \"data\": {\"card_name\": \"Procurement & Subcontract\", \"col\": 4}}, {\"id\": \"6ca3d79b3e\", \"type\": \"card\", \"data\": {\"card_name\": \"Manpower\", \"col\": 4}}, {\"id\": \"34fa6cc36f\", \"type\": \"card\", \"data\": {\"card_name\": \"Project Reports\", \"col\": 4}}]",
+ "content": "[{\"id\": \"a70708f67f\", \"type\": \"custom_block\", \"data\": {\"custom_block_name\": \"Project Overview Dashboard\", \"col\": 12}}, {\"id\": \"f6fa884169\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Projects</b></span>\", \"col\": 12}}, {\"id\": \"7e6d730c89\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project\", \"col\": 3}}, {\"id\": \"5d4da0ecc5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Task\", \"col\": 3}}, {\"id\": \"81c6885c69\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Schedule\", \"col\": 3}}, {\"id\": \"2a3ff79b97\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Budget & Cost</b></span>\", \"col\": 12}}, {\"id\": \"39c6233a87\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Budget\", \"col\": 3}}, {\"id\": \"e13dbb370e\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Manpower Entry\", \"col\": 3}}, {\"id\": \"6f9916740c\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Material Request\", \"col\": 3}}, {\"id\": \"e8c529b3b9\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Order\", \"col\": 3}}, {\"id\": \"ef8ec1b1ba\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Invoice\", \"col\": 3}}, {\"id\": \"cb149915e6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Subcontract Work Order\", \"col\": 3}}, {\"id\": \"30fa5fbea6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Subcontract Invoice\", \"col\": 3}}, {\"id\": \"51dbc1da84\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Expense Entry\", \"col\": 3}}, {\"id\": \"8ce11ed34e\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Reports</b></span>\", \"col\": 12}}, {\"id\": \"aaed51b01a\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Budget Variance\", \"col\": 3}}, {\"id\": \"83e1334de8\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Manpower Cost Summary\", \"col\": 3}}, {\"id\": \"c3cb3ebd44\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Wise\", \"col\": 3}}, {\"id\": \"a257b91877\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Other Dashboards</b></span>\", \"col\": 12}}, {\"id\": \"2ee44a60e6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"HR Dashboard\", \"col\": 3}}, {\"id\": \"409226ba0a\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Overview\", \"col\": 3}}, {\"id\": \"99d83d2956\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Accounts Overview\", \"col\": 3}}, {\"id\": \"b16dd22314\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Altor Home\", \"col\": 3}}, {\"id\": \"633d4b3644\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"7bf75d6881\", \"type\": \"card\", \"data\": {\"card_name\": \"Project Management\", \"col\": 4}}, {\"id\": \"3ac80ff363\", \"type\": \"card\", \"data\": {\"card_name\": \"Procurement & Subcontract\", \"col\": 4}}, {\"id\": \"6ca3d79b3e\", \"type\": \"card\", \"data\": {\"card_name\": \"Manpower\", \"col\": 4}}, {\"id\": \"34fa6cc36f\", \"type\": \"card\", \"data\": {\"card_name\": \"Project Reports\", \"col\": 4}}]",
  "creation": "2026-11-01 12:00:00.000000",
  "custom_blocks": [
   {
@@ -22,7 +22,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Project Management",
-   "link_count": 5,
+   "link_count": 4,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -63,16 +63,6 @@
    "label": "Project Budget",
    "link_count": 0,
    "link_to": "Project Budget",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Bill of Quantity",
-   "link_count": 0,
-   "link_to": "Bill of Quantity",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -245,7 +235,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-11-03 14:00:00.000000",
+ "modified": "2026-11-07 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Project Overview",
@@ -282,15 +272,6 @@
    "link_to": "Project Schedule",
    "stats_filter": "[]",
    "type": "DocType"
-  },
-  {
-   "color": "Grey",
-   "doc_view": "List",
-   "label": "Bill of Quantity",
-   "link_to": "Bill of Quantity",
-   "stats_filter": "[[\"Bill of Quantity\", \"docstatus\", \"=\", 0, false]]",
-   "type": "DocType",
-   "format": "{} Draft"
   },
   {
    "color": "Red",

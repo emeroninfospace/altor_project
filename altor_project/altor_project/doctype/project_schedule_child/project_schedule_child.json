@@ -7,7 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "description",
-  "boq_template",
+  "work_package",
   "expected_start_date",
   "expected_end_date",
   "total_work",
@@ -22,11 +22,12 @@
    "label": "Description"
   },
   {
-   "fieldname": "boq_template",
+   "fieldname": "work_package",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "BOQ Template",
-   "options": "Item Group"
+   "label": "Work Package",
+   "options": "Item Group",
+   "description": "Item group / work package the task belongs to"
   },
   {
    "columns": 1,
@@ -67,7 +68,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-01-24 16:55:54.380691",
+ "modified": "2026-11-07 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Project Schedule Child",

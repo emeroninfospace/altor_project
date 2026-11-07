@@ -7,9 +7,8 @@ def get_data():
 		"internal_links": {
 			"Subcontract Work Order": "subcontract_work_order",
 			"Project": "project",
-			"Bill of Quantity": "bill_of_quantity",
 		},
 		"transactions": [
-			{"label": _("Reference"), "items": ["Subcontract Work Order", "Project", "Bill of Quantity"]},
+			{"label": _("Reference"), "items": ["Subcontract Work Order", "Project"]},
 		],
 	}

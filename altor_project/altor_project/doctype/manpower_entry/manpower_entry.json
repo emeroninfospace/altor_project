@@ -8,6 +8,7 @@
   "naming_series",
   "project",
   "project_name",
+  "cost_center",
   "company",
   "column_break_4",
   "posting_date",
@@ -185,12 +186,23 @@
    "label": "Auto Created",
    "read_only": 1,
    "no_copy": 1
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "Cost Center",
+   "in_standard_filter": 1,
+   "link_filters": "[[\"Cost Center\",\"is_group\",\"=\",0]]",
+   "description": "Division (Cost Center) this document belongs to",
+   "fetch_from": "project.cost_center",
+   "fetch_if_empty": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-11-03 10:00:00.000000",
+ "modified": "2026-11-07 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Manpower Entry",

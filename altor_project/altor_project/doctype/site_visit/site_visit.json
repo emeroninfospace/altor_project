@@ -10,6 +10,7 @@
   "naming_series",
   "lead",
   "lead_name",
+  "cost_center",
   "company",
   "visit_date",
   "visited_by",
@@ -137,13 +138,24 @@
    "fieldtype": "Table",
    "label": "Site Images",
    "options": "Site Visit Image"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "Cost Center",
+   "in_standard_filter": 1,
+   "link_filters": "[[\"Cost Center\",\"is_group\",\"=\",0]]",
+   "description": "Division (Cost Center) this document belongs to",
+   "fetch_from": "lead.cost_center",
+   "fetch_if_empty": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-06-22 00:00:00.000000",
+ "modified": "2026-11-07 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Site Visit",

@@ -7,6 +7,5 @@ def get_data():
 		"internal_links": {"Lead": "lead"},
 		"transactions": [
 			{"label": _("Lead"), "items": ["Lead"]},
-			{"label": _("Bill of Quantity"), "items": ["Bill of Quantity"]},
 		],
 	}

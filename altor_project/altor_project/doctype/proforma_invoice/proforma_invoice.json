@@ -22,6 +22,7 @@
   "contact_persons",
   "payment_terms_template",
   "company",
+  "cost_center",
   "has_unit_price_items",
   "amended_from",
   "column_break_ewef",
@@ -1075,13 +1076,22 @@
    "fieldtype": "Link",
    "label": "Sales Order",
    "options": "Sales Order"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "Cost Center",
+   "in_standard_filter": 1,
+   "link_filters": "[[\"Cost Center\",\"is_group\",\"=\",0]]",
+   "description": "Division (Cost Center) this document belongs to"
   }
  ],
  "icon": "fa fa-shopping-cart",
  "idx": 82,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-01-22 15:38:54.169380",
+ "modified": "2026-11-07 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Proforma Invoice",

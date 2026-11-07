@@ -94,7 +94,7 @@ jinja = {
 		"altor_project.print_utils.altor_party",
 		"altor_project.print_utils.altor_lines",
 		"altor_project.print_utils.altor_item_taxes",
-		"altor_project.print_utils.altor_boq",
+		"altor_project.print_utils.altor_item_groups",
 		"altor_project.print_utils.altor_validity_days",
 	]
 }
@@ -188,9 +188,6 @@ doc_events = {
     "Site Visit": {
         "on_submit": "altor_project.events.lead.on_site_visit_submit"
     },
-    "Bill of Quantity": {
-        "on_submit": "altor_project.events.lead.on_boq_submit"
-    },
     # Item Group wise Project Budget: checks and live figures
     "Material Request": {
         "validate": "altor_project.budget.validate_budget"
@@ -213,6 +210,16 @@ doc_events = {
         "on_cancel": "altor_project.budget.on_transaction_change"
     },
 }
+
+# Division (Cost Center): rows without their own division take the document's.
+# Runs first in validate so the budget checks see the final rows.
+for _doctype in ("Sales Order", "Delivery Note", "Sales Invoice", "Material Request", "Purchase Order",
+                 "Purchase Receipt", "Purchase Invoice", "Stock Entry"):
+    _events = doc_events.setdefault(_doctype, {})
+    _existing = _events.get("validate") or []
+    _events["validate"] = ["altor_project.custom_and_property_setter.division.apply_division_to_rows"] + (
+        [_existing] if isinstance(_existing, str) else list(_existing)
+    )
 
 app_include_js = [
     "/assets/altor_project/js/project_calendar.js",
@@ -287,7 +294,6 @@ override_doctype_dashboards = {
 	"Project": "altor_project.events.dashboards.project",
 	"Quotation": "altor_project.events.dashboards.quotation",
 	"Lead": "altor_project.events.dashboards.lead",
-	"Customer": "altor_project.events.dashboards.customer",
 	"Supplier": "altor_project.events.dashboards.supplier",
 	"Employee": "altor_project.events.dashboards.employee",
 }

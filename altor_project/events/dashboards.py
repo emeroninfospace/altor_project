@@ -26,12 +26,7 @@ def _add(data, label, items, fieldnames=None, internal=None):
 
 def project(data):
 	_add(data, _("Budget & Manpower"), ["Project Budget", "Manpower Entry", "Expense Entry"])
-	_add(
-		data,
-		_("Planning"),
-		["Project Schedule", "Bill of Quantity"],
-		internal={"Bill of Quantity": "custom_bill_of_quantity"},
-	)
+	_add(data, _("Planning"), ["Project Schedule"])
 	_add(data, _("Subcontract"), ["Subcontract Work Order", "Subcontract Invoice"])
 	_add(data, _("Selling"), ["Quotation"], internal={"Quotation": "quotation"})
 	# Material Requests made from a project carry it in the header field custom_project
@@ -44,12 +39,6 @@ def quotation(data):
 	data.setdefault("fieldname", "prevdoc_docname")
 	_add(
 		data,
-		_("Bill of Quantity"),
-		["Bill of Quantity"],
-		internal={"Bill of Quantity": "custom_bill_of_quantity"},
-	)
-	_add(
-		data,
 		_("Selling"),
 		["Proforma Invoice", "Sales Invoice"],
 		fieldnames={"Proforma Invoice": "quotation", "Sales Invoice": "custom_quotation"},
@@ -59,18 +48,7 @@ def quotation(data):
 
 
 def lead(data):
-	return _add(
-		data,
-		_("Site Visit & BOQ"),
-		["Site Visit", "Bill of Quantity"],
-		fieldnames={"Site Visit": "lead", "Bill of Quantity": "party_name"},
-	)
-
-
-def customer(data):
-	return _add(
-		data, _("Site Visit & BOQ"), ["Bill of Quantity"], fieldnames={"Bill of Quantity": "party_name"}
-	)
+	return _add(data, _("Site Visit"), ["Site Visit"], fieldnames={"Site Visit": "lead"})
 
 
 def supplier(data):

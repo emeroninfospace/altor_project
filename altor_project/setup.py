@@ -6,9 +6,11 @@ from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from frappe.custom.doctype.property_setter.property_setter import  make_property_setter
 from altor_project.custom_and_property_setter.custom_field import CREATE_FIELDS
 from altor_project.custom_and_property_setter.property_setter import get_property_setters
+from altor_project.custom_and_property_setter.division import setup_division_fields, remove_division_fields
 
 def after_install():
     create_custom_fields(CREATE_FIELDS, ignore_validate=True)
+    setup_division_fields()
 
 
 def before_uninstall():
@@ -16,6 +18,7 @@ def before_uninstall():
     print('delete custom field')
     delete_custom_fields(CREATE_FIELDS)
     delete_property_setters()
+    remove_division_fields()
 
 def delete_custom_fields(custom_fields):
     for doctypes, fields in custom_fields.items():

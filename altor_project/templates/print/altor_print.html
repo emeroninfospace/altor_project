@@ -258,7 +258,7 @@
 </div>
 {%- endmacro -%}
 
-{%- macro boq_summary(groups, doc) -%}
+{%- macro groups_summary(groups, doc) -%}
 <table class="items">
   <thead><tr><th style="width:8%">#</th><th>Work Package</th><th class="right" style="width:24%">Amount ({{ doc.get("currency") }})</th></tr></thead>
   <tbody>
@@ -271,7 +271,7 @@
 </table>
 {%- endmacro -%}
 
-{%- macro boq_detail(groups, doc, show_rates=True) -%}
+{%- macro groups_detail(groups, doc, show_rates=True) -%}
 <table class="items">
   <thead><tr>
     <th style="width:7%">Sr.</th><th>Description</th><th style="width:8%">Unit</th><th class="right" style="width:8%">Qty</th>
@@ -294,7 +294,7 @@
     {%- set ns.grand = ns.grand + sub.t %}
     {%- if show_rates %}<tr class="sub"><td></td><td colspan="4" class="right">Sub Total &mdash; {{ g.title }}</td><td class="right">{{ amt(sub.t) }}</td></tr>{% endif %}
   {%- endfor %}
-  {%- if show_rates %}<tr class="grp"><td></td><td colspan="4" class="right">Total of Bill of Quantities</td><td class="right">{{ money(ns.grand, doc) }}</td></tr>{% endif %}
+  {%- if show_rates %}<tr class="grp"><td></td><td colspan="4" class="right">Total</td><td class="right">{{ money(ns.grand, doc) }}</td></tr>{% endif %}
   </tbody>
 </table>
 {%- endmacro -%}

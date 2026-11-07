@@ -533,7 +533,7 @@ def _make_budgets(ctx, log):
 				"applicable_on_purchase_order": 1,
 				"action_if_annual_budget_exceeded_on_po": "Warn",
 				"budget_items": [
-					{"category": ctx.groups[g], "budgeted_amount": amt, "boq_amount": round(amt * 1.22)}
+					{"category": ctx.groups[g], "budgeted_amount": amt, "quoted_amount": round(amt * 1.22)}
 					for g, amt in lines.items()
 				],
 			}
