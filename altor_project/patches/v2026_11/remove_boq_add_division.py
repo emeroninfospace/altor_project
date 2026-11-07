@@ -35,11 +35,23 @@ def execute():
 	setup_division_fields()
 
 
+NUMERIC_TYPES = ("Currency", "Float", "Int", "Percent", "Check")
+
+
 def copy_column(doctype, old, new):
-	if frappe.db.has_column(doctype, old) and frappe.db.has_column(doctype, new):
-		frappe.db.sql(
-			f"UPDATE `tab{doctype}` SET `{new}` = `{old}` WHERE (`{new}` IS NULL OR `{new}` = '' OR `{new}` = 0) AND `{old}` IS NOT NULL"
-		)
+	"""Copy values of a renamed field into its new column where the new one is still empty.
+
+	The "empty" test must match the column type: MariaDB in strict mode rejects comparing a
+	decimal column with '' (error 1292) and a text column with 0.
+	"""
+	if not (frappe.db.has_column(doctype, old) and frappe.db.has_column(doctype, new)):
+		return
+	df = frappe.get_meta(doctype).get_field(new)
+	if df and df.fieldtype in NUMERIC_TYPES:
+		empty, has_value = f"IFNULL(`{new}`, 0) = 0", f"IFNULL(`{old}`, 0) != 0"
+	else:
+		empty, has_value = f"IFNULL(`{new}`, '') = ''", f"IFNULL(`{old}`, '') != ''"
+	frappe.db.sql(f"UPDATE `tab{doctype}` SET `{new}` = `{old}` WHERE {empty} AND {has_value}")
 
 
 def reset_lead_status():
