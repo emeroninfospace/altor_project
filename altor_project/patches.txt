@@ -11,3 +11,4 @@ altor_project.patches.patch  03/11/2026-print-settings
 altor_project.patches.v2026_11.remove_boq_add_division
 altor_project.patches.v2026_11.remove_boq_add_division  #2026-11-08 division numbering fields
 altor_project.patches.v2026_11.apply_settings_defaults
+altor_project.patches.v2026_11.update_division_fields
