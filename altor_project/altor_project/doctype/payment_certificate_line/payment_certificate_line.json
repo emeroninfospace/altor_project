@@ -1,0 +1,95 @@
+{
+ "actions": [],
+ "creation": "2026-11-09 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "ref",
+  "description",
+  "rate",
+  "cumulative",
+  "previous",
+  "this_period",
+  "notes",
+  "currency"
+ ],
+ "fields": [
+  {
+   "fieldname": "ref",
+   "fieldtype": "Data",
+   "label": "Ref.",
+   "in_list_view": 1,
+   "read_only": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Description",
+   "in_list_view": 1,
+   "read_only": 1,
+   "columns": 3
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Percent",
+   "label": "Rate / %",
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "Optional. For retention and advance recovery the cumulative amount is calculated from this rate."
+  },
+  {
+   "fieldname": "cumulative",
+   "fieldtype": "Currency",
+   "label": "Cumulative",
+   "options": "currency",
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "previous",
+   "fieldtype": "Currency",
+   "label": "Previous",
+   "options": "currency",
+   "in_list_view": 1,
+   "read_only": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "this_period",
+   "fieldtype": "Currency",
+   "label": "This Period",
+   "options": "currency",
+   "in_list_view": 1,
+   "read_only": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "hidden": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-11-09 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Altor Project",
+ "name": "Payment Certificate Line",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1
+}

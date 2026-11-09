@@ -27,7 +27,7 @@ def _add(data, label, items, fieldnames=None, internal=None):
 def project(data):
 	_add(data, _("Budget & Manpower"), ["Project Budget", "Manpower Entry", "Expense Entry"])
 	_add(data, _("Planning"), ["Project Schedule"])
-	_add(data, _("Subcontract"), ["Subcontract Work Order", "Subcontract Invoice"])
+	_add(data, _("Subcontract"), ["Subcontract Work Order", "Payment Certificate", "Subcontract Invoice"])
 	_add(data, _("Selling"), ["Quotation"], internal={"Quotation": "quotation"})
 	# Material Requests made from a project carry it in the header field custom_project
 	data["non_standard_fieldnames"].setdefault("Material Request", "custom_project")
@@ -54,7 +54,9 @@ def lead(data):
 def supplier(data):
 	# Manpower Entry: agency on the worker rows
 	return _add(
-		data, _("Subcontract & Manpower"), ["Subcontract Work Order", "Subcontract Invoice", "Manpower Entry"]
+		data,
+		_("Subcontract & Manpower"),
+		["Subcontract Work Order", "Payment Certificate", "Subcontract Invoice", "Manpower Entry"],
 	)
 
 

@@ -103,6 +103,27 @@ Lead, Quotation, Sales Order and Project are numbered by division, and one enqui
 - Formats, digits and on/off: **Altor Settings > Division Numbering**. Documents without a division keep the
   standard naming series.
 
+### Payment Certificate
+
+Subcontractor's Payment Certificate, following the ALTOR template. Create it from a submitted **Subcontract Work
+Order** (Create > Payment Certificate) or directly (Projects > Payment Certificate).
+
+- Header: subcontractor, agreement (Subcontract Work Order), project, scope, budget code, client PO, application
+  dates, securities / insurances / licences with validity, and the contract summary (revised contract amount =
+  subcontract amount + variations + adjustments).
+- Certification lines A to L are entered as **cumulative** amounts. **Previous** is taken from the last submitted
+  certificate for the same agreement (or the same subcontractor and project without an agreement), and
+  **This Period** = Cumulative - Previous.
+- Calculated: E Gross = A+B+C+D, H Remaining Advance = F-G, O Deductions = G+I+J-K-L, P Net excl. VAT = E+F-O,
+  Q = P, R VAT = Q x VAT rate (default 5%), S Net incl. VAT = P+R. A Rate % on G, I or J works the line out from
+  Works Executed + Variations (advance recovery is capped at the advance paid).
+- Back charges are listed with amount, VAT and total.
+- Approval: Draft > Initiated > Reviewed > Checked > Authorized > Approved (or Rejected, with a reason). Each step
+  records the user; Authorized and Approved need Projects Manager / Accounts Manager. Only an Approved certificate
+  can be submitted. Amending a certificate increases its **Version**.
+- Warnings: expired or soon to expire (30 days) securities, gross above the revised contract, recovery above the
+  advance, lower cumulative than last time, duplicate application number.
+
 ### Print Formats
 
 All Altor print formats share one design (`altor_project/templates/print/altor_print.html`) and read the company
@@ -121,6 +142,7 @@ details from the site, not from code:
 | Altor Purchase Order | Purchase Order |
 | Altor Manpower Sheet | Manpower Entry (daily manpower sheet) |
 | Altor Project Budget | Project Budget (item group wise) |
+| Altor Payment Certificate | Payment Certificate (subcontractor's payment certificate) |
 
 Helpers used by the templates are in `altor_project/print_utils.py` (registered as Jinja methods in `hooks.py`).
 

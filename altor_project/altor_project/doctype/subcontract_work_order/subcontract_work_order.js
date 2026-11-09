@@ -18,6 +18,12 @@ frappe.ui.form.on("Subcontract Work Order", {
                 });
             }, "Create");
 
+            frm.add_custom_button(__("Payment Certificate"), () => {
+                frappe.model.open_mapped_doc({
+                    method: "altor_project.altor_project.doctype.payment_certificate.payment_certificate.make_payment_certificate",
+                    frm: frm,
+                });
+            }, "Create");
         }
     },
     status(frm) {

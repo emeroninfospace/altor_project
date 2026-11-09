@@ -154,7 +154,7 @@ function render_budget_dashboard(frm) {
                 <span class="pb-row-name">${frappe.utils.escape_html(r.category)}</span>
                 <span class="pb-row-figures">
                     ${money(r.utilized_amount)} / ${money(r.budgeted_amount)}
-                    <span class="indicator-pill ${STATUS_COLORS[r.budget_status] || "gray"}">${round(pct, 1)}%</span>
+                    <span class="indicator-pill ${STATUS_COLORS[r.budget_status] || "gray"}">${flt(pct, 1)}%</span>
                 </span>
             </div>
             <div class="pb-track" title="${__("Committed")}: ${money(r.committed_amount)} | ${__("Actual")}: ${money(r.actual_amount)} | ${__("Manpower")}: ${money(r.manpower_amount)}">
@@ -176,7 +176,7 @@ function render_budget_dashboard(frm) {
     }
     if (near.length) {
         alerts += `<div class="pb-alert pb-alert-orange">${__("Above {0}% used", [limit])}: ${near
-            .map((r) => `<b>${frappe.utils.escape_html(r.category)}</b> (${round(flt(r.utilization_percentage), 1)}%)`).join(", ")}</div>`;
+            .map((r) => `<b>${frappe.utils.escape_html(r.category)}</b> (${flt(flt(r.utilization_percentage), 1)}%)`).join(", ")}</div>`;
     }
     if (flt(frm.doc.total_manpower_cost)) {
         alerts += `<div class="pb-alert" style="background:var(--subtle-fg,#f4f5f6)">${__("Manpower")}: ${__("Own Staff")} ${money(frm.doc.own_staff_manpower_cost)}
@@ -214,7 +214,7 @@ function render_budget_dashboard(frm) {
                 ${card(__("Manpower"), money(frm.doc.total_manpower_cost))}
                 ${card(__("Utilized"), money(utilized))}
                 ${card(__("Balance"), money(frm.doc.variance), flt(frm.doc.variance) < 0 ? "var(--red-500,#e03636)" : "")}
-                ${card(__("Utilization"), round(util_pct, 1) + "%",
+                ${card(__("Utilization"), flt(util_pct, 1) + "%",
                     util_pct > 100 ? "var(--red-500,#e03636)" : util_pct >= limit ? "var(--orange-500,#f08c00)" : "var(--green-500,#2f9e44)")}
             </div>
             ${alerts}
