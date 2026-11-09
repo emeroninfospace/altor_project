@@ -1,0 +1,812 @@
+{
+ "actions": [],
+ "creation": "2026-11-09 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "supplier",
+  "supplier_name",
+  "subcontract_work_order",
+  "subcontract_type",
+  "project",
+  "project_name",
+  "scope_of_work",
+  "project_budget",
+  "client_po",
+  "column_break_header",
+  "certificate_date",
+  "application_no",
+  "application_date",
+  "application_recorded",
+  "payment_due_date",
+  "company",
+  "cost_center",
+  "currency",
+  "version",
+  "approval_status",
+  "previous_certificate",
+  "securities_section",
+  "apg_no",
+  "apg_validity",
+  "pg_no",
+  "pg_validity",
+  "tpl_no",
+  "tpl_validity",
+  "vehicle_insurance_no",
+  "vehicle_insurance_validity",
+  "trade_license_no",
+  "trade_license_validity",
+  "column_break_securities",
+  "wc_insurance_no",
+  "wc_insurance_validity",
+  "cpm_insurance_no",
+  "cpm_insurance_validity",
+  "pi_no",
+  "pi_validity",
+  "cargo_insurance_no",
+  "cargo_insurance_validity",
+  "vat_trn",
+  "contract_section",
+  "subcontract_amount",
+  "approved_variations",
+  "other_adjustments",
+  "revised_contract_amount",
+  "settlement_figure",
+  "column_break_contract",
+  "period_month",
+  "duration",
+  "commencement_date",
+  "cumulative_work_percent",
+  "certification_section",
+  "lines",
+  "vat_rate",
+  "totals_section",
+  "gross_cumulative",
+  "gross_previous",
+  "gross_this_period",
+  "column_break_t1",
+  "total_deductions_cumulative",
+  "total_deductions_previous",
+  "total_deductions_this_period",
+  "remaining_advance_cumulative",
+  "remaining_advance_previous",
+  "remaining_advance_this_period",
+  "column_break_t2",
+  "net_excl_vat_cumulative",
+  "net_excl_vat_previous",
+  "net_excl_vat_this_period",
+  "vat_amount_cumulative",
+  "vat_amount_previous",
+  "vat_amount_this_period",
+  "net_incl_vat_cumulative",
+  "net_incl_vat_previous",
+  "net_incl_vat_this_period",
+  "in_words",
+  "back_charges_section",
+  "back_charges",
+  "total_back_charges",
+  "notes_section",
+  "payment_terms",
+  "remarks",
+  "approval_section",
+  "initiated_by",
+  "reviewed_by",
+  "checked_by",
+  "column_break_approval",
+  "authorized_by",
+  "approved_by",
+  "approved_on",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "PC-.YYYY.-.####",
+   "default": "PC-.YYYY.-.####",
+   "reqd": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Subcontractor / Payee",
+   "options": "Supplier",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "supplier_name",
+   "fieldtype": "Data",
+   "label": "Subcontractor Name",
+   "fetch_from": "supplier.supplier_name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "subcontract_work_order",
+   "fieldtype": "Link",
+   "label": "Agreement Reference",
+   "options": "Subcontract Work Order",
+   "in_standard_filter": 1,
+   "description": "Subcontract Work Order this certificate is issued against"
+  },
+  {
+   "fieldname": "subcontract_type",
+   "fieldtype": "Select",
+   "label": "Subcontract Type",
+   "options": "\nLabour Supply\nSupply and Installation\nEquipment / Material Hire\nServices\nOther"
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "Site / Project",
+   "options": "Project",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "project_name",
+   "fieldtype": "Data",
+   "label": "Project Name",
+   "fetch_from": "project.project_name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "scope_of_work",
+   "fieldtype": "Small Text",
+   "label": "Scope of Work",
+   "fetch_from": "project.scope_of_work",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "project_budget",
+   "fieldtype": "Link",
+   "label": "Project / Budget Code",
+   "options": "Project Budget"
+  },
+  {
+   "fieldname": "client_po",
+   "fieldtype": "Data",
+   "label": "Client PO",
+   "fetch_from": "project.lpo_ref",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "column_break_header",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "certificate_date",
+   "fieldtype": "Date",
+   "label": "Certificate Date",
+   "default": "Today",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "application_no",
+   "fieldtype": "Data",
+   "label": "Application No.",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "application_date",
+   "fieldtype": "Date",
+   "label": "Application Date"
+  },
+  {
+   "fieldname": "application_recorded",
+   "fieldtype": "Date",
+   "label": "Application Recorded",
+   "description": "Date the subcontractor's application was received"
+  },
+  {
+   "fieldname": "payment_due_date",
+   "fieldtype": "Date",
+   "label": "Payment Due Date"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "fetch_from": "project.company",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "Cost Center",
+   "fetch_from": "project.cost_center",
+   "fetch_if_empty": 1,
+   "in_standard_filter": 1,
+   "link_filters": "[[\"Cost Center\",\"is_group\",\"=\",0]]"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "fieldname": "version",
+   "fieldtype": "Int",
+   "label": "Version",
+   "read_only": 1,
+   "default": "1",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "approval_status",
+   "fieldtype": "Select",
+   "label": "Approval Status",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "default": "Draft",
+   "options": "Draft\nInitiated\nReviewed\nChecked\nAuthorized\nApproved\nRejected",
+   "allow_on_submit": 0,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "previous_certificate",
+   "fieldtype": "Link",
+   "label": "Previous Certificate",
+   "options": "Payment Certificate",
+   "read_only": 1,
+   "no_copy": 1,
+   "description": "Last submitted certificate the Previous figures are taken from"
+  },
+  {
+   "fieldname": "securities_section",
+   "fieldtype": "Section Break",
+   "label": "Securities, Insurances and Licences",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "apg_no",
+   "fieldtype": "Data",
+   "label": "APG No."
+  },
+  {
+   "fieldname": "apg_validity",
+   "fieldtype": "Date",
+   "label": "APG Validity"
+  },
+  {
+   "fieldname": "pg_no",
+   "fieldtype": "Data",
+   "label": "PG No."
+  },
+  {
+   "fieldname": "pg_validity",
+   "fieldtype": "Date",
+   "label": "PG Validity"
+  },
+  {
+   "fieldname": "tpl_no",
+   "fieldtype": "Data",
+   "label": "TPL No."
+  },
+  {
+   "fieldname": "tpl_validity",
+   "fieldtype": "Date",
+   "label": "TPL Validity"
+  },
+  {
+   "fieldname": "vehicle_insurance_no",
+   "fieldtype": "Data",
+   "label": "Vehicle Insurance No."
+  },
+  {
+   "fieldname": "vehicle_insurance_validity",
+   "fieldtype": "Date",
+   "label": "Vehicle Insurance Validity"
+  },
+  {
+   "fieldname": "trade_license_no",
+   "fieldtype": "Data",
+   "label": "Trade License No."
+  },
+  {
+   "fieldname": "trade_license_validity",
+   "fieldtype": "Date",
+   "label": "Trade License Validity"
+  },
+  {
+   "fieldname": "column_break_securities",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "wc_insurance_no",
+   "fieldtype": "Data",
+   "label": "WC Insurance No."
+  },
+  {
+   "fieldname": "wc_insurance_validity",
+   "fieldtype": "Date",
+   "label": "WC Insurance Validity"
+  },
+  {
+   "fieldname": "cpm_insurance_no",
+   "fieldtype": "Data",
+   "label": "CPM Insurance No."
+  },
+  {
+   "fieldname": "cpm_insurance_validity",
+   "fieldtype": "Date",
+   "label": "CPM Insurance Validity"
+  },
+  {
+   "fieldname": "pi_no",
+   "fieldtype": "Data",
+   "label": "PI No."
+  },
+  {
+   "fieldname": "pi_validity",
+   "fieldtype": "Date",
+   "label": "PI Validity"
+  },
+  {
+   "fieldname": "cargo_insurance_no",
+   "fieldtype": "Data",
+   "label": "Cargo Insurance No."
+  },
+  {
+   "fieldname": "cargo_insurance_validity",
+   "fieldtype": "Date",
+   "label": "Cargo Insurance Validity"
+  },
+  {
+   "fieldname": "vat_trn",
+   "fieldtype": "Data",
+   "label": "VAT Certificate / TRN",
+   "fetch_from": "supplier.tax_id",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "contract_section",
+   "fieldtype": "Section Break",
+   "label": "Contract Summary"
+  },
+  {
+   "fieldname": "subcontract_amount",
+   "fieldtype": "Currency",
+   "label": "Subcontract Amount",
+   "options": "currency",
+   "fetch_from": "subcontract_work_order.total_currency",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "approved_variations",
+   "fieldtype": "Currency",
+   "label": "Approved Amendments / Variations",
+   "options": "currency"
+  },
+  {
+   "fieldname": "other_adjustments",
+   "fieldtype": "Currency",
+   "label": "Other Adjustments",
+   "options": "currency"
+  },
+  {
+   "fieldname": "revised_contract_amount",
+   "fieldtype": "Currency",
+   "label": "Revised Contract Amount",
+   "options": "currency",
+   "read_only": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "settlement_figure",
+   "fieldtype": "Currency",
+   "label": "Settlement / Waiver Figure",
+   "options": "currency"
+  },
+  {
+   "fieldname": "column_break_contract",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "period_month",
+   "fieldtype": "Data",
+   "label": "Month",
+   "description": "Billing month, e.g. Nov 2026 (filled from the certificate date if empty)"
+  },
+  {
+   "fieldname": "duration",
+   "fieldtype": "Data",
+   "label": "Duration"
+  },
+  {
+   "fieldname": "commencement_date",
+   "fieldtype": "Date",
+   "label": "Commencement Date",
+   "fetch_from": "subcontract_work_order.start_date",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "cumulative_work_percent",
+   "fieldtype": "Percent",
+   "label": "Cumulative Work %"
+  },
+  {
+   "fieldname": "certification_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Certification",
+   "description": "Enter cumulative amounts to date. Previous comes from the last approved certificate for the same agreement (or subcontractor and project); This Period = Cumulative - Previous."
+  },
+  {
+   "fieldname": "lines",
+   "fieldtype": "Table",
+   "label": "Certification Lines",
+   "options": "Payment Certificate Line",
+   "cannot_add_rows": 1,
+   "cannot_delete_rows": 1
+  },
+  {
+   "fieldname": "vat_rate",
+   "fieldtype": "Percent",
+   "label": "VAT Rate",
+   "default": "5"
+  },
+  {
+   "fieldname": "totals_section",
+   "fieldtype": "Section Break",
+   "label": "Totals"
+  },
+  {
+   "fieldname": "gross_cumulative",
+   "fieldtype": "Currency",
+   "label": "Gross Amount (E) - Cumulative",
+   "options": "currency",
+   "read_only": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "gross_previous",
+   "fieldtype": "Currency",
+   "label": "Gross Amount (E) - Previous",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "gross_this_period",
+   "fieldtype": "Currency",
+   "label": "Gross Amount (E) - This Period",
+   "options": "currency",
+   "read_only": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "column_break_t1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_deductions_cumulative",
+   "fieldtype": "Currency",
+   "label": "Total Deductions (O) - Cumulative",
+   "options": "currency",
+   "read_only": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "total_deductions_previous",
+   "fieldtype": "Currency",
+   "label": "Total Deductions (O) - Previous",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_deductions_this_period",
+   "fieldtype": "Currency",
+   "label": "Total Deductions (O) - This Period",
+   "options": "currency",
+   "read_only": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "remaining_advance_cumulative",
+   "fieldtype": "Currency",
+   "label": "Remaining Advance (H) - Cumulative",
+   "options": "currency",
+   "read_only": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "remaining_advance_previous",
+   "fieldtype": "Currency",
+   "label": "Remaining Advance (H) - Previous",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "remaining_advance_this_period",
+   "fieldtype": "Currency",
+   "label": "Remaining Advance (H) - This Period",
+   "options": "currency",
+   "read_only": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "column_break_t2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "net_excl_vat_cumulative",
+   "fieldtype": "Currency",
+   "label": "Net Amount excl. VAT (P) - Cumulative",
+   "options": "currency",
+   "read_only": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "net_excl_vat_previous",
+   "fieldtype": "Currency",
+   "label": "Net Amount excl. VAT (P) - Previous",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "net_excl_vat_this_period",
+   "fieldtype": "Currency",
+   "label": "Net Amount excl. VAT (P) - This Period",
+   "options": "currency",
+   "read_only": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "vat_amount_cumulative",
+   "fieldtype": "Currency",
+   "label": "VAT (R) - Cumulative",
+   "options": "currency",
+   "read_only": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "vat_amount_previous",
+   "fieldtype": "Currency",
+   "label": "VAT (R) - Previous",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "vat_amount_this_period",
+   "fieldtype": "Currency",
+   "label": "VAT (R) - This Period",
+   "options": "currency",
+   "read_only": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "net_incl_vat_cumulative",
+   "fieldtype": "Currency",
+   "label": "Net Amount incl. VAT (S) - Cumulative",
+   "options": "currency",
+   "read_only": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "net_incl_vat_previous",
+   "fieldtype": "Currency",
+   "label": "Net Amount incl. VAT (S) - Previous",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "net_incl_vat_this_period",
+   "fieldtype": "Currency",
+   "label": "Net Amount incl. VAT (S) - This Period",
+   "options": "currency",
+   "read_only": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "in_words",
+   "fieldtype": "Small Text",
+   "label": "Amount in Words (This Period)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "back_charges_section",
+   "fieldtype": "Section Break",
+   "label": "Back Charges / Other Recoveries",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "back_charges",
+   "fieldtype": "Table",
+   "label": "Back Charges",
+   "options": "Payment Certificate Back Charge"
+  },
+  {
+   "fieldname": "total_back_charges",
+   "fieldtype": "Currency",
+   "label": "Total Back Charges",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Terms and Remarks",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "payment_terms",
+   "fieldtype": "Small Text",
+   "label": "Payment Terms / Notes"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "approval_section",
+   "fieldtype": "Section Break",
+   "label": "Approvals"
+  },
+  {
+   "fieldname": "initiated_by",
+   "fieldtype": "Link",
+   "label": "Initiated By",
+   "options": "User",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "reviewed_by",
+   "fieldtype": "Link",
+   "label": "Reviewed By",
+   "options": "User",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "checked_by",
+   "fieldtype": "Link",
+   "label": "Checked By",
+   "options": "User",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_approval",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "authorized_by",
+   "fieldtype": "Link",
+   "label": "Authorized By",
+   "options": "User",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "approved_on",
+   "fieldtype": "Date",
+   "label": "Approved On",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Payment Certificate",
+   "no_copy": 1,
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-11-09 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Altor Project",
+ "name": "Payment Certificate",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "read": 1,
+   "write": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1,
+   "role": "System Manager"
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "write": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1,
+   "role": "Projects Manager"
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "write": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1,
+   "role": "Accounts Manager"
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "write": 1,
+   "submit": 0,
+   "cancel": 0,
+   "amend": 0,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1,
+   "role": "Projects User"
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "write": 1,
+   "submit": 0,
+   "cancel": 0,
+   "amend": 0,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1,
+   "role": "Accounts User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "certificate_date",
+ "sort_order": "DESC",
+ "states": [],
+ "is_submittable": 1,
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field",
+ "title_field": "supplier_name",
+ "show_title_field_in_link": 0,
+ "search_fields": "supplier_name,project,application_no",
+ "default_print_format": "Altor Payment Certificate"
+}

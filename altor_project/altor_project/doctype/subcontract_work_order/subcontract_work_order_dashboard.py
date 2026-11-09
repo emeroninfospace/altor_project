@@ -6,7 +6,7 @@ def get_data():
 		"fieldname": "subcontract_work_order",
 		"internal_links": {"Project": "project"},
 		"transactions": [
-			{"label": _("Invoices"), "items": ["Subcontract Invoice"]},
+			{"label": _("Billing"), "items": ["Payment Certificate", "Subcontract Invoice"]},
 			{"label": _("Reference"), "items": ["Project"]},
 		],
 	}
