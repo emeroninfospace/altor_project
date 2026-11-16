@@ -165,9 +165,10 @@ CREATE_FIELDS = {
 		},
 		{
 			"fieldname": "custom_hourly_cost_rate",
-			"label": "Hourly Cost Rate",
+			"label": "Hourly Charge (Agency Rate)",
 			"fieldtype": "Currency",
-			"description": "Outsourced: the agency's rate per hour (Timesheet cost = rate x (normal + OT 1 x 1.25 + OT 2 x 1.5)). Own staff: used only when no Basic Salary is entered",
+			"depends_on": "eval:doc.custom_is_outsourced",
+			"description": "What the agency charges per hour. Timesheet cost = rate x (normal hours + OT 1 x 1.25 + OT 2 x 1.5), booked on the project's Outsource Manpower Cost budget line",
 			"insert_after": "custom_manpower_column_break",
 		},
 		# Own staff monthly salary: Timesheet cost (normal hour = gross / days in month / 8, OT hour = basic / days / 8)
@@ -181,7 +182,7 @@ CREATE_FIELDS = {
 			"label": "Basic Salary (Monthly)",
 			"fieldtype": "Currency",
 			"depends_on": "eval:!doc.custom_is_outsourced",
-			"description": "Own staff: Timesheet cost per normal hour = (Basic + Allowance + HRA + Transportation) / days in the month / working hours per day; overtime is worked out from Basic",
+			"description": "Timesheet cost per normal hour = (Basic + Allowance + HRA + Transportation) / days in the month / working hours per day; overtime is worked out from Basic. Booked on the project's Manpower Cost budget line",
 			"insert_after": "custom_salary_column_break",
 		},
 		{

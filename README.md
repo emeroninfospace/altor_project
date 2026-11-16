@@ -58,8 +58,9 @@ Employee > **Manpower Costing**:
 - **Own staff**: Basic Salary, Allowance, HRA, Transportation.
   normal hour = (Basic + Allowance + HRA + Transportation) / days in the month / 8;
   OT hour = Basic / days in the month / 8; cost = normal hours x normal hour + (OT 1 x 1.25 + OT 2 x 1.5) x OT hour.
-  Without a Basic Salary the Hourly Cost Rate is used.
-- **Outsourced**: tick Outsourced Manpower, select the Manpower Supplier / Agency and enter the **Hourly Cost Rate**.
+  Booked on the project budget's Manpower Cost line.
+- **Outsourced** (no salary fields): tick Outsourced Manpower, select the Manpower Supplier / Agency and enter the
+  **Hourly Charge (Agency Rate)**. Booked on the project budget's Outsource Manpower Cost line.
   cost = hourly rate x (normal hours + OT 1 x 1.25 + OT 2 x 1.5).
 
 Submitted Timesheets with a Project count in the **Project Budget** as manpower cost, on the Item Group set in

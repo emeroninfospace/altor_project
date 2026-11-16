@@ -18,8 +18,7 @@ Cost of the hours (the client's calculation sheet):
     normal hour = (Basic + Allowance + HRA + Transportation) / days in the month / hours per day
     OT hour     = Basic / days in the month / hours per day
     cost        = normal hours x normal hour + (OT 1 x 1.25 + OT 2 x 1.5) x OT hour
-  Without a Basic Salary the Hourly Cost Rate on the Employee is used like for outsourced staff.
-* Outsourced (Hourly Cost Rate on the Employee):
+* Outsourced (Hourly Charge on the Employee, no salary fields):
     cost = hourly rate x (normal hours + OT 1 x 1.25 + OT 2 x 1.5)
 """
 
@@ -65,18 +64,24 @@ def get_employee(name):
 
 
 def hour_rates(employee, on_date, s=None):
-	"""(normal, OT 1, OT 2) cost per hour of an employee on a date."""
+	"""(normal, OT 1, OT 2) cost per hour of an employee on a date.
+
+	Own staff: from the monthly salary fields. Outsourced: the agency's hourly charge.
+	"""
 	s = s or get_settings()
 	if not employee:
 		return 0.0, 0.0, 0.0
-	if not cint(employee.get("custom_is_outsourced")) and flt(employee.get("custom_basic_salary")):
-		day = getdate(on_date)
-		days = calendar.monthrange(day.year, day.month)[1]
-		normal = sum(flt(employee.get(f)) for f in SALARY_FIELDS) / days / s.hours
-		ot_base = flt(employee.custom_basic_salary) / days / s.hours
-		return normal, ot_base * s.ot_multiplier, ot_base * s.ot2_multiplier
-	hourly = flt(employee.get("custom_hourly_cost_rate"))
-	return hourly, hourly * s.ot_multiplier, hourly * s.ot2_multiplier
+	if cint(employee.get("custom_is_outsourced")):
+		hourly = flt(employee.get("custom_hourly_cost_rate"))
+		return hourly, hourly * s.ot_multiplier, hourly * s.ot2_multiplier
+	basic = flt(employee.get("custom_basic_salary"))
+	if not basic:
+		return 0.0, 0.0, 0.0
+	day = getdate(on_date)
+	days = calendar.monthrange(day.year, day.month)[1]
+	normal = sum(flt(employee.get(f)) for f in SALARY_FIELDS) / days / s.hours
+	ot_base = basic / days / s.hours
+	return normal, ot_base * s.ot_multiplier, ot_base * s.ot2_multiplier
 
 
 def holiday_dates(employee, start, end):
@@ -178,7 +183,7 @@ def calculate_timesheet(doc, method=None):
 	if missing_rate:
 		frappe.msgprint(
 			_(
-				"No cost rate for {0}. Fill Basic Salary (own staff) or Hourly Cost Rate (outsourced) on the Employee under Manpower Costing."
+				"No cost rate for {0}. Fill the salary (own staff) or the Hourly Charge (outsourced) on the Employee under Manpower Costing."
 			).format(get_link_to_form("Employee", doc.employee)),
 			title=_("Labour Cost Missing"),
 			indicator="orange",
