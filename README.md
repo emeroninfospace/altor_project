@@ -73,13 +73,25 @@ weighted OT hours, OT rate, OT amount and total labour cost, as in the monthly o
 
 ### Demo data
 
+Built from the client's ERP_Comments sheet:
+
 ```bash
+bench --site <site> execute altor_project.demo.reset_demo_data   # delete + create
 bench --site <site> execute altor_project.demo.make_demo_data
 bench --site <site> execute altor_project.demo.delete_demo_data
 ```
 
-Creates (and removes) projects, tasks, item group budgets, purchase orders and invoices, own and outsourced
-employees with salary / hourly rates, timesheets, attendance and leave requests. Every record starts with `DEMO`.
+(also whitelisted for System Managers; pass `background=1` and read the result with `altor_project.demo.demo_status`).
+
+- **Client masters** (kept by delete_demo_data): the customers of the Customer Master sheet (TRN, contacts, address,
+  payment terms, credit limit), the scaffolding division's standard quotation lines, the asset list (Project Asset
+  items under the "Material Cost" budget line), the budget cost lines, the cross hire items and the workers of the
+  overtime sheet (Aswin: own staff salary, Manu: outsourced hourly rate).
+- **Demo transactions** (DEMO prefix, removed by delete_demo_data): a Lead -> Quotation -> Sales Order -> Project chain
+  per division (Scaffolding, Cradle, Equipment Rental), project budgets (the Budget sheet figures on the scaffolding
+  project), the three Rental (cross hire) POs of the sheets, opening Project Assets with sample quantities and costs,
+  asset issues and a return with damaged items, Aswin's and Manu's November Timesheets exactly as in the overtime
+  sheet, transport / inspection / consumables bills, the agency bill and a sales invoice.
 
 ### Division (Cost Center)
 
