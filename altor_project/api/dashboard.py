@@ -9,6 +9,8 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, flt, get_first_day, get_last_day, getdate, nowdate
 
+from altor_project.labour import labour_sql
+
 
 def _parse(filters):
 	if isinstance(filters, str):
@@ -157,16 +159,15 @@ def get_project_overview(filters=None):
 	if names:
 		month_start = get_first_day(today)
 		for m in frappe.db.sql(
-			"""
-			SELECT me.project,
-				SUM(CASE WHEN d.worker_type = 'Outsourced' THEN 0 ELSE d.amount END) AS own,
-				SUM(CASE WHEN d.worker_type = 'Outsourced' THEN d.amount ELSE 0 END) AS outsourced,
-				SUM(CASE WHEN me.posting_date >= %(month_start)s THEN d.amount ELSE 0 END) AS this_month,
-				SUM(CASE WHEN me.posting_date = %(today)s THEN d.no_of_workers ELSE 0 END) AS workers_today
-			FROM `tabManpower Entry Detail` d
-			INNER JOIN `tabManpower Entry` me ON me.name = d.parent
-			WHERE me.docstatus = 1 AND me.project IN %(projects)s
-			GROUP BY me.project
+			f"""
+			SELECT l.project,
+				SUM(CASE WHEN l.worker_type = 'Outsourced' THEN 0 ELSE l.amount END) AS own,
+				SUM(CASE WHEN l.worker_type = 'Outsourced' THEN l.amount ELSE 0 END) AS outsourced,
+				SUM(CASE WHEN l.posting_date >= %(month_start)s THEN l.amount ELSE 0 END) AS this_month,
+				SUM(CASE WHEN l.posting_date = %(today)s THEN l.no_of_workers ELSE 0 END) AS workers_today
+			FROM ({labour_sql()}) l
+			WHERE l.project IN %(projects)s
+			GROUP BY l.project
 			""",
 			{"projects": tuple(names), "today": today, "month_start": month_start},
 			as_dict=True,
@@ -424,21 +425,21 @@ def get_hr_overview(filters=None):
 		manpower_outsourced_month=0,
 	)
 
-	# Manpower deployed on projects (Manpower Entries)
+	# Manpower deployed on projects (Timesheets + Manpower Entries)
 	manpower_by_project, manpower_by_agency = [], []
 	if _doctype_exists("Manpower Entry"):
+		labour = labour_sql()
 		mp_cond, mp_values = "", {"month_start": month_start, "month_end": month_end, "today": today}
 		if filters.company:
-			mp_cond = " AND me.company = %(company)s"
+			mp_cond = " AND l.company = %(company)s"
 			mp_values["company"] = filters.company
 		totals = frappe.db.sql(
 			f"""
-			SELECT SUM(CASE WHEN me.posting_date = %(today)s THEN d.no_of_workers ELSE 0 END) AS workers_today,
-				SUM(CASE WHEN d.worker_type = 'Outsourced' THEN 0 ELSE d.amount END) AS own,
-				SUM(CASE WHEN d.worker_type = 'Outsourced' THEN d.amount ELSE 0 END) AS outsourced
-			FROM `tabManpower Entry Detail` d
-			INNER JOIN `tabManpower Entry` me ON me.name = d.parent
-			WHERE me.docstatus = 1 AND me.posting_date BETWEEN %(month_start)s AND %(month_end)s {mp_cond}
+			SELECT SUM(CASE WHEN l.posting_date = %(today)s THEN l.no_of_workers ELSE 0 END) AS workers_today,
+				SUM(CASE WHEN l.worker_type = 'Outsourced' THEN 0 ELSE l.amount END) AS own,
+				SUM(CASE WHEN l.worker_type = 'Outsourced' THEN l.amount ELSE 0 END) AS outsourced
+			FROM ({labour}) l
+			WHERE l.posting_date BETWEEN %(month_start)s AND %(month_end)s {mp_cond}
 			""",
 			mp_values,
 			as_dict=True,
@@ -451,11 +452,10 @@ def get_hr_overview(filters=None):
 			{"label": r.project, "value": flt(r.amount)}
 			for r in frappe.db.sql(
 				f"""
-				SELECT me.project, SUM(d.amount) AS amount
-				FROM `tabManpower Entry Detail` d
-				INNER JOIN `tabManpower Entry` me ON me.name = d.parent
-				WHERE me.docstatus = 1 AND me.posting_date BETWEEN %(month_start)s AND %(month_end)s {mp_cond}
-				GROUP BY me.project ORDER BY amount DESC LIMIT 10
+				SELECT l.project, SUM(l.amount) AS amount
+				FROM ({labour}) l
+				WHERE l.posting_date BETWEEN %(month_start)s AND %(month_end)s {mp_cond}
+				GROUP BY l.project ORDER BY amount DESC LIMIT 10
 				""",
 				mp_values,
 				as_dict=True,
@@ -465,12 +465,11 @@ def get_hr_overview(filters=None):
 			{"label": r.supplier, "value": flt(r.amount), "workers": int(r.workers or 0)}
 			for r in frappe.db.sql(
 				f"""
-				SELECT d.supplier, SUM(d.amount) AS amount, SUM(d.no_of_workers) AS workers
-				FROM `tabManpower Entry Detail` d
-				INNER JOIN `tabManpower Entry` me ON me.name = d.parent
-				WHERE me.docstatus = 1 AND d.worker_type = 'Outsourced'
-					AND me.posting_date BETWEEN %(month_start)s AND %(month_end)s {mp_cond}
-				GROUP BY d.supplier ORDER BY amount DESC LIMIT 10
+				SELECT l.supplier, SUM(l.amount) AS amount, SUM(l.no_of_workers) AS workers
+				FROM ({labour}) l
+				WHERE l.worker_type = 'Outsourced'
+					AND l.posting_date BETWEEN %(month_start)s AND %(month_end)s {mp_cond}
+				GROUP BY l.supplier ORDER BY amount DESC LIMIT 10
 				""",
 				mp_values,
 				as_dict=True,

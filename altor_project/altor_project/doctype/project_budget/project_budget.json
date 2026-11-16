@@ -277,7 +277,7 @@
   {
    "fieldname": "manpower_section",
    "fieldtype": "Section Break",
-   "label": "Manpower Cost",
+   "label": "Manpower (Timesheets and Manpower Entries)",
    "collapsible": 0
   },
   {

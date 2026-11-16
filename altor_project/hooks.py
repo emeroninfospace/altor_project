@@ -49,6 +49,7 @@ doctype_js = {
 	"Material Request": "public/js/material_request.js",
 	"Task": "public/js/task.js",
 	"Lead": "public/js/lead.js",
+	"Timesheet": "public/js/timesheet.js",
 }
 
 override_doctype_class = {"Quotation": "altor_project.events.quotation.CustomQuotation"}
@@ -198,6 +199,12 @@ doc_events = {
 	"Subcontract Invoice": {
 		"on_submit": "altor_project.budget.on_transaction_change",
 		"on_cancel": "altor_project.budget.on_transaction_change",
+	},
+	# Timesheet labour cost: normal / OT 1 / OT 2 hours, own staff and outsourced
+	"Timesheet": {
+		"validate": "altor_project.labour.calculate_timesheet",
+		"on_submit": "altor_project.labour.on_timesheet_change",
+		"on_cancel": "altor_project.labour.on_timesheet_change",
 	},
 	# GRN of "Project Asset" items creates Project Assets
 	"Purchase Receipt": {

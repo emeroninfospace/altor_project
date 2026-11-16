@@ -1,19 +1,22 @@
 # Copyright (c) 2026, Emeron Infospace and contributors
 # For license information, please see license.txt
 
-"""Labour cost from submitted Manpower Entries, grouped for review and for checking agency invoices."""
+"""Labour cost from submitted Timesheets and Manpower Entries, grouped for review and for checking agency invoices."""
 
 import frappe
 from frappe import _
 from frappe.utils import flt
 
+from altor_project.labour import labour_sql
+
 GROUP_BY = {
-	"Project": ("me.project", "Link", "Project"),
-	"Manpower Supplier": ("IFNULL(d.supplier, '')", "Link", "Supplier"),
-	"Employee": ("IFNULL(d.employee, '')", "Link", "Employee"),
-	"Designation": ("IFNULL(d.designation, '')", "Link", "Designation"),
-	"Date": ("me.posting_date", "Date", None),
-	"Item Group": ("COALESCE(NULLIF(d.item_group, ''), me.item_group)", "Link", "Item Group"),
+	"Project": ("l.project", "Link", "Project"),
+	"Manpower Supplier": ("IFNULL(l.supplier, '')", "Link", "Supplier"),
+	"Employee": ("IFNULL(l.employee, '')", "Link", "Employee"),
+	"Designation": ("IFNULL(l.designation, '')", "Link", "Designation"),
+	"Date": ("l.posting_date", "Date", None),
+	"Item Group": ("IFNULL(l.item_group, '')", "Link", "Item Group"),
+	"Source": ("l.source", "Data", None),
 }
 
 
@@ -22,12 +25,13 @@ def execute(filters=None):
 	group_by = filters.group_by if filters.group_by in GROUP_BY else "Project"
 	key_sql, fieldtype, options = GROUP_BY[group_by]
 
-	conditions = ["me.docstatus = 1", "me.posting_date BETWEEN %(from_date)s AND %(to_date)s"]
+	conditions = ["l.posting_date BETWEEN %(from_date)s AND %(to_date)s"]
 	for field, column in (
-		("company", "me.company"),
-		("project", "me.project"),
-		("worker_type", "d.worker_type"),
-		("supplier", "d.supplier"),
+		("company", "l.company"),
+		("project", "l.project"),
+		("worker_type", "l.worker_type"),
+		("supplier", "l.supplier"),
+		("source", "l.source"),
 	):
 		if filters.get(field):
 			conditions.append(f"{column} = %({field})s")
@@ -35,17 +39,17 @@ def execute(filters=None):
 	data = frappe.db.sql(
 		f"""
 		SELECT {key_sql} AS group_key,
-			MAX(d.employee_name) AS employee_name,
-			COUNT(DISTINCT me.name) AS entries,
-			COUNT(DISTINCT me.posting_date) AS days,
-			SUM(d.no_of_workers) AS man_days,
-			SUM(d.no_of_workers * IFNULL(d.working_hours, 0)) AS hours,
-			SUM(d.no_of_workers * IFNULL(d.ot_hours, 0)) AS ot_hours,
-			SUM(CASE WHEN d.worker_type = 'Outsourced' THEN 0 ELSE d.amount END) AS own_cost,
-			SUM(CASE WHEN d.worker_type = 'Outsourced' THEN d.amount ELSE 0 END) AS outsourced_cost,
-			SUM(d.amount) AS total_cost
-		FROM `tabManpower Entry Detail` d
-		INNER JOIN `tabManpower Entry` me ON me.name = d.parent
+			MAX(l.employee_name) AS employee_name,
+			COUNT(DISTINCT l.source, l.voucher) AS entries,
+			COUNT(DISTINCT l.posting_date) AS days,
+			SUM(l.no_of_workers) AS man_days,
+			SUM(l.hours) AS hours,
+			SUM(l.ot_hours) AS ot_hours,
+			SUM(l.ot2_hours) AS ot2_hours,
+			SUM(CASE WHEN l.worker_type = 'Outsourced' THEN 0 ELSE l.amount END) AS own_cost,
+			SUM(CASE WHEN l.worker_type = 'Outsourced' THEN l.amount ELSE 0 END) AS outsourced_cost,
+			SUM(l.amount) AS total_cost
+		FROM ({labour_sql()}) l
 		WHERE {" AND ".join(conditions)}
 		GROUP BY group_key
 		ORDER BY total_cost DESC
@@ -54,9 +58,8 @@ def execute(filters=None):
 		as_dict=True,
 	)
 	for row in data:
-		row.avg_hourly_cost = (
-			flt(row.total_cost) / flt(row.hours + row.ot_hours) if flt(row.hours + row.ot_hours) else 0
-		)
+		all_hours = flt(row.hours) + flt(row.ot_hours) + flt(row.ot2_hours)
+		row.avg_hourly_cost = flt(row.total_cost) / all_hours if all_hours else 0
 		if not row.group_key:
 			row.group_key = _("Not Set")
 
@@ -77,8 +80,9 @@ def execute(filters=None):
 		{"fieldname": "entries", "label": _("Entries"), "fieldtype": "Int", "width": 80},
 		{"fieldname": "days", "label": _("Days"), "fieldtype": "Int", "width": 70},
 		{"fieldname": "man_days", "label": _("Man-Days"), "fieldtype": "Int", "width": 90},
-		{"fieldname": "hours", "label": _("Hours"), "fieldtype": "Float", "width": 90},
-		{"fieldname": "ot_hours", "label": _("OT Hours"), "fieldtype": "Float", "width": 90},
+		{"fieldname": "hours", "label": _("Normal Hours"), "fieldtype": "Float", "width": 100},
+		{"fieldname": "ot_hours", "label": _("OT 1 Hours"), "fieldtype": "Float", "width": 90},
+		{"fieldname": "ot2_hours", "label": _("OT 2 Hours"), "fieldtype": "Float", "width": 90},
 		{"fieldname": "own_cost", "label": _("Own Staff Cost"), "fieldtype": "Currency", "width": 130},
 		{
 			"fieldname": "outsourced_cost",

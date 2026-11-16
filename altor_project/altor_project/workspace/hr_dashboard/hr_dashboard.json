@@ -130,10 +130,20 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Manpower",
-   "link_count": 4,
+   "link_count": 6,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Timesheet",
+   "link_count": 0,
+   "link_to": "Timesheet",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   },
   {
    "hidden": 0,
@@ -177,6 +187,16 @@
   },
   {
    "hidden": 0,
+   "is_query_report": 1,
+   "label": "Employee Overtime",
+   "link_count": 0,
+   "link_to": "Employee Overtime",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
    "is_query_report": 0,
    "label": "Expenses",
    "link_count": 2,
@@ -205,7 +225,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-11-03 14:00:00.000000",
+ "modified": "2026-11-16 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "HR Dashboard",

@@ -63,6 +63,35 @@ then `bench --site <site> migrate`. Data comes from `altor_project/api/dashboard
   The Manpower Entry list has a **Create from Attendance** button to run it for any past date.
 - Report: **Manpower Cost Summary** (by project, agency, employee, designation, date or item group) to check agency bills.
 
+### Timesheet Labour Cost (normal hours, OT 1, OT 2)
+
+Workers' hours are entered on ERPNext **Timesheets** (one per employee, a row per day / project). Each row's hours are
+split into **Normal**, **OT 1** and **OT 2**:
+
+- Normal: up to the normal hours per day (Altor Settings: **Working Hours per Day (Own Staff)** 8,
+  **Normal Hours per Day (Outsourced)** 10); several rows on the same day share it.
+- OT 1: hours above that on a working day (x **OT 1 Multiplier**, 1.25).
+- OT 2: all hours on a holiday / weekly off of the employee's Holiday List (x **OT 2 Multiplier**, 1.5).
+- Untick **Split Overtime Automatically** on the Timesheet to enter OT 1 / OT 2 by hand.
+
+Cost (calculated on save, shown per row and as **Total Labour Cost**, also used as the Timesheet's costing amount):
+
+- **Own staff** (Employee > Manpower Costing: Basic Salary, Allowance, HRA, Transportation):
+  normal hour = (Basic + Allowance + HRA + Transportation) / days in the month / 8;
+  OT hour = Basic / days in the month / 8; cost = normal hours x normal hour + (OT 1 x 1.25 + OT 2 x 1.5) x OT hour.
+  Without a Basic Salary the Hourly Cost Rate (or CTC) is used.
+- **Outsourced** (Employee: Outsourced Manpower + Hourly Cost Rate, or the agency rate in Altor Settings):
+  cost = hourly rate x (normal hours + OT 1 x 1.25 + OT 2 x 1.5).
+
+Submitted Timesheets with a Project count in the **Project Budget** as manpower cost, on the Item Group set in
+Altor Settings (**Manpower Item Group (Own Staff)** / **(Outsourced)**), with **Own Staff Cost** and **Outsourced
+Manpower Cost** shown separately. The Manpower Cost Summary report and the Project Overview dashboard include Timesheets
+(with Manpower Entries). A warning is shown when the same employee is also on a Manpower Entry for that day, as the
+cost would be counted twice.
+
+Report: **Employee Overtime** (per employee, or employee and project, for any period): days worked, normal / OT 1 /
+OT 2 hours, weighted OT hours, OT rate, OT amount and total labour cost, as in the monthly overtime sheet.
+
 ### Demo data
 
 ```bash

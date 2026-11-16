@@ -7,7 +7,8 @@ Amounts per budget line (Project Budget Item):
 
 * Committed  - submitted Purchase Orders + Subcontract Work Orders
 * Actual     - submitted Purchase Invoices + Subcontract Invoices
-* Manpower   - submitted Manpower Entries (own staff + outsourced labour)
+* Manpower   - submitted Manpower Entries and Timesheets (own staff +
+               outsourced labour, altor_project.labour)
 * Asset      - depreciation of Project Assets while allocated to the
                project, plus the book value of damaged / lost assets
                (altor_project.assets)
@@ -147,16 +148,20 @@ def get_item_group_spend(project, exclude=None):
 	add(si_rows, "actual")
 	add([frappe._dict(item_group=r.item_group, amount=r.direct) for r in si_rows], "direct_actual")
 
-	# Manpower Entries (own staff + outsourced labour)
+	# Labour: Manpower Entries + Timesheets (own staff + outsourced)
+	from altor_project.labour import labour_sql
+
+	exclude_labour = ""
+	if exclude and exclude.get("doctype") in ("Manpower Entry", "Timesheet") and exclude.get("name"):
+		exclude_labour = " AND NOT (l.source = %(exclude_doctype)s AND l.voucher = %(exclude_name)s)"
+		values["exclude_doctype"] = exclude["doctype"]
 	add(
 		frappe.db.sql(
 			f"""
-			SELECT COALESCE(NULLIF(d.item_group, ''), me.item_group) AS item_group, SUM(d.amount) AS amount
-			FROM `tabManpower Entry Detail` d
-			INNER JOIN `tabManpower Entry` me ON me.name = d.parent
-			WHERE me.docstatus = 1 AND me.project = %(project)s
-			{_exclude_clause("me", "Manpower Entry", exclude)}
-			GROUP BY COALESCE(NULLIF(d.item_group, ''), me.item_group)
+			SELECT l.item_group, SUM(l.amount) AS amount
+			FROM ({labour_sql()}) l
+			WHERE l.project = %(project)s {exclude_labour}
+			GROUP BY l.item_group
 			""",
 			values,
 			as_dict=True,
@@ -222,14 +227,15 @@ def utilized(amounts):
 
 
 def get_manpower_split(project):
-	"""Own staff / outsourced labour cost of a project."""
+	"""Own staff / outsourced labour cost of a project (Manpower Entries + Timesheets)."""
+	from altor_project.labour import labour_sql
+
 	row = frappe.db.sql(
-		"""
-		SELECT SUM(CASE WHEN d.worker_type = 'Outsourced' THEN d.amount ELSE 0 END) AS outsourced,
-			SUM(CASE WHEN d.worker_type = 'Outsourced' THEN 0 ELSE d.amount END) AS own
-		FROM `tabManpower Entry Detail` d
-		INNER JOIN `tabManpower Entry` me ON me.name = d.parent
-		WHERE me.docstatus = 1 AND me.project = %s
+		f"""
+		SELECT SUM(CASE WHEN l.worker_type = 'Outsourced' THEN l.amount ELSE 0 END) AS outsourced,
+			SUM(CASE WHEN l.worker_type = 'Outsourced' THEN 0 ELSE l.amount END) AS own
+		FROM ({labour_sql()}) l
+		WHERE l.project = %s
 		""",
 		project,
 		as_dict=True,
