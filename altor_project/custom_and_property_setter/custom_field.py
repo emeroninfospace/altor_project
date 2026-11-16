@@ -108,6 +108,35 @@ CREATE_FIELDS = {
 			"columns": 1,
 		},
 	],
+	# Project Assets (scaffolding materials / equipment issued to projects)
+	"Item": [
+		{
+			"fieldname": "custom_is_project_asset",
+			"label": "Project Asset",
+			"fieldtype": "Check",
+			"insert_after": "is_fixed_asset",
+			"description": "Scaffolding material / equipment issued to projects. A GRN of this item creates a Project Asset.",
+		},
+		{
+			"fieldname": "custom_depreciation_months",
+			"label": "Depreciation Period (Months)",
+			"fieldtype": "Int",
+			"insert_after": "custom_is_project_asset",
+			"depends_on": "eval:doc.custom_is_project_asset",
+			"mandatory_depends_on": "eval:doc.custom_is_project_asset",
+		},
+	],
+	"Purchase Receipt Item": [
+		{
+			"fieldname": "custom_depreciation_months",
+			"label": "Depreciation Period (Months)",
+			"fieldtype": "Int",
+			"insert_after": "item_group",
+			"fetch_from": "item_code.custom_depreciation_months",
+			"fetch_if_empty": 1,
+			"description": "For Project Asset items: the asset is depreciated over this period",
+		},
+	],
 	"Task": [
 		{
 			"fieldname": "custom_project_schedule",

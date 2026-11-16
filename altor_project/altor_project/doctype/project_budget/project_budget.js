@@ -157,13 +157,14 @@ function render_budget_dashboard(frm) {
                     <span class="indicator-pill ${STATUS_COLORS[r.budget_status] || "gray"}">${flt(pct, 1)}%</span>
                 </span>
             </div>
-            <div class="pb-track" title="${__("Committed")}: ${money(r.committed_amount)} | ${__("Actual")}: ${money(r.actual_amount)} | ${__("Manpower")}: ${money(r.manpower_amount)}">
+            <div class="pb-track" title="${__("Committed")}: ${money(r.committed_amount)} | ${__("Actual")}: ${money(r.actual_amount)} | ${__("Manpower")}: ${money(r.manpower_amount)} | ${__("Assets")}: ${money(r.asset_amount)}">
                 <div class="pb-fill" style="width:${width}%;background:${bar_color(r.budget_status)}"></div>
                 <div class="pb-marker" style="left:${Math.min(limit, 100)}%"></div>
             </div>
             <div class="pb-row-sub text-muted">
                 ${__("Committed")} ${money(r.committed_amount)} &middot; ${__("Actual")} ${money(r.actual_amount)} &middot;
                 ${flt(r.manpower_amount) ? `${__("Manpower")} ${money(r.manpower_amount)} &middot;` : ""}
+                ${flt(r.asset_amount) ? `${__("Assets")} ${money(r.asset_amount)} &middot;` : ""}
                 ${__("Balance")} <span style="color:${flt(r.variance) < 0 ? "var(--red-500,#e03636)" : "inherit"}">${money(r.variance)}</span>
             </div>
         </div>`;
@@ -181,6 +182,10 @@ function render_budget_dashboard(frm) {
     if (flt(frm.doc.total_manpower_cost)) {
         alerts += `<div class="pb-alert" style="background:var(--subtle-fg,#f4f5f6)">${__("Manpower")}: ${__("Own Staff")} ${money(frm.doc.own_staff_manpower_cost)}
             &middot; ${__("Outsourced")} ${money(frm.doc.outsourced_manpower_cost)}</div>`;
+    }
+    if (flt(frm.doc.total_asset_cost)) {
+        alerts += `<div class="pb-alert" style="background:var(--subtle-fg,#f4f5f6)">${__("Project Assets")}: ${__("Depreciation")} ${money(frm.doc.asset_depreciation_cost)}
+            &middot; ${__("Damaged / Lost")} ${money(frm.doc.asset_damage_cost)}</div>`;
     }
     if (flt(frm.doc.unbudgeted_amount)) {
         alerts += `<div class="pb-alert pb-alert-orange">${__("Unbudgeted spend")}: ${money(frm.doc.unbudgeted_amount)}
@@ -212,6 +217,7 @@ function render_budget_dashboard(frm) {
                 ${card(__("Committed"), money(frm.doc.total_committed_cost))}
                 ${card(__("Actual"), money(frm.doc.total_actual_cost))}
                 ${card(__("Manpower"), money(frm.doc.total_manpower_cost))}
+                ${flt(frm.doc.total_asset_cost) ? card(__("Assets"), money(frm.doc.total_asset_cost)) : ""}
                 ${card(__("Utilized"), money(utilized))}
                 ${card(__("Balance"), money(frm.doc.variance), flt(frm.doc.variance) < 0 ? "var(--red-500,#e03636)" : "")}
                 ${card(__("Utilization"), flt(util_pct, 1) + "%",

@@ -1,0 +1,175 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-16 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "project_asset",
+  "asset_name",
+  "on_site_qty",
+  "returned_qty",
+  "damaged_qty",
+  "days",
+  "depreciation_amount",
+  "damage_cost",
+  "column_break_r1",
+  "uom",
+  "daily_rate",
+  "book_value",
+  "damage_rate",
+  "damage_remarks",
+  "allocation_item",
+  "item_code",
+  "item_group"
+ ],
+ "fields": [
+  {
+   "fieldname": "project_asset",
+   "fieldtype": "Link",
+   "label": "Project Asset",
+   "options": "Project Asset",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2,
+   "read_only": 1
+  },
+  {
+   "fieldname": "asset_name",
+   "fieldtype": "Data",
+   "label": "Asset Name",
+   "in_list_view": 1,
+   "columns": 2,
+   "read_only": 1
+  },
+  {
+   "fieldname": "on_site_qty",
+   "fieldtype": "Float",
+   "label": "On Site",
+   "in_list_view": 1,
+   "columns": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "returned_qty",
+   "fieldtype": "Float",
+   "label": "Returned (Good)",
+   "in_list_view": 1,
+   "columns": 1,
+   "non_negative": 1
+  },
+  {
+   "fieldname": "damaged_qty",
+   "fieldtype": "Float",
+   "label": "Damaged / Lost",
+   "in_list_view": 1,
+   "columns": 1,
+   "non_negative": 1
+  },
+  {
+   "fieldname": "days",
+   "fieldtype": "Int",
+   "label": "Days",
+   "in_list_view": 1,
+   "columns": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "depreciation_amount",
+   "fieldtype": "Currency",
+   "label": "Depreciation",
+   "options": "Company:company:default_currency",
+   "in_list_view": 1,
+   "columns": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "damage_cost",
+   "fieldtype": "Currency",
+   "label": "Damage Cost",
+   "options": "Company:company:default_currency",
+   "in_list_view": 1,
+   "columns": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_r1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "daily_rate",
+   "fieldtype": "Currency",
+   "label": "Rate / Unit / Day",
+   "options": "Company:company:default_currency",
+   "precision": "4",
+   "read_only": 1
+  },
+  {
+   "fieldname": "book_value",
+   "fieldtype": "Currency",
+   "label": "Book Value per Unit",
+   "options": "Company:company:default_currency",
+   "read_only": 1,
+   "description": "Unit cost less depreciation since purchase, on the return date"
+  },
+  {
+   "fieldname": "damage_rate",
+   "fieldtype": "Currency",
+   "label": "Damage Charge per Unit",
+   "options": "Company:company:default_currency",
+   "non_negative": 1,
+   "description": "Defaults to the book value; change it if the damage is charged differently"
+  },
+  {
+   "fieldname": "damage_remarks",
+   "fieldtype": "Small Text",
+   "label": "Damage Details"
+  },
+  {
+   "fieldname": "allocation_item",
+   "fieldtype": "Data",
+   "label": "Allocation Row",
+   "hidden": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item",
+   "hidden": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group",
+   "hidden": 1,
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-16 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Altor Project",
+ "name": "Asset Return Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1
+}

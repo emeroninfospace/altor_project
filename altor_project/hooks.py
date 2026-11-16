@@ -199,6 +199,13 @@ doc_events = {
 		"on_submit": "altor_project.budget.on_transaction_change",
 		"on_cancel": "altor_project.budget.on_transaction_change",
 	},
+	# GRN of "Project Asset" items creates Project Assets
+	"Purchase Receipt": {
+		"validate": "altor_project.events.purchase_receipt.validate",
+		"on_submit": "altor_project.events.purchase_receipt.on_submit",
+		"before_cancel": "altor_project.events.purchase_receipt.before_cancel",
+		"on_cancel": "altor_project.events.purchase_receipt.on_cancel",
+	},
 }
 
 # Division numbering: CRM-SCF-LEAD-2026-0001 -> QT-SCF-2026-0001 -> SO-... -> PRJ-...
@@ -257,7 +264,10 @@ fixtures = [
 # ---------------
 
 scheduler_events = {
-	"daily": ["altor_project.budget.refresh_all_budgets"],
+	"daily": [
+		"altor_project.assets.refresh_open_allocations",
+		"altor_project.budget.refresh_all_budgets",
+	],
 	"cron": {
 		# 01:30 every night: book yesterday's manpower (only when enabled in Altor Settings)
 		"30 1 * * *": ["altor_project.manpower_automation.scheduled_create"]

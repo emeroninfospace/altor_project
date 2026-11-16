@@ -35,6 +35,12 @@
   "own_staff_manpower_cost",
   "column_break_mp2",
   "outsourced_manpower_cost",
+  "asset_section",
+  "total_asset_cost",
+  "column_break_as1",
+  "asset_depreciation_cost",
+  "column_break_as2",
+  "asset_damage_cost",
   "section_break_11",
   "budget_items",
   "budget_control_action_section",
@@ -307,6 +313,44 @@
    "read_only": 1
   },
   {
+   "fieldname": "asset_section",
+   "fieldtype": "Section Break",
+   "label": "Project Assets"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "total_asset_cost",
+   "fieldtype": "Currency",
+   "label": "Total Asset Cost",
+   "options": "Company:company:default_currency",
+   "read_only": 1,
+   "description": "Depreciation while on the project + damaged / lost assets"
+  },
+  {
+   "fieldname": "column_break_as1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "asset_depreciation_cost",
+   "fieldtype": "Currency",
+   "label": "Asset Depreciation",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_as2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "asset_damage_cost",
+   "fieldtype": "Currency",
+   "label": "Damaged / Lost Assets",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
    "fieldname": "cost_center",
    "fieldtype": "Link",
    "label": "Division",
@@ -322,7 +366,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-09 10:00:00.000000",
+ "modified": "2026-11-16 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Project Budget",

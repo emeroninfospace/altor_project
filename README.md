@@ -103,6 +103,33 @@ Lead, Quotation, Sales Order and Project are numbered by division, and one enqui
 - Formats, digits and on/off: **Altor Settings > Division Numbering**. Documents without a division keep the
   standard naming series.
 
+### Project Assets (asset allocation to projects)
+
+Scaffolding materials and equipment that are bought once and issued to projects (Cuplock standards, ledgers,
+couplers, cradles, scissor lifts, hoists ...). Office furniture and computers stay in ERPNext's own Asset module.
+
+1. **Item**: tick **Project Asset** and enter the **Depreciation Period (Months)**.
+2. **Purchase Receipt (GRN)**: on submit, every Project Asset item row becomes a **Project Asset** with the purchase
+   price of the row (net, company currency) and the depreciation period (editable on the row). Existing stock is
+   entered by hand as Project Assets (purchase date, quantity, unit cost, months).
+3. **Project Asset** (the asset list): quantity purchased, unit cost, salvage value, depreciation months and
+   - Depreciation per unit per day = (Unit Cost - Salvage Value) / (Months x 30)
+   - Available / On Projects / Damaged quantities, and which projects have it now.
+4. **Asset Allocation** (issue to a project): the quantity on the project is taken off the available quantity. The
+   project is charged qty x rate per unit per day x days from the delivery date (both days counted, never past the end
+   of the depreciation period).
+5. **Asset Return** (Create > Asset Return on the allocation): returned (good) and **damaged / lost** quantities.
+   Depreciation of the returned quantity stops on the return date. Damaged / lost units are written off and charged
+   to the project at their book value on the return date (unit cost less depreciation since purchase, not below the
+   salvage value); the charge per unit can be changed on the row.
+6. **Project Budget**: depreciation and damage cost count against the budget line of the asset's Item Group
+   (shown as **Asset Cost**, included in Utilized). They are refreshed after each allocation / return and every
+   night, as depreciation grows each day the asset stays on site.
+7. **Project Asset Cost** report: depreciation and damage cost charged to each project in any period (month end
+   costing), with the quantity on site at the period end.
+
+These figures are for project costing; no accounting (GL) entries are posted for the depreciation.
+
 ### Payment Certificate
 
 Subcontractor's Payment Certificate, following the ALTOR template. Create it from a submitted **Subcontract Work
@@ -143,6 +170,8 @@ details from the site, not from code:
 | Altor Manpower Sheet | Manpower Entry (daily manpower sheet) |
 | Altor Project Budget | Project Budget (item group wise) |
 | Altor Payment Certificate | Payment Certificate (subcontractor's payment certificate) |
+| Altor Asset Allocation | Asset Allocation (asset issue note) |
+| Altor Asset Return | Asset Return (asset return note, with damaged / lost) |
 
 Helpers used by the templates are in `altor_project/print_utils.py` (registered as Jinja methods in `hooks.py`).
 

@@ -1,0 +1,314 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-16 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "project",
+  "project_name",
+  "site_location",
+  "company",
+  "cost_center",
+  "column_break_main",
+  "delivery_date",
+  "delivery_ref",
+  "status",
+  "items_section",
+  "items",
+  "totals_section",
+  "total_qty",
+  "daily_charge",
+  "column_break_t1",
+  "on_site_qty",
+  "depreciation_to_date",
+  "column_break_t2",
+  "total_damage_cost",
+  "total_project_cost",
+  "remarks_section",
+  "remarks",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "AAL-.YYYY.-.####",
+   "default": "AAL-.YYYY.-.####",
+   "reqd": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "Project",
+   "options": "Project",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "project_name",
+   "fieldtype": "Data",
+   "label": "Project Name",
+   "fetch_from": "project.project_name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "site_location",
+   "fieldtype": "Data",
+   "label": "Site / Location",
+   "fetch_from": "project.location",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "fetch_from": "project.company",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "Cost Center",
+   "fetch_from": "project.cost_center",
+   "fetch_if_empty": 1,
+   "in_standard_filter": 1,
+   "link_filters": "[[\"Cost Center\",\"is_group\",\"=\",0]]"
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "delivery_date",
+   "fieldtype": "Date",
+   "label": "Delivery Date",
+   "reqd": 1,
+   "default": "Today",
+   "in_list_view": 1,
+   "description": "Depreciation is charged to the project from this date"
+  },
+  {
+   "fieldname": "delivery_ref",
+   "fieldtype": "Data",
+   "label": "Delivery Note / Gate Pass No."
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nAllocated\nPartly Returned\nReturned\nCancelled",
+   "default": "Draft",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "allow_on_submit": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Assets Issued"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Assets",
+   "options": "Asset Allocation Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "totals_section",
+   "fieldtype": "Section Break",
+   "label": "Cost to the Project"
+  },
+  {
+   "fieldname": "total_qty",
+   "fieldtype": "Float",
+   "label": "Total Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "daily_charge",
+   "fieldtype": "Currency",
+   "label": "Depreciation per Day",
+   "options": "Company:company:default_currency",
+   "bold": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_t1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "on_site_qty",
+   "fieldtype": "Float",
+   "label": "Still on Site",
+   "allow_on_submit": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "depreciation_to_date",
+   "fieldtype": "Currency",
+   "label": "Depreciation to Date",
+   "options": "Company:company:default_currency",
+   "allow_on_submit": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_t2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_damage_cost",
+   "fieldtype": "Currency",
+   "label": "Damage Cost",
+   "options": "Company:company:default_currency",
+   "allow_on_submit": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_project_cost",
+   "fieldtype": "Currency",
+   "label": "Total Cost to Project",
+   "options": "Company:company:default_currency",
+   "bold": 1,
+   "allow_on_submit": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "remarks_section",
+   "fieldtype": "Section Break",
+   "label": "Remarks",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Asset Allocation",
+   "no_copy": 1,
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 0,
+ "links": [
+  {
+   "group": "Returns",
+   "link_doctype": "Asset Return",
+   "link_fieldname": "asset_allocation"
+  }
+ ],
+ "modified": "2026-11-16 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Altor Project",
+ "name": "Asset Allocation",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1,
+   "delete": 1
+  },
+  {
+   "role": "Stock Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1,
+   "delete": 1
+  },
+  {
+   "role": "Projects Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1,
+   "delete": 1
+  },
+  {
+   "role": "Stock User",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "submit": 1,
+   "cancel": 0,
+   "amend": 0,
+   "delete": 0
+  },
+  {
+   "role": "Projects User",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "submit": 0,
+   "cancel": 0,
+   "amend": 0,
+   "delete": 0
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "delivery_date",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field",
+ "track_changes": 1,
+ "is_submittable": 1,
+ "title_field": "project_name",
+ "show_title_field_in_link": 0,
+ "search_fields": "project,project_name,delivery_ref",
+ "default_print_format": "Altor Asset Allocation"
+}

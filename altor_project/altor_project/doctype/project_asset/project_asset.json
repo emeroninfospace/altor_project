@@ -1,0 +1,391 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-16 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "asset_name",
+  "item_code",
+  "item_group",
+  "asset_tag",
+  "column_break_main",
+  "company",
+  "cost_center",
+  "uom",
+  "status",
+  "disabled",
+  "purchase_section",
+  "purchase_date",
+  "supplier",
+  "purchase_receipt",
+  "purchase_receipt_item",
+  "column_break_purchase",
+  "qty",
+  "unit_cost",
+  "total_cost",
+  "salvage_value",
+  "column_break_dep",
+  "depreciation_months",
+  "depreciation_end_date",
+  "daily_rate",
+  "monthly_rate",
+  "quantities_section",
+  "available_qty",
+  "allocated_qty",
+  "damaged_qty",
+  "column_break_qty",
+  "allocations_html",
+  "remarks_section",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "AST-.YYYY.-.#####",
+   "default": "AST-.YYYY.-.#####",
+   "reqd": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "asset_name",
+   "fieldtype": "Data",
+   "label": "Asset Name",
+   "reqd": 1,
+   "in_list_view": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group (Budget Line)",
+   "options": "Item Group",
+   "reqd": 1,
+   "in_standard_filter": 1,
+   "fetch_from": "item_code.item_group",
+   "fetch_if_empty": 1,
+   "description": "Depreciation and damage cost are charged to this Item Group in the Project Budget"
+  },
+  {
+   "fieldname": "asset_tag",
+   "fieldtype": "Data",
+   "label": "Asset Tag / Serial No.",
+   "description": "For single equipment (cradle, hoist, crane ...)"
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "Cost Center",
+   "in_standard_filter": 1,
+   "link_filters": "[[\"Cost Center\",\"is_group\",\"=\",0]]"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM",
+   "fetch_from": "item_code.stock_uom",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Available\nPartly Allocated\nFully Allocated\nWritten Off",
+   "default": "Available",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled",
+   "description": "Hide from new allocations"
+  },
+  {
+   "fieldname": "purchase_section",
+   "fieldtype": "Section Break",
+   "label": "Purchase and Depreciation"
+  },
+  {
+   "fieldname": "purchase_date",
+   "fieldtype": "Date",
+   "label": "Purchase Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "purchase_receipt",
+   "fieldtype": "Link",
+   "label": "Purchase Receipt (GRN)",
+   "options": "Purchase Receipt",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "purchase_receipt_item",
+   "fieldtype": "Data",
+   "label": "Purchase Receipt Item",
+   "hidden": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_purchase",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "label": "Quantity Purchased",
+   "reqd": 1,
+   "non_negative": 1
+  },
+  {
+   "fieldname": "unit_cost",
+   "fieldtype": "Currency",
+   "label": "Unit Cost",
+   "options": "Company:company:default_currency",
+   "reqd": 1,
+   "non_negative": 1
+  },
+  {
+   "fieldname": "total_cost",
+   "fieldtype": "Currency",
+   "label": "Total Cost",
+   "options": "Company:company:default_currency",
+   "bold": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "salvage_value",
+   "fieldtype": "Currency",
+   "label": "Salvage Value per Unit",
+   "options": "Company:company:default_currency",
+   "non_negative": 1,
+   "description": "Value left at the end of the depreciation period (scrap value)"
+  },
+  {
+   "fieldname": "column_break_dep",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "depreciation_months",
+   "fieldtype": "Int",
+   "label": "Depreciation Period (Months)",
+   "reqd": 1,
+   "non_negative": 1
+  },
+  {
+   "fieldname": "depreciation_end_date",
+   "fieldtype": "Date",
+   "label": "Depreciated Until",
+   "read_only": 1
+  },
+  {
+   "fieldname": "daily_rate",
+   "fieldtype": "Currency",
+   "label": "Depreciation per Unit per Day",
+   "options": "Company:company:default_currency",
+   "precision": "4",
+   "bold": 1,
+   "read_only": 1,
+   "description": "(Unit Cost - Salvage Value) / (Months x 30)"
+  },
+  {
+   "fieldname": "monthly_rate",
+   "fieldtype": "Currency",
+   "label": "Depreciation per Unit per Month",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "quantities_section",
+   "fieldtype": "Section Break",
+   "label": "Quantities"
+  },
+  {
+   "fieldname": "available_qty",
+   "fieldtype": "Float",
+   "label": "Available Qty",
+   "in_list_view": 1,
+   "bold": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "allocated_qty",
+   "fieldtype": "Float",
+   "label": "On Projects",
+   "in_list_view": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "damaged_qty",
+   "fieldtype": "Float",
+   "label": "Damaged / Lost",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_qty",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "allocations_html",
+   "fieldtype": "HTML",
+   "label": "On Projects Now"
+  },
+  {
+   "fieldname": "remarks_section",
+   "fieldtype": "Section Break",
+   "label": "Remarks",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 0,
+ "links": [
+  {
+   "group": "Movements",
+   "link_doctype": "Asset Allocation",
+   "link_fieldname": "project_asset",
+   "parent_doctype": "Asset Allocation",
+   "table_fieldname": "items",
+   "is_child_table": 1
+  },
+  {
+   "group": "Movements",
+   "link_doctype": "Asset Return",
+   "link_fieldname": "project_asset",
+   "parent_doctype": "Asset Return",
+   "table_fieldname": "items",
+   "is_child_table": 1
+  }
+ ],
+ "modified": "2026-11-16 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Altor Project",
+ "name": "Project Asset",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "Stock Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "Projects Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "Accounts Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "Stock User",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 0
+  },
+  {
+   "role": "Projects User",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 0,
+   "write": 0,
+   "delete": 0
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "purchase_date",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field",
+ "track_changes": 1,
+ "title_field": "asset_name",
+ "show_title_field_in_link": 1,
+ "search_fields": "asset_name,item_code,asset_tag,status"
+}
