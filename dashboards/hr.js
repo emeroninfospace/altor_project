@@ -21,7 +21,7 @@ function render(d) {
         ${kpi({ label: __("Active Employees"), value: s.total_active, icon: "users", color: C.blue, sub: `${num(s.own_staff)} ${__("own")} · ${num(s.outsourced)} ${__("outsourced")}`, route: ["List", "Employee", "List"] })}
         ${kpi({ label: __("Present Today"), value: present, icon: "check", color: C.green, sub: s.attendance_marked ? `${num(s.wfh_today)} ${__("WFH")} · ${num(s.half_day_today)} ${__("half day")}` : __("Attendance not marked yet"), route: ["List", "Attendance", "List"] })}
         ${kpi({ label: __("On Leave Today"), value: s.on_leave_today, icon: "leave", color: C.orange, sub: `${num(s.pending_leaves)} ${__("requests to approve")}`, route: ["List", "Leave Application", "List"] })}
-        ${kpi({ label: __("Workers on Site"), value: s.manpower_today, icon: "hardhat", color: C.pink, sub: `${money(s.manpower_cost_month)} ${__("labour this month")}`, route: ["List", "Manpower Entry", "List"] })}
+        ${kpi({ label: __("Workers on Site"), value: s.manpower_today, icon: "hardhat", color: C.pink, sub: `${money(s.manpower_cost_month)} ${__("labour this month")}`, route: ["List", "Timesheet", "List"] })}
     </div>`;
 
     const chips = [];
@@ -61,7 +61,7 @@ function render(d) {
         ${panel(__("Employment type"), "", donut(d.by_employment_type || [], { center_label: __("Employees"), size: 130 }), 4)}
     </div>`;
     const mp_tabs = tabs("mp", [
-        { key: "project", label: __("By project"), html: hbars(d.manpower_by_project || [], { color: C.pink, fmt: money, empty: __("No Manpower Entries this month") }) },
+        { key: "project", label: __("By project"), html: hbars(d.manpower_by_project || [], { color: C.pink, fmt: money, empty: __("No Timesheets this month") }) },
         { key: "agency", label: __("By agency"), html: hbars(d.manpower_cost_by_agency || [], { color: C.orange, fmt: money, empty: __("No agency cost this month") }) }
     ]);
     html += `<div class="grid" style="margin-top:12px">

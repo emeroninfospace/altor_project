@@ -425,56 +425,55 @@ def get_hr_overview(filters=None):
 		manpower_outsourced_month=0,
 	)
 
-	# Manpower deployed on projects (Timesheets + Manpower Entries)
+	# Manpower deployed on projects (Timesheets)
 	manpower_by_project, manpower_by_agency = [], []
-	if _doctype_exists("Manpower Entry"):
-		labour = labour_sql()
-		mp_cond, mp_values = "", {"month_start": month_start, "month_end": month_end, "today": today}
-		if filters.company:
-			mp_cond = " AND l.company = %(company)s"
-			mp_values["company"] = filters.company
-		totals = frappe.db.sql(
+	labour = labour_sql()
+	mp_cond, mp_values = "", {"month_start": month_start, "month_end": month_end, "today": today}
+	if filters.company:
+		mp_cond = " AND l.company = %(company)s"
+		mp_values["company"] = filters.company
+	totals = frappe.db.sql(
+		f"""
+		SELECT SUM(CASE WHEN l.posting_date = %(today)s THEN l.no_of_workers ELSE 0 END) AS workers_today,
+			SUM(CASE WHEN l.worker_type = 'Outsourced' THEN 0 ELSE l.amount END) AS own,
+			SUM(CASE WHEN l.worker_type = 'Outsourced' THEN l.amount ELSE 0 END) AS outsourced
+		FROM ({labour}) l
+		WHERE l.posting_date BETWEEN %(month_start)s AND %(month_end)s {mp_cond}
+		""",
+		mp_values,
+		as_dict=True,
+	)[0]
+	summary.manpower_today = int(totals.workers_today or 0)
+	summary.manpower_own_month = flt(totals.own)
+	summary.manpower_outsourced_month = flt(totals.outsourced)
+	summary.manpower_cost_month = summary.manpower_own_month + summary.manpower_outsourced_month
+	manpower_by_project = [
+		{"label": r.project, "value": flt(r.amount)}
+		for r in frappe.db.sql(
 			f"""
-			SELECT SUM(CASE WHEN l.posting_date = %(today)s THEN l.no_of_workers ELSE 0 END) AS workers_today,
-				SUM(CASE WHEN l.worker_type = 'Outsourced' THEN 0 ELSE l.amount END) AS own,
-				SUM(CASE WHEN l.worker_type = 'Outsourced' THEN l.amount ELSE 0 END) AS outsourced
+			SELECT l.project, SUM(l.amount) AS amount
 			FROM ({labour}) l
 			WHERE l.posting_date BETWEEN %(month_start)s AND %(month_end)s {mp_cond}
+			GROUP BY l.project ORDER BY amount DESC LIMIT 10
 			""",
 			mp_values,
 			as_dict=True,
-		)[0]
-		summary.manpower_today = int(totals.workers_today or 0)
-		summary.manpower_own_month = flt(totals.own)
-		summary.manpower_outsourced_month = flt(totals.outsourced)
-		summary.manpower_cost_month = summary.manpower_own_month + summary.manpower_outsourced_month
-		manpower_by_project = [
-			{"label": r.project, "value": flt(r.amount)}
-			for r in frappe.db.sql(
-				f"""
-				SELECT l.project, SUM(l.amount) AS amount
-				FROM ({labour}) l
-				WHERE l.posting_date BETWEEN %(month_start)s AND %(month_end)s {mp_cond}
-				GROUP BY l.project ORDER BY amount DESC LIMIT 10
-				""",
-				mp_values,
-				as_dict=True,
-			)
-		]
-		manpower_by_agency = [
-			{"label": r.supplier, "value": flt(r.amount), "workers": int(r.workers or 0)}
-			for r in frappe.db.sql(
-				f"""
-				SELECT l.supplier, SUM(l.amount) AS amount, SUM(l.no_of_workers) AS workers
-				FROM ({labour}) l
-				WHERE l.worker_type = 'Outsourced'
-					AND l.posting_date BETWEEN %(month_start)s AND %(month_end)s {mp_cond}
-				GROUP BY l.supplier ORDER BY amount DESC LIMIT 10
-				""",
-				mp_values,
-				as_dict=True,
-			)
-		]
+		)
+	]
+	manpower_by_agency = [
+		{"label": r.supplier, "value": flt(r.amount), "workers": int(r.workers or 0)}
+		for r in frappe.db.sql(
+			f"""
+			SELECT l.supplier, SUM(l.amount) AS amount, SUM(l.no_of_workers) AS workers
+			FROM ({labour}) l
+			WHERE l.worker_type = 'Outsourced'
+				AND l.posting_date BETWEEN %(month_start)s AND %(month_end)s {mp_cond}
+			GROUP BY l.supplier ORDER BY amount DESC LIMIT 10
+			""",
+			mp_values,
+			as_dict=True,
+		)
+	]
 
 	# Attendance today + trend for the last 7 days
 	trend = []

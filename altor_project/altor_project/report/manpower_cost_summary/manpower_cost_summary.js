@@ -9,10 +9,9 @@ frappe.query_reports["Manpower Cost Summary"] = {
         { fieldname: "project", label: __("Project"), fieldtype: "Link", options: "Project" },
         { fieldname: "worker_type", label: __("Worker Type"), fieldtype: "Select", options: ["", "Own Staff", "Outsourced"].join("\n") },
         { fieldname: "supplier", label: __("Manpower Supplier"), fieldtype: "Link", options: "Supplier" },
-        { fieldname: "source", label: __("Source"), fieldtype: "Select", options: ["", "Timesheet", "Manpower Entry"].join("\n") },
         {
             fieldname: "group_by", label: __("Group By"), fieldtype: "Select", default: "Project", reqd: 1,
-            options: ["Project", "Manpower Supplier", "Employee", "Designation", "Date", "Item Group", "Source"].join("\n")
+            options: ["Project", "Manpower Supplier", "Employee", "Designation", "Date", "Item Group"].join("\n")
         }
     ]
 };

@@ -12,7 +12,7 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
-from altor_project.manpower import get_settings
+from altor_project.labour import get_settings
 
 
 def execute(filters=None):

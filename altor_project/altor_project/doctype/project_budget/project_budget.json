@@ -277,7 +277,7 @@
   {
    "fieldname": "manpower_section",
    "fieldtype": "Section Break",
-   "label": "Manpower (Timesheets and Manpower Entries)",
+   "label": "Manpower (Timesheets)",
    "collapsible": 0
   },
   {

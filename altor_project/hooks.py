@@ -275,10 +275,6 @@ scheduler_events = {
 		"altor_project.assets.refresh_open_allocations",
 		"altor_project.budget.refresh_all_budgets",
 	],
-	"cron": {
-		# 01:30 every night: book yesterday's manpower (only when enabled in Altor Settings)
-		"30 1 * * *": ["altor_project.manpower_automation.scheduled_create"]
-	},
 }
 
 # scheduler_events = {

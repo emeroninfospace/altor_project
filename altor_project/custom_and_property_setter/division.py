@@ -6,7 +6,7 @@
 Every document carries its division in the standard `cost_center` field, shown
 with the label "Division". Using the same fieldname everywhere means ERPNext's
 mappers copy it along the flow: Lead -> Quotation -> Sales Order -> Project /
-Sales Invoice, and Project -> Project Budget / Manpower Entry / purchasing.
+Sales Invoice, and Project -> Project Budget / purchasing.
 
 * Documents that already have a header `cost_center` field: relabelled.
 * Documents without one: a `cost_center` custom field is added.

@@ -1,7 +1,7 @@
 # Copyright (c) 2026, Emeron Infospace and contributors
 # For license information, please see license.txt
 
-"""Labour cost from submitted Timesheets and Manpower Entries, grouped for review and for checking agency invoices."""
+"""Labour cost from submitted Timesheets, grouped for review and for checking agency invoices."""
 
 import frappe
 from frappe import _
@@ -16,7 +16,6 @@ GROUP_BY = {
 	"Designation": ("IFNULL(l.designation, '')", "Link", "Designation"),
 	"Date": ("l.posting_date", "Date", None),
 	"Item Group": ("IFNULL(l.item_group, '')", "Link", "Item Group"),
-	"Source": ("l.source", "Data", None),
 }
 
 
@@ -31,7 +30,6 @@ def execute(filters=None):
 		("project", "l.project"),
 		("worker_type", "l.worker_type"),
 		("supplier", "l.supplier"),
-		("source", "l.source"),
 	):
 		if filters.get(field):
 			conditions.append(f"{column} = %({field})s")
@@ -40,7 +38,7 @@ def execute(filters=None):
 		f"""
 		SELECT {key_sql} AS group_key,
 			MAX(l.employee_name) AS employee_name,
-			COUNT(DISTINCT l.source, l.voucher) AS entries,
+			COUNT(DISTINCT l.voucher) AS entries,
 			COUNT(DISTINCT l.posting_date) AS days,
 			SUM(l.no_of_workers) AS man_days,
 			SUM(l.hours) AS hours,
@@ -77,7 +75,7 @@ def execute(filters=None):
 			{"fieldname": "employee_name", "label": _("Employee Name"), "fieldtype": "Data", "width": 160}
 		)
 	columns += [
-		{"fieldname": "entries", "label": _("Entries"), "fieldtype": "Int", "width": 80},
+		{"fieldname": "entries", "label": _("Timesheets"), "fieldtype": "Int", "width": 90},
 		{"fieldname": "days", "label": _("Days"), "fieldtype": "Int", "width": 70},
 		{"fieldname": "man_days", "label": _("Man-Days"), "fieldtype": "Int", "width": 90},
 		{"fieldname": "hours", "label": _("Normal Hours"), "fieldtype": "Float", "width": 100},

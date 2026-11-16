@@ -12,16 +12,8 @@
   "ot_multiplier",
   "ot2_multiplier",
   "column_break_mp",
-  "working_days_per_month",
   "working_hours_per_day",
   "outsourced_hours_per_day",
-  "manpower_rates",
-  "manpower_automation_section",
-  "auto_create_manpower_entries",
-  "manpower_entry_source",
-  "column_break_auto",
-  "auto_submit_manpower_entries",
-  "skip_holidays_for_crews",
   "division_numbering_section",
   "enable_division_numbering",
   "division_series_digits",
@@ -41,14 +33,15 @@
   {
    "fieldname": "manpower_section",
    "fieldtype": "Section Break",
-   "label": "Manpower Costing"
+   "label": "Timesheet Labour Cost",
+   "description": "Normal / OT hours and the budget lines for labour booked on Timesheets"
   },
   {
    "fieldname": "default_manpower_item_group",
    "fieldtype": "Link",
    "label": "Manpower Item Group (Own Staff)",
    "options": "Item Group",
-   "description": "Budget line (Item Group) for own staff labour cost from Timesheets and Manpower Entries"
+   "description": "Budget line (Item Group) for own staff labour cost from Timesheets"
   },
   {
    "fieldname": "outsourced_manpower_item_group",
@@ -76,12 +69,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "working_days_per_month",
-   "fieldtype": "Int",
-   "label": "Working Days per Month",
-   "default": "26"
-  },
-  {
    "fieldname": "working_hours_per_day",
    "fieldtype": "Float",
    "label": "Working Hours per Day (Own Staff)",
@@ -94,53 +81,6 @@
    "label": "Normal Hours per Day (Outsourced)",
    "default": "10",
    "description": "Outsourced workers: Timesheet hours above this per day are OT 1"
-  },
-  {
-   "fieldname": "manpower_rates",
-   "fieldtype": "Table",
-   "label": "Outsourced Manpower Rates",
-   "options": "Manpower Rate"
-  },
-  {
-   "fieldname": "manpower_automation_section",
-   "fieldtype": "Section Break",
-   "label": "Manpower Entry Automation",
-   "description": "Every night, create Manpower Entries for the previous day: named workers from Attendance or Employee Checkins (charged to the employee's Assigned Project, or the project on the checkin), and agency crews from each project's Daily Manpower Crew."
-  },
-  {
-   "default": "0",
-   "fieldname": "auto_create_manpower_entries",
-   "fieldtype": "Check",
-   "label": "Create Manpower Entries Automatically"
-  },
-  {
-   "default": "Attendance",
-   "depends_on": "auto_create_manpower_entries",
-   "fieldname": "manpower_entry_source",
-   "fieldtype": "Select",
-   "label": "Hours Source",
-   "options": "Attendance\nEmployee Checkin",
-   "description": "Attendance: uses Working Hours on the attendance (or the standard day). Employee Checkin: first IN to last OUT."
-  },
-  {
-   "fieldname": "column_break_auto",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "0",
-   "depends_on": "auto_create_manpower_entries",
-   "fieldname": "auto_submit_manpower_entries",
-   "fieldtype": "Check",
-   "label": "Submit Automatically",
-   "description": "Leave unticked to create drafts for the site supervisor to check and submit."
-  },
-  {
-   "default": "1",
-   "depends_on": "auto_create_manpower_entries",
-   "fieldname": "skip_holidays_for_crews",
-   "fieldtype": "Check",
-   "label": "Skip Holidays for Crews",
-   "description": "Crews are not booked on holidays of the company's default Holiday List."
   },
   {
    "fieldname": "division_numbering_section",
@@ -198,7 +138,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-11-16 12:00:00.000000",
+ "modified": "2026-11-16 15:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Altor Settings",

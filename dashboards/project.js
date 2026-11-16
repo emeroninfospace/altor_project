@@ -51,7 +51,7 @@ function render(d) {
         `<div class="legend-rows" style="margin-top:12px">
             <div><span><i style="background:${C.pink}"></i>${__("Workers on site today")}</span><b>${num(s.workers_today)}</b></div>
             <div><span><i style="background:${C.violet}"></i>${__("Labour cost this month")}</span><b>${money(s.manpower_this_month)}</b></div></div>`
-        : empty(__("No Manpower Entries yet"), "users");
+        : empty(__("No Timesheets yet"), "users");
 
     html += section(__("Budget & cost"));
     html += `<div class="grid">
