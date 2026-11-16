@@ -96,7 +96,7 @@
    "fieldtype": "Check",
    "label": "Write Off Damaged Assets",
    "default": "1",
-   "description": "On an Asset Return, split the damaged / lost quantity off the ERPNext Asset and scrap it (Split Asset + Scrap Asset)"
+   "description": "On an Asset Return, split the damaged / lost quantity off the Fixed Asset and scrap it (Split Asset + Scrap Asset)"
   },
   {
    "fieldname": "column_break_pa",
@@ -165,7 +165,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-11-16 18:00:00.000000",
+ "modified": "2026-11-16 16:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Altor Settings",

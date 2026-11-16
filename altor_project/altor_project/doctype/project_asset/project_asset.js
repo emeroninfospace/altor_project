@@ -17,10 +17,10 @@ frappe.ui.form.on("Project Asset", {
     refresh(frm) {
         render_on_projects(frm);
         if (frm.doc.asset) {
-            frm.add_custom_button(__("ERPNext Asset"), () => frappe.set_route("Form", "Asset", frm.doc.asset), __("View"));
+            frm.add_custom_button(__("Fixed Asset"), () => frappe.set_route("Form", "Asset", frm.doc.asset), __("View"));
         } else if (!frm.is_new()) {
             frm.dashboard.set_headline_alert(
-                __("Not linked to an ERPNext Asset, so it is not in the accounts. Link the Asset (created from the GRN) to book its value and depreciation."),
+                __("Not linked to a Fixed Asset, so it is not in the accounts. Link the Asset (created from the GRN) to book its value and depreciation."),
                 "orange"
             );
         }

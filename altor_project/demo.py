@@ -29,6 +29,7 @@ from contextlib import contextmanager
 from datetime import timedelta
 
 import frappe
+from frappe.model import default_fields
 from frappe.utils import add_days, cint, flt, get_datetime, getdate, nowdate
 
 PREFIX = "DEMO"
@@ -808,7 +809,7 @@ def _make_demo_data(company=None, store=True):
 			_make_sales_flow(ctx, log, key)
 	for title, fn in (
 		("Project budgets", _make_budgets),
-		("ERPNext assets (opening stock)", _make_assets),
+		("Fixed assets (opening stock)", _make_assets),
 		("Asset issues and returns", _make_allocations),
 		("Cross hire purchase orders", _make_cross_hire_pos),
 		("Project bills", _make_direct_invoices),
@@ -1576,7 +1577,7 @@ def _delete_demo_data(store=True):
 			return []
 		meta = frappe.get_meta(doctype)
 		fields = list(filters or {}) + list(or_filters or {})
-		if any(f != "name" and not meta.has_field(f) for f in fields):
+		if any(f not in default_fields and not meta.has_field(f) for f in fields):
 			return []  # this site's version of the doctype has no such field
 		return frappe.get_all(
 			doctype, filters=filters, or_filters=or_filters, pluck="name", order_by="creation desc"
@@ -1640,9 +1641,23 @@ def _delete_demo_data(store=True):
 		remove("Proforma Invoice", names("Proforma Invoice", {"customer_name": ["like", like]}))
 	demo_assets = names("Project Asset", {"remarks": ["like", f"{PREFIX} %"]})
 	erp_assets = [a for a in (frappe.db.get_value("Project Asset", p, "asset") for p in demo_assets) if a]
+	# plus cancelled Assets of the demo items left over by an earlier run
+	erp_assets += names("Asset", {"item_code": ["in", [a[0] for a in ASSET_ITEMS]], "docstatus": 2})
 	remove("Project Asset", demo_assets)
 	if erp_assets:  # the ERPNext Assets of the opening stock, split-off parts first
-		remove("Asset", names("Asset", {"split_from": ["in", erp_assets]}))
+		split_off = names("Asset", {"split_from": ["in", erp_assets]})
+		# entries that point at them (depreciation booked on a split / restore, write-offs) block the delete
+		remove(
+			"Journal Entry",
+			frappe.get_all(
+				"Journal Entry Account",
+				filters={"reference_type": "Asset", "reference_name": ["in", split_off + erp_assets]},
+				pluck="parent",
+				distinct=True,
+				order_by="parent desc",
+			),
+		)
+		remove("Asset", split_off)
 		remove("Asset", erp_assets)
 	if employees:
 		for dt in ("Timesheet", "Attendance", "Employee Checkin", "Leave Application"):

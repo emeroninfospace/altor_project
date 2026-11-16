@@ -68,7 +68,7 @@ class ProjectAsset(Document):
 			values.pop("qty")
 			if self.has_value_changed("asset"):
 				frappe.throw(
-					_("The ERPNext Asset cannot be changed once the asset has been issued to projects.")
+					_("The Fixed Asset cannot be changed once the asset has been issued to projects.")
 				)
 		self.update(values)
 

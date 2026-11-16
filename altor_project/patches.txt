@@ -17,3 +17,4 @@ altor_project.patches.v2026_11.timesheet_labour_cost
 altor_project.patches.v2026_11.remove_manpower_entry
 altor_project.patches.v2026_11.project_assets_on_erpnext_assets
 altor_project.patches.v2026_11.employee_costing_fields
+altor_project.patches.v2026_11.fixed_asset_labels

@@ -12,7 +12,7 @@ frappe.query_reports["Project Asset Cost"] = {
         { fieldname: "item_group", label: __("Item Group"), fieldtype: "Link", options: "Item Group" },
     ],
     onload(report) {
-        // Month end: move the depreciation of linked ERPNext Assets used on projects to the projects (Journal Entry)
+        // Month end: move the depreciation of linked Fixed Assets used on projects to the projects (Journal Entry)
         report.page.add_inner_button(__("Post Depreciation to Projects"), () => {
             const months = [];
             for (let i = 1; i <= 12; i++) {
