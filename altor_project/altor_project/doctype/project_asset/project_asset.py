@@ -11,6 +11,7 @@ from altor_project.assets import DAYS_PER_MONTH, book_value, daily_rate, life_en
 
 class ProjectAsset(Document):
 	def validate(self):
+		self.sync_from_asset()
 		if not self.company:
 			self.company = frappe.defaults.get_user_default("Company") or frappe.defaults.get_global_default(
 				"company"
@@ -19,7 +20,8 @@ class ProjectAsset(Document):
 			self.asset_name = frappe.db.get_value("Item", self.item_code, "item_name")
 		if flt(self.qty) <= 0:
 			frappe.throw(_("Quantity Purchased must be more than 0."))
-		if cint(self.depreciation_months) <= 0:
+		if cint(self.depreciation_months) <= 0 and not self.asset:
+			# a linked Asset without depreciation is charged to projects at 0 per day
 			frappe.throw(_("Enter the Depreciation Period in months."))
 		if flt(self.salvage_value) > flt(self.unit_cost):
 			frappe.throw(_("Salvage Value cannot be more than the Unit Cost."))
@@ -47,6 +49,28 @@ class ProjectAsset(Document):
 				indicator="orange",
 				alert=True,
 			)
+
+	def sync_from_asset(self):
+		"""A linked ERPNext Asset is the source of the cost, quantity and depreciation."""
+		if not self.asset:
+			return
+		from altor_project.asset_accounting import has_movements, values_from_asset
+
+		asset = frappe.get_doc("Asset", self.asset)
+		if asset.docstatus == 2:
+			frappe.throw(_("Asset {0} is cancelled.").format(self.asset))
+		other = frappe.db.get_value("Project Asset", {"asset": self.asset, "name": ["!=", self.name or ""]})
+		if other:
+			frappe.throw(_("Asset {0} is already linked to Project Asset {1}.").format(self.asset, other))
+		values = values_from_asset(asset)
+		if not self.is_new() and has_movements(self.name):
+			# issued to projects: the quantity stays as issued (a later split / scrap changes the Asset's)
+			values.pop("qty")
+			if self.has_value_changed("asset"):
+				frappe.throw(
+					_("The ERPNext Asset cannot be changed once the asset has been issued to projects.")
+				)
+		self.update(values)
 
 	def onload(self):
 		self.set_onload("book_value", flt(self.get_book_value(), 2))

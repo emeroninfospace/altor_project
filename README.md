@@ -125,30 +125,31 @@ Lead, Quotation, Sales Order and Project are numbered by division, and one enqui
 
 ### Project Assets (asset allocation to projects)
 
-Scaffolding materials and equipment that are bought once and issued to projects (Cuplock standards, ledgers,
-couplers, cradles, scissor lifts, hoists ...). Office furniture and computers stay in ERPNext's own Asset module.
+Scaffolding materials and equipment bought once and issued to projects. **ERPNext's Asset module keeps the
+accounts** (capitalisation, monthly depreciation, split, scrap, sale); the Project Asset keeps the site side
+(quantities on projects, issue / return, per-day cost to each project).
 
-1. **Item**: tick **Project Asset** and enter the **Depreciation Period (Months)**.
-2. **Purchase Receipt (GRN)**: on submit, every Project Asset item row becomes a **Project Asset** with the purchase
-   price of the row (net, company currency) and the depreciation period (editable on the row). Existing stock is
-   entered by hand as Project Assets (purchase date, quantity, unit cost, months).
-3. **Project Asset** (the asset list): quantity purchased, unit cost, salvage value, depreciation months and
-   - Depreciation per unit per day = (Unit Cost - Salvage Value) / (Months x 30)
-   - Available / On Projects / Damaged quantities, and which projects have it now.
-4. **Asset Allocation** (issue to a project): the quantity on the project is taken off the available quantity. The
-   project is charged qty x rate per unit per day x days from the delivery date (both days counted, never past the end
-   of the depreciation period).
-5. **Asset Return** (Create > Asset Return on the allocation): returned (good) and **damaged / lost** quantities.
-   Depreciation of the returned quantity stops on the return date. Damaged / lost units are written off and charged
-   to the project at their book value on the return date (unit cost less depreciation since purchase, not below the
-   salvage value); the charge per unit can be changed on the row.
-6. **Project Budget**: depreciation and damage cost count against the budget line of the asset's Item Group
-   (shown as **Asset Cost**, included in Utilized). They are refreshed after each allocation / return and every
-   night, as depreciation grows each day the asset stays on site.
-7. **Project Asset Cost** report: depreciation and damage cost charged to each project in any period (month end
-   costing), with the quantity on site at the period end.
+1. **Item**: tick **Project Asset** (it also ticks Is Fixed Asset, Create Grouped Asset and Auto Create Assets and
+   clears Maintain Stock) and choose the **Asset Category** (accounts + depreciation method and months).
+2. **Purchase Receipt (GRN)**: ERPNext creates ONE grouped **Asset** for the quantity received. Submitting that Asset
+   creates the linked **Project Asset**: quantity, unit cost, salvage value and depreciation months come from the Asset
+   and are read-only. Assets already owned: create them in ERPNext as existing assets (Is Existing Asset, opening
+   accumulated depreciation); their Project Assets are created the same way.
+3. **Asset Allocation** (issue to a project) and **Asset Return** (good and damaged / lost quantities) as before:
+   the project is charged qty x (cost - salvage) / (months x 30) per unit per day while on site, and damaged / lost
+   units at their book value on the return date (Project Budget, Material Cost line).
+4. **Accounts for damage**: on an Asset Return the damaged / lost quantity is split off the ERPNext Asset and scrapped
+   (ERPNext Split Asset + Scrap Asset: the loss goes to the company's Gain/Loss Account on Asset Disposal). Cancelling
+   the return restores it (it stays a separate asset). Switch off in Altor Settings > Write Off Damaged Assets.
+5. **Month end**: Project Asset Cost report > **Post Depreciation to Projects** (or Altor Settings > Post Depreciation
+   to Projects Monthly) makes a Journal Entry that moves the month's depreciation of the issued assets from the
+   asset's cost center to each project and its division, on the asset category's depreciation expense account, with
+   the same figures as the report. One entry per company and month.
 
-These figures are for project costing; no accounting (GL) entries are posted for the depreciation.
+Accounting setup the client's accountant checks: Asset Categories (fixed asset, accumulated depreciation and
+depreciation expense accounts, depreciation months), the Company's asset accounts (Gain/Loss Account on Asset
+Disposal, Depreciation Cost Center, Asset Received But Not Billed / CWIP for GRNs) and Accounts Settings > Book
+Asset Depreciation Entry Automatically.
 
 ### Payment Certificate
 

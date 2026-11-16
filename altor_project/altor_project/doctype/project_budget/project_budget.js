@@ -114,8 +114,14 @@ function set_status_indicator(frm) {
     }
 }
 
-function money(value, frm) {
+function money_text(value) {
+    // plain text for tooltips (title attributes cannot hold markup)
     return format_currency(flt(value), frappe.defaults.get_default("currency"), 0);
+}
+
+function money(value, frm) {
+    // <bdi>: the Arabic AED symbol otherwise reverses the order of amounts shown side by side
+    return `<bdi>${format_currency(flt(value), frappe.defaults.get_default("currency"), 0)}</bdi>`;
 }
 
 function render_budget_dashboard(frm) {
@@ -157,7 +163,7 @@ function render_budget_dashboard(frm) {
                     <span class="indicator-pill ${STATUS_COLORS[r.budget_status] || "gray"}">${flt(pct, 1)}%</span>
                 </span>
             </div>
-            <div class="pb-track" title="${__("Committed")}: ${money(r.committed_amount)} | ${__("Actual")}: ${money(r.actual_amount)} | ${__("Manpower")}: ${money(r.manpower_amount)} | ${__("Assets")}: ${money(r.asset_amount)}">
+            <div class="pb-track" title="${__("Committed")}: ${money_text(r.committed_amount)} | ${__("Actual")}: ${money_text(r.actual_amount)} | ${__("Manpower")}: ${money_text(r.manpower_amount)} | ${__("Assets")}: ${money_text(r.asset_amount)}">
                 <div class="pb-fill" style="width:${width}%;background:${bar_color(r.budget_status)}"></div>
                 <div class="pb-marker" style="left:${Math.min(limit, 100)}%"></div>
             </div>

@@ -6,6 +6,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, getdate
 
+from altor_project.asset_accounting import ENDED, asset_state
 from altor_project.assets import lock_assets, on_movement, update_allocation
 
 
@@ -79,6 +80,13 @@ class AssetAllocation(Document):
 				frappe.throw(_("Row #{0}: select a Project Asset.").format(row.idx))
 			if asset.disabled:
 				frappe.throw(_("Row #{0}: Project Asset {1} is disabled.").format(row.idx, asset.name))
+			linked, status, _docstatus = asset_state(asset.name)
+			if status in ENDED:
+				frappe.throw(
+					_("Row #{0}: ERPNext Asset {1} of {2} is {3}.").format(
+						row.idx, linked, asset.name, _(status)
+					)
+				)
 			if self.company and asset.company and asset.company != self.company:
 				frappe.throw(
 					_("Row #{0}: {1} belongs to {2}, not {3}.").format(

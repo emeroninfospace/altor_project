@@ -788,9 +788,11 @@ def _make_demo_data(company=None, store=True):
 		projects={},
 		sales_orders={},
 		assets={},
+		location=None,
 	)
 	for title, fn in (
 		("Divisions", _make_divisions),
+		("Asset accounting setup", _make_asset_setup),
 		("Item groups", _make_item_groups),
 		("Items", _make_items),
 		("Payment terms", _make_payment_terms),
@@ -806,13 +808,14 @@ def _make_demo_data(company=None, store=True):
 			_make_sales_flow(ctx, log, key)
 	for title, fn in (
 		("Project budgets", _make_budgets),
-		("Project assets", _make_project_assets),
+		("ERPNext assets (opening stock)", _make_assets),
 		("Asset issues and returns", _make_allocations),
 		("Cross hire purchase orders", _make_cross_hire_pos),
 		("Project bills", _make_direct_invoices),
 		("Timesheets (November overtime sheet)", _make_timesheets),
 		("Agency bill", _make_agency_invoice),
 		("Sales invoice", _make_sales_invoice),
+		("Depreciation to projects (last month)", _post_depreciation_to_projects),
 	):
 		with log.step(title):
 			fn(ctx, log)
@@ -901,20 +904,21 @@ def _make_items(ctx, log):
 	for key, items in SALES_ITEMS.items():
 		for code, name, uom in items:
 			_item(log, code, name, SERVICE_GROUPS[key], uom, is_sales_item=1, is_purchase_item=0)
-	for code, name, group, uom, cost, months, _qty, _div in ASSET_ITEMS:
-		_item(
-			log,
-			code,
-			name,
-			group,
-			uom,
-			is_stock_item=1,
-			is_sales_item=0,
-			is_purchase_item=1,
-			valuation_rate=cost,
-			custom_is_project_asset=1,
-			custom_depreciation_months=months,
-		)
+	for code, name, group, uom, _cost, _months, _qty, _div in ASSET_ITEMS:
+		fixed = {
+			"is_stock_item": 0,
+			"is_fixed_asset": 1,
+			"asset_category": group,
+			"is_grouped_asset": 1,
+			"auto_create_assets": 1,
+			"custom_is_project_asset": 1,
+		}
+		_item(log, code, name, group, uom, is_sales_item=0, is_purchase_item=1, **fixed)
+		item = frappe.get_doc("Item", code)
+		if any(item.get(k) != v for k, v in fixed.items()):  # an item made by an earlier version of the demo
+			item.update(fixed)
+			item.flags.ignore_permissions = True
+			item.save()
 	for _project, _supplier, period, rows in CROSS_HIRE_POS:
 		for code, name, _qty, uom, _rate, _n in rows:
 			_item(
@@ -1122,7 +1126,8 @@ def _make_sales_flow(ctx, log, key):
 	q.update(
 		{
 			"transaction_date": add_days(start, -20),
-			"valid_till": add_days(start, 10),
+			# still valid today: ERPNext refuses a Sales Order from an expired quotation
+			"valid_till": add_days(t, 15),
 			"company": ctx.company,
 			"cost_center": ctx.divisions[key],
 			"custom_project": p["name"],
@@ -1137,6 +1142,10 @@ def _make_sales_flow(ctx, log, key):
 	q = _insert(q, log, submit=True)
 
 	so = make_sales_order(q.name)
+	# the quotation's contact belongs to the Lead; the order takes the customer's own contact
+	from frappe.contacts.doctype.contact.contact import get_default_contact
+
+	so.contact_person = get_default_contact("Customer", customer)
 	so.update(
 		{
 			"transaction_date": add_days(start, -5),
@@ -1225,25 +1234,133 @@ def _make_budgets(ctx, log):
 # ---------------------------------------------------------------------------
 
 
-def _make_project_assets(ctx, log):
-	for code, name, _group_name, _uom_name, cost, months, qty, div in ASSET_ITEMS:
-		asset = _insert(
+def _account(ctx, log, account_type, name, like_type):
+	"""Company account of a type: the demo's own if present, else created next to an existing one."""
+	full = f"{name} - {ctx.abbr}"
+	if frappe.db.exists("Account", full):
+		return full
+	sibling = frappe.db.get_value(
+		"Account",
+		{"company": ctx.company, "account_type": like_type, "is_group": 0},
+		["parent_account", "root_type"],
+		as_dict=True,
+	)
+	if not sibling:
+		return None
+	return _insert(
+		{
+			"doctype": "Account",
+			"account_name": name,
+			"company": ctx.company,
+			"parent_account": sibling.parent_account,
+			"account_type": account_type,
+			"root_type": sibling.root_type,
+		},
+		log,
+	).name
+
+
+def _make_asset_setup(ctx, log):
+	"""Location, accounts and Asset Categories for the asset list (only what is missing)."""
+	ctx.location = _get_or_create("Location", "Altor Yard", {"location_name": "Altor Yard"}, log)
+	fixed = _account(ctx, log, "Fixed Asset", "Scaffolding and Access Equipment", "Fixed Asset")
+	acc_dep = _account(
+		ctx,
+		log,
+		"Accumulated Depreciation",
+		"Acc. Depreciation of Scaffolding and Access Equipment",
+		"Accumulated Depreciation",
+	)
+	dep = _account(
+		ctx, log, "Depreciation", "Depreciation of Scaffolding and Access Equipment", "Depreciation"
+	)
+	company = frappe.get_doc("Company", ctx.company)
+	if not company.disposal_account:  # ERPNext needs it to scrap (write off) an asset
+		company.disposal_account = frappe.db.get_value(
+			"Account",
+			{"company": ctx.company, "account_name": ["like", "%Fixed Assets Disposal%"], "is_group": 0},
+		)
+		if company.disposal_account:
+			company.flags.ignore_permissions = True
+			company.save()
+	months = {group: m for _c, _n, group, _u, _cost, m, _q, _d in ASSET_ITEMS}
+	for group, total in months.items():
+		_get_or_create(
+			"Asset Category",
+			group,
 			{
-				"doctype": "Project Asset",
-				"asset_name": name[:140],
-				"item_code": code,
-				"company": ctx.company,
-				"cost_center": ctx.divisions[div],
-				"purchase_date": add_days(ctx.today, -random.choice([120, 240, 400, 540, 700])),
-				"qty": qty,
-				"unit_cost": cost,
-				"salvage_value": round(cost * 0.05, 2),
-				"depreciation_months": months,
-				"remarks": ASSET_REMARK,
+				"asset_category_name": group,
+				"accounts": [
+					{
+						"company_name": ctx.company,
+						"fixed_asset_account": fixed,
+						"accumulated_depreciation_account": acc_dep,
+						"depreciation_expense_account": dep,
+					}
+				],
+				"finance_books": [
+					{
+						"depreciation_method": "Straight Line",
+						"total_number_of_depreciations": total,
+						"frequency_of_depreciation": 1,
+					}
+				],
 			},
 			log,
 		)
-		ctx.assets[code] = asset.name
+
+
+def _make_assets(ctx, log):
+	"""Opening stock as ERPNext Assets (existing assets, depreciation booked to last month end).
+
+	Submitting each Asset creates its Project Asset (altor_project.asset_accounting.on_asset_submit).
+	"""
+	t = ctx.today
+	start = getdate(add_days(t, -t.day + 1))  # first day of this month
+	for code, name, _group, _uom, cost, months, qty, div in ASSET_ITEMS:
+		existing = frappe.db.get_value("Project Asset", {"item_code": code, "remarks": ASSET_REMARK})
+		if existing:  # a re-run keeps the opening stock already created
+			ctx.assets[code] = existing
+			continue
+		used_from = getdate(add_days(t, -random.choice([120, 240, 400, 540, 700])))
+		booked = min((start.year - used_from.year) * 12 + start.month - used_from.month - 1, months - 1)
+		gross, salvage = qty * cost, round(qty * cost * 0.05, 2)
+		asset = _insert(
+			{
+				"doctype": "Asset",
+				"item_code": code,
+				"asset_name": name[:140],
+				"company": ctx.company,
+				"location": ctx.location,
+				"cost_center": ctx.divisions[div],
+				"purchase_date": used_from,
+				"available_for_use_date": used_from,
+				"gross_purchase_amount": gross,
+				"purchase_amount": gross,
+				"asset_quantity": qty,
+				"is_existing_asset": 1,
+				"calculate_depreciation": 1,
+				"opening_accumulated_depreciation": round((gross - salvage) / months * max(booked, 0), 2),
+				"opening_number_of_booked_depreciations": max(booked, 0),
+				"finance_books": [
+					{
+						"depreciation_method": "Straight Line",
+						"total_number_of_depreciations": months,
+						"frequency_of_depreciation": 1,
+						"depreciation_start_date": add_days(add_days(start, 32), -add_days(start, 32).day),
+						"expected_value_after_useful_life": salvage,
+					}
+				],
+			},
+			log,
+			submit=True,
+		)
+		project_asset = frappe.db.get_value("Project Asset", {"asset": asset.name})
+		if not project_asset:
+			frappe.throw(f"No Project Asset was created for {asset.name}")
+		frappe.db.set_value("Project Asset", project_asset, "remarks", ASSET_REMARK)
+		ctx.assets[code] = project_asset
+		frappe.clear_messages()
 
 
 def _make_allocations(ctx, log):
@@ -1367,6 +1484,8 @@ def _make_agency_invoice(ctx, log):
 
 def _make_timesheets(ctx, log):
 	year, month = OT_MONTH
+	# ERPNext needs an Activity Type on each row before a Timesheet can be submitted
+	activity = _get_or_create("Activity Type", "Scaffolding Work", {"activity_type": "Scaffolding Work"}, log)
 	for worker, employee in ctx.workers.items():
 		logs = []
 		for day in range(1, 31):
@@ -1378,6 +1497,7 @@ def _make_timesheets(ctx, log):
 			start = get_datetime(f"{year}-{month:02d}-{day:02d} 07:00:00")
 			logs.append(
 				{
+					"activity_type": activity,
 					"from_time": start,
 					"to_time": start + timedelta(hours=total),
 					"hours": total,
@@ -1400,6 +1520,16 @@ def _make_timesheets(ctx, log):
 			submit=True,
 		)
 		frappe.clear_messages()
+
+
+def _post_depreciation_to_projects(ctx, log):
+	"""Last month's depreciation of the issued assets -> the projects (Journal Entry)."""
+	from altor_project.asset_accounting import post_depreciation_allocation
+
+	period = str(add_days(getdate(add_days(ctx.today, -ctx.today.day + 1)), -1))[:7]
+	out = post_depreciation_allocation(ctx.company, period)
+	if out.get("journal_entry") and not out.get("existing"):
+		log.add("Journal Entry")
 
 
 def _make_sales_invoice(ctx, log):
@@ -1483,6 +1613,15 @@ def _delete_demo_data(store=True):
 	leads = list(dict.fromkeys(leads))
 
 	if projects:
+		# month-end entries that moved asset depreciation to the demo projects
+		remove(
+			"Journal Entry",
+			[
+				j
+				for j in parents("Journal Entry Account", "project", projects)
+				if frappe.db.get_value("Journal Entry", j, "custom_asset_depreciation_period")
+			],
+		)
 		remove("Timesheet", parents("Timesheet Detail", "project", projects))
 		remove("Asset Return", names("Asset Return", {"project": ["in", projects]}))
 		remove("Asset Allocation", names("Asset Allocation", {"project": ["in", projects]}))
@@ -1499,7 +1638,12 @@ def _delete_demo_data(store=True):
 	if customers:
 		remove("Sales Invoice", names("Sales Invoice", {"customer": ["in", customers]}))
 		remove("Proforma Invoice", names("Proforma Invoice", {"customer_name": ["like", like]}))
-	remove("Project Asset", names("Project Asset", {"remarks": ["like", f"{PREFIX} %"]}))
+	demo_assets = names("Project Asset", {"remarks": ["like", f"{PREFIX} %"]})
+	erp_assets = [a for a in (frappe.db.get_value("Project Asset", p, "asset") for p in demo_assets) if a]
+	remove("Project Asset", demo_assets)
+	if erp_assets:  # the ERPNext Assets of the opening stock, split-off parts first
+		remove("Asset", names("Asset", {"split_from": ["in", erp_assets]}))
+		remove("Asset", erp_assets)
 	if employees:
 		for dt in ("Timesheet", "Attendance", "Employee Checkin", "Leave Application"):
 			remove(dt, names(dt, {"employee": ["in", employees]}))
