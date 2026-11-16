@@ -14,6 +14,10 @@
   "column_break_mp",
   "working_hours_per_day",
   "outsourced_hours_per_day",
+  "project_assets_section",
+  "write_off_damaged_assets",
+  "column_break_pa",
+  "auto_post_asset_depreciation",
   "division_numbering_section",
   "enable_division_numbering",
   "division_series_digits",
@@ -83,6 +87,29 @@
    "description": "Outsourced workers: Timesheet hours above this per day are OT 1"
   },
   {
+   "fieldname": "project_assets_section",
+   "fieldtype": "Section Break",
+   "label": "Project Assets"
+  },
+  {
+   "fieldname": "write_off_damaged_assets",
+   "fieldtype": "Check",
+   "label": "Write Off Damaged Assets",
+   "default": "1",
+   "description": "On an Asset Return, split the damaged / lost quantity off the ERPNext Asset and scrap it (Split Asset + Scrap Asset)"
+  },
+  {
+   "fieldname": "column_break_pa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "auto_post_asset_depreciation",
+   "fieldtype": "Check",
+   "label": "Post Depreciation to Projects Monthly",
+   "default": "0",
+   "description": "On the 1st of each month, a Journal Entry moves last month's depreciation of project assets to the projects and divisions that used them"
+  },
+  {
    "fieldname": "division_numbering_section",
    "fieldtype": "Section Break",
    "label": "Division Numbering",
@@ -138,7 +165,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-11-16 15:00:00.000000",
+ "modified": "2026-11-16 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Altor Settings",

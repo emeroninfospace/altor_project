@@ -50,6 +50,7 @@ doctype_js = {
 	"Task": "public/js/task.js",
 	"Lead": "public/js/lead.js",
 	"Timesheet": "public/js/timesheet.js",
+	"Item": "public/js/item.js",
 }
 
 override_doctype_class = {"Quotation": "altor_project.events.quotation.CustomQuotation"}
@@ -208,13 +209,12 @@ doc_events = {
 		"on_submit": "altor_project.labour.on_timesheet_change",
 		"on_cancel": "altor_project.labour.on_timesheet_change",
 	},
-	# GRN of "Project Asset" items creates Project Assets
-	"Purchase Receipt": {
-		"validate": "altor_project.events.purchase_receipt.validate",
-		"on_submit": "altor_project.events.purchase_receipt.on_submit",
-		"before_cancel": "altor_project.events.purchase_receipt.before_cancel",
-		"on_cancel": "altor_project.events.purchase_receipt.on_cancel",
+	# ERPNext Asset of a "Project Asset" item <-> Project Asset (ERPNext keeps the accounts)
+	"Asset": {
+		"on_submit": "altor_project.asset_accounting.on_asset_submit",
+		"on_cancel": "altor_project.asset_accounting.on_asset_cancel",
 	},
+	"Item": {"validate": "altor_project.asset_accounting.validate_item"},
 }
 
 # Division numbering: CRM-SCF-LEAD-2026-0001 -> QT-SCF-2026-0001 -> SO-... -> PRJ-...
@@ -277,6 +277,8 @@ scheduler_events = {
 		"altor_project.assets.refresh_open_allocations",
 		"altor_project.budget.refresh_all_budgets",
 	],
+	# 1st of the month: last month's project asset depreciation to projects (when enabled)
+	"monthly": ["altor_project.asset_accounting.scheduled_allocation"],
 }
 
 # scheduler_events = {

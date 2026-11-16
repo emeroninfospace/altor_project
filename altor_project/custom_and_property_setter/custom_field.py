@@ -100,26 +100,7 @@ CREATE_FIELDS = {
 			"label": "Project Asset",
 			"fieldtype": "Check",
 			"insert_after": "is_fixed_asset",
-			"description": "Scaffolding material / equipment issued to projects. A GRN of this item creates a Project Asset.",
-		},
-		{
-			"fieldname": "custom_depreciation_months",
-			"label": "Depreciation Period (Months)",
-			"fieldtype": "Int",
-			"insert_after": "custom_is_project_asset",
-			"depends_on": "eval:doc.custom_is_project_asset",
-			"mandatory_depends_on": "eval:doc.custom_is_project_asset",
-		},
-	],
-	"Purchase Receipt Item": [
-		{
-			"fieldname": "custom_depreciation_months",
-			"label": "Depreciation Period (Months)",
-			"fieldtype": "Int",
-			"insert_after": "item_group",
-			"fetch_from": "item_code.custom_depreciation_months",
-			"fetch_if_empty": 1,
-			"description": "For Project Asset items: the asset is depreciated over this period",
+			"description": "Fixed asset issued to projects (scaffolding materials, equipment). Use Create Grouped Asset: a GRN creates one ERPNext Asset for the quantity, and its submission creates the Project Asset.",
 		},
 	],
 	"Task": [
@@ -140,7 +121,16 @@ CREATE_FIELDS = {
 			"options": "Project",
 			"read_only": 1,
 			"insert_after": "tax_withholding_category",
-		}
+		},
+		{
+			"fieldname": "custom_asset_depreciation_period",
+			"label": "Project Asset Depreciation Month",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"no_copy": 1,
+			"insert_after": "custom_project",
+			"description": "Month (YYYY-MM) whose project asset depreciation this entry moves to the projects",
+		},
 	],
 	# Manpower costing (own staff and outsourced manpower)
 	"Employee": [

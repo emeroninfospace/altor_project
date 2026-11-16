@@ -16,6 +16,14 @@ frappe.ui.form.on("Project Asset", {
 
     refresh(frm) {
         render_on_projects(frm);
+        if (frm.doc.asset) {
+            frm.add_custom_button(__("ERPNext Asset"), () => frappe.set_route("Form", "Asset", frm.doc.asset), __("View"));
+        } else if (!frm.is_new()) {
+            frm.dashboard.set_headline_alert(
+                __("Not linked to an ERPNext Asset, so it is not in the accounts. Link the Asset (created from the GRN) to book its value and depreciation."),
+                "orange"
+            );
+        }
         if (!frm.is_new() && !frm.doc.disabled && flt(frm.doc.available_qty) > 0) {
             frm.add_custom_button(__("Issue to Project"), () => {
                 const doc = frappe.model.get_new_doc("Asset Allocation");
@@ -38,14 +46,15 @@ frappe.ui.form.on("Project Asset", {
     },
 
     item_code(frm) {
-        if (!frm.doc.item_code) return;
-        frappe.db.get_value("Item", frm.doc.item_code, ["item_name", "custom_depreciation_months"]).then((r) => {
-            const v = r.message || {};
-            if (!frm.doc.asset_name) frm.set_value("asset_name", v.item_name);
-            if (!frm.doc.depreciation_months && v.custom_depreciation_months) {
-                frm.set_value("depreciation_months", v.custom_depreciation_months);
-            }
+        if (!frm.doc.item_code || frm.doc.asset_name) return;
+        frappe.db.get_value("Item", frm.doc.item_code, "item_name").then((r) => {
+            if (r.message) frm.set_value("asset_name", r.message.item_name);
         });
+    },
+    asset(frm) {
+        if (frm.doc.asset) {
+            frappe.show_alert({ message: __("Quantity, cost and depreciation are taken from the Asset when you save."), indicator: "blue" });
+        }
     },
     qty: calculate,
     unit_cost: calculate,

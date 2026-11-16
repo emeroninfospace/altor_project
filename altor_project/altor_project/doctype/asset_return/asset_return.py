@@ -6,6 +6,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, getdate, nowdate
 
+from altor_project.asset_accounting import restore_written_off, write_off_damaged
 from altor_project.assets import book_value, charge_days, lock_assets, on_movement, update_allocation
 
 
@@ -28,8 +29,10 @@ class AssetReturn(Document):
 
 	def on_submit(self):
 		self.update_movement()
+		write_off_damaged(self)  # damaged / lost -> ERPNext Split Asset + Scrap Asset
 
 	def on_cancel(self):
+		restore_written_off(self)
 		self.update_movement()
 
 	def update_movement(self):

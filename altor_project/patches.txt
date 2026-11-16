@@ -15,3 +15,4 @@ altor_project.patches.v2026_11.update_division_fields
 altor_project.patches.v2026_11.add_project_assets
 altor_project.patches.v2026_11.timesheet_labour_cost
 altor_project.patches.v2026_11.remove_manpower_entry
+altor_project.patches.v2026_11.project_assets_on_erpnext_assets
