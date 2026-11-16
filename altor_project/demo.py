@@ -1444,6 +1444,10 @@ def _delete_demo_data(store=True):
 	def names(doctype, filters=None, or_filters=None):
 		if not frappe.db.exists("DocType", doctype):
 			return []
+		meta = frappe.get_meta(doctype)
+		fields = list(filters or {}) + list(or_filters or {})
+		if any(f != "name" and not meta.has_field(f) for f in fields):
+			return []  # this site's version of the doctype has no such field
 		return frappe.get_all(
 			doctype, filters=filters, or_filters=or_filters, pluck="name", order_by="creation desc"
 		)
@@ -1494,7 +1498,7 @@ def _delete_demo_data(store=True):
 		remove("Purchase Order", names("Purchase Order", {"supplier": ["in", suppliers]}))
 	if customers:
 		remove("Sales Invoice", names("Sales Invoice", {"customer": ["in", customers]}))
-		remove("Proforma Invoice", names("Proforma Invoice", {"customer": ["in", customers]}))
+		remove("Proforma Invoice", names("Proforma Invoice", {"customer_name": ["like", like]}))
 	remove("Project Asset", names("Project Asset", {"remarks": ["like", f"{PREFIX} %"]}))
 	if employees:
 		for dt in ("Timesheet", "Attendance", "Employee Checkin", "Leave Application"):
