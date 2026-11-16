@@ -288,7 +288,9 @@ def post_depreciation_allocation(company, period):
 	je = frappe.new_doc("Journal Entry")
 	je.update(
 		{
-			"voucher_type": "Journal Entry",
+			# ERPNext requires this type on entries that touch a depreciation account; with no Asset
+			# reference on the rows it does not change any asset's value
+			"voucher_type": "Depreciation Entry",
 			"company": company,
 			"posting_date": end,
 			"custom_asset_depreciation_period": period,
