@@ -73,3 +73,8 @@ def employee(data):
 			"Expense Entry": "employee_name",
 		},
 	)
+
+
+def asset(data):
+	# the Project Asset that issues this ERPNext Asset to projects (Asset Allocation / Return)
+	return _add(data, _("Projects"), ["Project Asset"], fieldnames={"Project Asset": "asset"})
