@@ -809,7 +809,7 @@ def _make_demo_data(company=None, store=True):
 			_make_sales_flow(ctx, log, key)
 	for title, fn in (
 		("Project budgets", _make_budgets),
-		("ERPNext assets (opening stock)", _make_assets),
+		("Fixed assets (opening stock)", _make_assets),
 		("Asset issues and returns", _make_allocations),
 		("Cross hire purchase orders", _make_cross_hire_pos),
 		("Project bills", _make_direct_invoices),

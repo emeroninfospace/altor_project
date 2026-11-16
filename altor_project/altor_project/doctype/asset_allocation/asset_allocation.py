@@ -83,7 +83,7 @@ class AssetAllocation(Document):
 			linked, status, _docstatus = asset_state(asset.name)
 			if status in ENDED:
 				frappe.throw(
-					_("Row #{0}: ERPNext Asset {1} of {2} is {3}.").format(
+					_("Row #{0}: Fixed Asset {1} of {2} is {3}.").format(
 						row.idx, linked, asset.name, _(status)
 					)
 				)

@@ -100,7 +100,7 @@ CREATE_FIELDS = {
 			"label": "Project Asset",
 			"fieldtype": "Check",
 			"insert_after": "is_fixed_asset",
-			"description": "Fixed asset issued to projects (scaffolding materials, equipment). Use Create Grouped Asset: a GRN creates one ERPNext Asset for the quantity, and its submission creates the Project Asset.",
+			"description": "Fixed asset issued to projects (scaffolding materials, equipment). Use Create Grouped Asset: a GRN creates one Fixed Asset for the quantity, and its submission creates the Project Asset.",
 		},
 	],
 	"Task": [

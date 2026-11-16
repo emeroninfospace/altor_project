@@ -142,7 +142,7 @@
    "read_only": 1,
    "no_copy": 1,
    "allow_on_submit": 1,
-   "description": "ERPNext Asset scrapped for the damaged / lost quantity"
+   "description": "Fixed Asset scrapped for the damaged / lost quantity"
   },
   {
    "fieldname": "allocation_item",
@@ -171,7 +171,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-11-16 18:00:00.000000",
+ "modified": "2026-11-16 16:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Asset Return Item",
