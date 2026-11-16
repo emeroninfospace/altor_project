@@ -50,21 +50,6 @@ CREATE_FIELDS = {
 			"show_dashboard": 1,
 		},
 		{
-			"fieldname": "custom_manpower_crew_section",
-			"fieldtype": "Section Break",
-			"insert_after": "scope_of_work",
-			"label": "Daily Manpower Crew",
-			"collapsible": 1,
-			"description": "Agency crews working on this project every day. Booked automatically in Manpower Entries (when automation is on in Altor Settings).",
-		},
-		{
-			"fieldname": "custom_manpower_crew",
-			"fieldtype": "Table",
-			"insert_after": "custom_manpower_crew_section",
-			"label": "Daily Manpower Crew",
-			"options": "Project Manpower Crew",
-		},
-		{
 			"fieldname": "lpo_ref",
 			"label": "LPO Ref",
 			"fieldtype": "Data",
@@ -192,30 +177,14 @@ CREATE_FIELDS = {
 			"fieldname": "custom_hourly_cost_rate",
 			"label": "Hourly Cost Rate",
 			"fieldtype": "Currency",
-			"description": "Cost per hour. Leave empty to use the agency rate (outsourced) or CTC / working hours (own staff) from Altor Settings",
+			"description": "Outsourced: the agency's rate per hour (Timesheet cost = rate x (normal + OT 1 x 1.25 + OT 2 x 1.5)). Own staff: used only when no Basic Salary is entered",
 			"insert_after": "custom_manpower_column_break",
-		},
-		{
-			"fieldname": "custom_ot_hourly_rate",
-			"label": "OT Hourly Rate",
-			"fieldtype": "Currency",
-			"description": "Leave empty to use Hourly Cost Rate x OT Multiplier",
-			"insert_after": "custom_hourly_cost_rate",
-		},
-		{
-			"fieldname": "custom_current_project",
-			"label": "Assigned Project",
-			"fieldtype": "Link",
-			"options": "Project",
-			"in_standard_filter": 1,
-			"description": "Project this worker is deployed on. Used to create Manpower Entries automatically from attendance.",
-			"insert_after": "custom_manpower_supplier",
 		},
 		# Own staff monthly salary: Timesheet cost (normal hour = gross / days in month / 8, OT hour = basic / days / 8)
 		{
 			"fieldname": "custom_salary_column_break",
 			"fieldtype": "Column Break",
-			"insert_after": "custom_ot_hourly_rate",
+			"insert_after": "custom_hourly_cost_rate",
 		},
 		{
 			"fieldname": "custom_basic_salary",
@@ -373,22 +342,12 @@ CREATE_FIELDS = {
 			"insert_after": "custom_labour_cost",
 		},
 	],
-	"Employee Checkin": [
-		{
-			"fieldname": "custom_project",
-			"label": "Project",
-			"fieldtype": "Link",
-			"options": "Project",
-			"description": "Site / project of this check-in. Leave empty to use the employee's Assigned Project.",
-			"insert_after": "log_type",
-		},
-	],
 	"Purchase Invoice": [
 		{
 			"fieldname": "custom_is_manpower_invoice",
 			"label": "Outsourced Manpower Invoice",
 			"fieldtype": "Check",
-			"description": "Agency invoice for manpower already recorded in Manpower Entries. It is left out of the Project Budget so labour cost is not counted twice.",
+			"description": "Agency invoice for labour already costed on Timesheets. It is left out of the Project Budget so labour cost is not counted twice.",
 			"insert_after": "supplier",
 		},
 	],

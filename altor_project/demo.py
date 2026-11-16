@@ -15,6 +15,7 @@ payable account), it is reported and the rest still runs.
 
 import random
 from contextlib import contextmanager
+from datetime import timedelta
 
 import frappe
 from frappe.utils import add_days, cint, flt, get_datetime, getdate, nowdate
@@ -66,35 +67,25 @@ DESIGNATIONS = [
 	"Accountant",
 ]
 
-# agency, designation, hourly, ot hourly
-AGENCY_RATES = [
-	("agency_1", "", 16, 20),
-	("agency_1", "Mason", 20, 25),
-	("agency_1", "Electrician", 24, 30),
-	("agency_1", "Helper", 14, 17.5),
-	("agency_2", "", 15, 19),
-	("agency_2", "Carpenter", 22, 27.5),
-	("agency_2", "Helper", 13, 16),
-]
-
-# first, last, gender, designation, hourly cost (own staff) / agency (outsourced)
+# first, last, gender, designation, monthly basic salary, allowance (own staff)
 OWN_STAFF = [
-	("Ahmed", "Khan", "Male", "Site Engineer", 85),
-	("Rashid", "Ali", "Male", "Foreman", 45),
-	("Suresh", "Kumar", "Male", "Electrician", 30),
-	("Joseph", "Mathew", "Male", "Plumber", 28),
-	("Imran", "Shaikh", "Male", "Mason", 25),
-	("Fatima", "Noor", "Female", "Accountant", 60),
+	("Ahmed", "Khan", "Male", "Site Engineer", 9000, 3000),
+	("Rashid", "Ali", "Male", "Foreman", 3500, 1000),
+	("Suresh", "Kumar", "Male", "Electrician", 2200, 600),
+	("Joseph", "Mathew", "Male", "Plumber", 2000, 500),
+	("Imran", "Shaikh", "Male", "Mason", 1300, 400),
+	("Fatima", "Noor", "Female", "Accountant", 7000, 2000),
 ]
+# first, last, gender, designation, agency, hourly rate (outsourced)
 OUTSOURCED = [
-	("Ramesh", "Yadav", "Male", "Mason", "agency_1"),
-	("Bilal", "Hussain", "Male", "Electrician", "agency_1"),
-	("Santosh", "Rai", "Male", "Helper", "agency_1"),
-	("Kamal", "Hossain", "Male", "Helper", "agency_1"),
-	("Arjun", "Thapa", "Male", "Carpenter", "agency_2"),
-	("Nabin", "Gurung", "Male", "Helper", "agency_2"),
-	("Ravi", "Shetty", "Male", "Carpenter", "agency_2"),
-	("Mohan", "Das", "Male", "Helper", "agency_2"),
+	("Ramesh", "Yadav", "Male", "Mason", "agency_1", 20),
+	("Bilal", "Hussain", "Male", "Electrician", "agency_1", 24),
+	("Santosh", "Rai", "Male", "Helper", "agency_1", 14),
+	("Kamal", "Hossain", "Male", "Helper", "agency_1", 14),
+	("Arjun", "Thapa", "Male", "Carpenter", "agency_2", 22),
+	("Nabin", "Gurung", "Male", "Helper", "agency_2", 13),
+	("Ravi", "Shetty", "Male", "Carpenter", "agency_2", 22),
+	("Mohan", "Das", "Male", "Helper", "agency_2", 13),
 ]
 
 # key, name, status, start offset, end offset, progress, customer index, contract
@@ -260,8 +251,8 @@ def _make_demo_data(company=None):
 	for i, inv in enumerate(DIRECT_INVOICES):
 		with log.step(f"Direct Purchase Invoice {i + 1}"):
 			_make_direct_invoice(ctx, log, *inv)
-	with log.step("Manpower entries"):
-		_make_manpower_entries(ctx, log)
+	with log.step("Timesheets"):
+		_make_timesheets(ctx, log)
 	with log.step("Agency invoice"):
 		_make_agency_invoice(ctx, log)
 	with log.step("Attendance"):
@@ -369,24 +360,11 @@ def _update_settings(ctx, log):
 	if not settings.get("default_manpower_item_group"):
 		settings.default_manpower_item_group = ctx.groups["Manpower"]
 	settings.ot_multiplier = settings.get("ot_multiplier") or 1.25
-	settings.working_days_per_month = settings.get("working_days_per_month") or 26
+	settings.ot2_multiplier = settings.get("ot2_multiplier") or 1.5
 	settings.working_hours_per_day = settings.get("working_hours_per_day") or 8
-	existing = {(r.supplier, r.designation or "") for r in settings.get("manpower_rates") or []}
-	for agency, designation, hourly, ot in AGENCY_RATES:
-		key = (ctx.suppliers[agency], designation)
-		if key not in existing:
-			settings.append(
-				"manpower_rates",
-				{
-					"supplier": key[0],
-					"designation": designation or None,
-					"hourly_rate": hourly,
-					"ot_hourly_rate": ot,
-				},
-			)
+	settings.outsourced_hours_per_day = settings.get("outsourced_hours_per_day") or 10
 	settings.flags.ignore_permissions = True
 	settings.save()
-	frappe.local.altor_manpower_settings = None  # reset cached rates
 	log.add("Altor Settings")
 
 
@@ -430,7 +408,7 @@ def _employee(ctx, log, first, last, gender, designation, joined_days_ago, extra
 
 
 def _make_employees(ctx, log):
-	for i, (first, last, gender, designation, hourly) in enumerate(OWN_STAFF):
+	for i, (first, last, gender, designation, basic, allowance) in enumerate(OWN_STAFF):
 		ctx.employees.setdefault("own", []).append(
 			_employee(
 				ctx,
@@ -440,10 +418,10 @@ def _make_employees(ctx, log):
 				gender,
 				designation,
 				random.choice([365 * 2 - 20, 400, 365 * 3 - 5, 900, 30, 365 + 10]) if i else 365 * 4 - 8,
-				{"custom_hourly_cost_rate": hourly, "custom_ot_hourly_rate": round(hourly * 1.25, 2)},
+				{"custom_basic_salary": basic, "custom_allowance": allowance},
 			)
 		)
-	for first, last, gender, designation, agency in OUTSOURCED:
+	for first, last, gender, designation, agency, hourly in OUTSOURCED:
 		ctx.employees.setdefault("outsourced", []).append(
 			_employee(
 				ctx,
@@ -453,7 +431,11 @@ def _make_employees(ctx, log):
 				gender,
 				designation,
 				random.randint(10, 500),
-				{"custom_is_outsourced": 1, "custom_manpower_supplier": ctx.suppliers[agency]},
+				{
+					"custom_is_outsourced": 1,
+					"custom_manpower_supplier": ctx.suppliers[agency],
+					"custom_hourly_cost_rate": hourly,
+				},
 			)
 		)
 
@@ -608,11 +590,11 @@ def _make_direct_invoice(ctx, log, project_key, supplier_key, days_ago, items, m
 
 
 def _make_agency_invoice(ctx, log):
-	"""An agency bill for labour already booked in Manpower Entries (left out of the budget)."""
+	"""An agency bill for labour already costed on Timesheets (left out of the budget)."""
 	hours = frappe.db.sql(
-		"""SELECT SUM(d.no_of_workers * (IFNULL(d.working_hours, 0) + IFNULL(d.ot_hours, 0)))
-		FROM `tabManpower Entry Detail` d INNER JOIN `tabManpower Entry` me ON me.name = d.parent
-		WHERE me.docstatus = 1 AND me.project = %s AND d.supplier = %s""",
+		"""SELECT SUM(td.hours)
+		FROM `tabTimesheet Detail` td INNER JOIN `tabTimesheet` ts ON ts.name = td.parent
+		WHERE ts.docstatus = 1 AND td.project = %s AND ts.custom_manpower_supplier = %s""",
 		(ctx.projects["villa"], ctx.suppliers["agency_1"]),
 	)[0][0]
 	if flt(hours):
@@ -624,68 +606,43 @@ def _make_agency_invoice(ctx, log):
 # ---------------------------------------------------------------------------
 
 
-def _make_manpower_entries(ctx, log):
+def _make_timesheets(ctx, log):
+	"""One Timesheet per worker and project: a row per working day, some overtime, a few Sundays."""
 	own, out = ctx.employees.get("own", []), ctx.employees.get("outsourced", [])
-	# Fixed crews per project so nobody is booked twice on the same day
+	# Fixed crews per project so nobody is booked on two projects at the same time
 	crews = {
-		"villa": {"own": own[1:3], "out": out[0:3], "crew": (ctx.suppliers["agency_1"], "Helper", 4)},
-		"office": {"own": own[3:5], "out": out[4:6], "crew": (ctx.suppliers["agency_2"], "Helper", 3)},
-		"warehouse": {
-			"own": own[0:1],
-			"out": out[6:8] + out[3:4],
-			"crew": (ctx.suppliers["agency_2"], "Carpenter", 2),
-		},
+		"villa": own[1:3] + out[0:4],
+		"office": own[3:5] + out[4:6],
+		"warehouse": own[0:1] + out[6:8],
 	}
-	group = ctx.groups["Manpower"]
-	for key, crew in crews.items():
+	outsourced = set(out)
+	for key, employees in crews.items():
 		start = max(-26, PROJECTS[[p[0] for p in PROJECTS].index(key)][3])
-		for offset in range(start, 1):
-			day = add_days(ctx.today, offset)
-			if getdate(day).weekday() == 6 or random.random() < 0.25:  # Sundays off, and not every day booked
-				continue
-			details = []
-			for emp in crew["own"]:
-				details.append(
+		for emp in employees:
+			normal = 10 if emp in outsourced else 8
+			logs = []
+			for offset in range(start, 1):
+				day = getdate(add_days(ctx.today, offset))
+				sunday = day.weekday() == 6
+				if (sunday and random.random() < 0.7) or random.random() < 0.15:
+					continue  # Sundays mostly off, and not every day worked
+				hours = 8 if sunday else normal + random.choice([0, 0, 1, 2])
+				from_time = get_datetime(f"{day} 07:00:00")
+				logs.append(
 					{
-						"worker_type": "Own Staff",
-						"employee": emp,
-						"working_hours": 8,
-						"ot_hours": random.choice([0, 0, 1, 2]),
+						"from_time": from_time,
+						"to_time": from_time + timedelta(hours=hours),
+						"hours": hours,
+						"project": ctx.projects[key],
 					}
 				)
-			for emp in crew["out"]:
-				if random.random() < 0.9:
-					details.append(
-						{
-							"worker_type": "Outsourced",
-							"employee": emp,
-							"working_hours": 8,
-							"ot_hours": random.choice([0, 1, 2, 3]),
-						}
-					)
-			supplier, designation, n = crew["crew"]
-			details.append(
-				{
-					"worker_type": "Outsourced",
-					"supplier": supplier,
-					"designation": designation,
-					"no_of_workers": n + random.randint(-1, 2),
-					"working_hours": 8,
-					"ot_hours": random.choice([0, 2]),
-				}
-			)
-			_insert(
-				{
-					"doctype": "Manpower Entry",
-					"project": ctx.projects[key],
-					"posting_date": day,
-					"item_group": group,
-					"details": details,
-				},
-				log,
-				submit=True,
-			)
-			frappe.clear_messages()
+			if logs:
+				_insert(
+					{"doctype": "Timesheet", "company": ctx.company, "employee": emp, "time_logs": logs},
+					log,
+					submit=True,
+				)
+				frappe.clear_messages()
 
 
 def _make_attendance(ctx, log):
@@ -779,15 +736,13 @@ def delete_demo_data():
 	def names(doctype, filters):
 		return frappe.get_all(doctype, filters=filters, pluck="name", order_by="creation desc")
 
-	if projects:
-		remove("Manpower Entry", names("Manpower Entry", {"project": ["in", projects]}))
 	if suppliers:
 		remove("Purchase Invoice", names("Purchase Invoice", {"supplier": ["in", suppliers]}))
 		remove("Purchase Order", names("Purchase Order", {"supplier": ["in", suppliers]}))
 	if projects:
 		remove("Project Budget", names("Project Budget", {"project": ["in", projects]}))
 	if employees:
-		for dt in ("Attendance", "Employee Checkin", "Leave Application"):
+		for dt in ("Timesheet", "Attendance", "Employee Checkin", "Leave Application"):
 			if frappe.db.exists("DocType", dt):
 				remove(dt, names(dt, {"employee": ["in", employees]}))
 	if projects:
@@ -795,11 +750,8 @@ def delete_demo_data():
 		remove("Project", projects)
 	remove("Employee", employees)
 
-	with log.step("Altor Settings rates"):
+	with log.step("Altor Settings"):
 		settings = frappe.get_single("Altor Settings")
-		keep = [r for r in settings.get("manpower_rates") or [] if r.supplier not in suppliers]
-		if len(keep) != len(settings.get("manpower_rates") or []):
-			settings.set("manpower_rates", keep)
 		if (settings.get("default_manpower_item_group") or "").startswith(PREFIX):
 			settings.default_manpower_item_group = None
 		settings.flags.ignore_permissions = True

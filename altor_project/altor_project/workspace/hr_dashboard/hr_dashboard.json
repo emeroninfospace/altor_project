@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\": \"4481740c56\", \"type\": \"custom_block\", \"data\": {\"custom_block_name\": \"HR Dashboard\", \"col\": 12}}, {\"id\": \"6685a92180\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Employees</b></span>\", \"col\": 12}}, {\"id\": \"02e18fc164\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Employee\", \"col\": 3}}, {\"id\": \"ea2210955f\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Department\", \"col\": 3}}, {\"id\": \"a30143d8cd\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Designation\", \"col\": 3}}, {\"id\": \"c8a0244d03\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Holiday List\", \"col\": 3}}, {\"id\": \"b0ac838176\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Attendance & Leave</b></span>\", \"col\": 12}}, {\"id\": \"1e527b1f25\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Attendance\", \"col\": 3}}, {\"id\": \"e7e92d6a7f\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Employee Checkin\", \"col\": 3}}, {\"id\": \"6c9453ef4e\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Leave Application\", \"col\": 3}}, {\"id\": \"880ba723b9\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Manpower</b></span>\", \"col\": 12}}, {\"id\": \"0e2222d7e2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Manpower Entry\", \"col\": 3}}, {\"id\": \"97284598e8\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Manpower Cost Summary\", \"col\": 3}}, {\"id\": \"ce4621cf02\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Altor Settings\", \"col\": 3}}, {\"id\": \"bc7f02b57e\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Other Dashboards</b></span>\", \"col\": 12}}, {\"id\": \"2fbdf88331\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Overview\", \"col\": 3}}, {\"id\": \"82ce1a5551\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Overview\", \"col\": 3}}, {\"id\": \"7d4436f373\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Accounts Overview\", \"col\": 3}}, {\"id\": \"6081944e04\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Altor Home\", \"col\": 3}}, {\"id\": \"a970a87611\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"1fac73f7e6\", \"type\": \"card\", \"data\": {\"card_name\": \"Employees\", \"col\": 4}}, {\"id\": \"7f78428d93\", \"type\": \"card\", \"data\": {\"card_name\": \"Attendance & Leave\", \"col\": 4}}, {\"id\": \"e64142e6e8\", \"type\": \"card\", \"data\": {\"card_name\": \"Manpower\", \"col\": 4}}, {\"id\": \"5cceb1f030\", \"type\": \"card\", \"data\": {\"card_name\": \"Expenses\", \"col\": 4}}]",
+ "content": "[{\"id\": \"4481740c56\", \"type\": \"custom_block\", \"data\": {\"custom_block_name\": \"HR Dashboard\", \"col\": 12}}, {\"id\": \"6685a92180\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Employees</b></span>\", \"col\": 12}}, {\"id\": \"02e18fc164\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Employee\", \"col\": 3}}, {\"id\": \"ea2210955f\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Department\", \"col\": 3}}, {\"id\": \"a30143d8cd\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Designation\", \"col\": 3}}, {\"id\": \"c8a0244d03\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Holiday List\", \"col\": 3}}, {\"id\": \"b0ac838176\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Attendance & Leave</b></span>\", \"col\": 12}}, {\"id\": \"1e527b1f25\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Attendance\", \"col\": 3}}, {\"id\": \"e7e92d6a7f\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Employee Checkin\", \"col\": 3}}, {\"id\": \"6c9453ef4e\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Leave Application\", \"col\": 3}}, {\"id\": \"880ba723b9\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Manpower</b></span>\", \"col\": 12}}, {\"id\": \"0e2222d7e2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Timesheet\", \"col\": 3}}, {\"id\": \"97284598e8\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Manpower Cost Summary\", \"col\": 3}}, {\"id\": \"ce4621cf02\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Altor Settings\", \"col\": 3}}, {\"id\": \"bc7f02b57e\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Other Dashboards</b></span>\", \"col\": 12}}, {\"id\": \"2fbdf88331\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project Overview\", \"col\": 3}}, {\"id\": \"82ce1a5551\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Overview\", \"col\": 3}}, {\"id\": \"7d4436f373\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Accounts Overview\", \"col\": 3}}, {\"id\": \"6081944e04\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Altor Home\", \"col\": 3}}, {\"id\": \"a970a87611\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"1fac73f7e6\", \"type\": \"card\", \"data\": {\"card_name\": \"Employees\", \"col\": 4}}, {\"id\": \"7f78428d93\", \"type\": \"card\", \"data\": {\"card_name\": \"Attendance & Leave\", \"col\": 4}}, {\"id\": \"e64142e6e8\", \"type\": \"card\", \"data\": {\"card_name\": \"Manpower\", \"col\": 4}}, {\"id\": \"5cceb1f030\", \"type\": \"card\", \"data\": {\"card_name\": \"Expenses\", \"col\": 4}}]",
  "creation": "2026-11-01 12:00:00.000000",
  "custom_blocks": [
   {
@@ -130,7 +130,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Manpower",
-   "link_count": 6,
+   "link_count": 5,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -141,16 +141,6 @@
    "label": "Timesheet",
    "link_count": 0,
    "link_to": "Timesheet",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Manpower Entry",
-   "link_count": 0,
-   "link_to": "Manpower Entry",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -225,7 +215,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-11-16 12:00:00.000000",
+ "modified": "2026-11-16 15:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "HR Dashboard",
@@ -308,9 +298,9 @@
   {
    "color": "Pink",
    "doc_view": "List",
-   "label": "Manpower Entry",
-   "link_to": "Manpower Entry",
-   "stats_filter": "[[\"Manpower Entry\", \"docstatus\", \"=\", 0, false]]",
+   "label": "Timesheet",
+   "link_to": "Timesheet",
+   "stats_filter": "[[\"Timesheet\", \"docstatus\", \"=\", 0, false]]",
    "type": "DocType",
    "format": "{} To Submit"
   },
@@ -321,7 +311,7 @@
    "link_to": "Manpower Cost Summary",
    "stats_filter": "[]",
    "type": "Report",
-   "report_ref_doctype": "Manpower Entry"
+   "report_ref_doctype": "Timesheet"
   },
   {
    "color": "Grey",

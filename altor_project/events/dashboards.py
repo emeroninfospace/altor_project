@@ -25,7 +25,7 @@ def _add(data, label, items, fieldnames=None, internal=None):
 
 
 def project(data):
-	_add(data, _("Budget & Manpower"), ["Project Budget", "Manpower Entry", "Expense Entry"])
+	_add(data, _("Budget & Manpower"), ["Project Budget", "Timesheet", "Expense Entry"])
 	_add(data, _("Planning"), ["Project Schedule"])
 	_add(data, _("Subcontract"), ["Subcontract Work Order", "Payment Certificate", "Subcontract Invoice"])
 	_add(data, _("Selling"), ["Quotation"], internal={"Quotation": "quotation"})
@@ -53,11 +53,12 @@ def lead(data):
 
 
 def supplier(data):
-	# Manpower Entry: agency on the worker rows
+	# Timesheets of the agency's workers
 	return _add(
 		data,
 		_("Subcontract & Manpower"),
-		["Subcontract Work Order", "Payment Certificate", "Subcontract Invoice", "Manpower Entry"],
+		["Subcontract Work Order", "Payment Certificate", "Subcontract Invoice", "Timesheet"],
+		fieldnames={"Timesheet": "custom_manpower_supplier"},
 	)
 
 
@@ -65,9 +66,9 @@ def employee(data):
 	return _add(
 		data,
 		_("Projects & Manpower"),
-		["Manpower Entry", "Site Visit", "Expense Entry"],
+		["Timesheet", "Site Visit", "Expense Entry"],
 		fieldnames={
-			"Manpower Entry": "employee",
+			"Timesheet": "employee",
 			"Site Visit": "visited_by",
 			"Expense Entry": "employee_name",
 		},

@@ -148,7 +148,7 @@
   },
   {
    "allow_on_submit": 1,
-   "description": "Submitted Timesheets and Manpower Entries (own staff + outsourced)",
+   "description": "Submitted Timesheets (own staff + outsourced)",
    "fieldname": "manpower_amount",
    "fieldtype": "Currency",
    "label": "Manpower Cost",

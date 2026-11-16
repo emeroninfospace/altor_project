@@ -41,29 +41,7 @@ then `bench --site <site> migrate`. Data comes from `altor_project/api/dashboard
   *Ignore* skips. A warning is also shown when the warning threshold (default 90%) is reached or an item group has no budget line.
 - Report: **Project Budget Variance**.
 
-### Manpower Costing (own staff and outsourced manpower)
-
-- **Manpower Entry** (daily, per project): one row per worker: Own Staff or Outsourced (agency).
-  An outsourced row can be a named worker (Employee) or a crew (agency + designation + number of workers).
-  Amount = workers x (hours x hourly rate + OT hours x OT rate).
-- Hourly rate comes from the Employee's **Hourly Cost Rate**, otherwise the agency rate in
-  **Altor Settings > Outsourced Manpower Rates** (supplier + designation), otherwise CTC / 12 / working days / hours.
-  OT rate falls back to hourly rate x OT Multiplier (default 1.25).
-- Employee fields: **Outsourced Manpower**, **Manpower Supplier / Agency**, **Hourly Cost Rate**, **OT Hourly Rate**.
-- Checks: own staff needs an Employee, outsourced needs an agency, no duplicate employee in an entry,
-  max 24 hours per employee per day across all projects, no booking on completed / cancelled projects,
-  rate required.
-- The cost goes to the Project Budget line of the entry's **Budget Item Group** (Manpower Cost column) and is part of Utilized.
-  Tick **Outsourced Manpower Invoice** on the agency's Purchase Invoice so that labour is not counted twice.
-- **Automation** (Altor Settings > Manpower Entry Automation): every night at 01:30 one Manpower Entry per project is
-  created for the previous day: named workers from Attendance (or Employee Checkins, first IN to last OUT) charged to
-  the employee's **Assigned Project** (or the Project on the checkin), hours above the standard day as OT, plus each
-  project's **Daily Manpower Crew** (agency, trade, workers, hours, from/to date; skipped on holidays). Already booked
-  employees / crews are skipped. Entries are drafts for review unless "Submit Automatically" is ticked.
-  The Manpower Entry list has a **Create from Attendance** button to run it for any past date.
-- Report: **Manpower Cost Summary** (by project, agency, employee, designation, date or item group) to check agency bills.
-
-### Timesheet Labour Cost (normal hours, OT 1, OT 2)
+### Manpower Costing (Timesheets: normal hours, OT 1, OT 2)
 
 Workers' hours are entered on ERPNext **Timesheets** (one per employee, a row per day / project). Each row's hours are
 split into **Normal**, **OT 1** and **OT 2**:
@@ -74,23 +52,24 @@ split into **Normal**, **OT 1** and **OT 2**:
 - OT 2: all hours on a holiday / weekly off of the employee's Holiday List (x **OT 2 Multiplier**, 1.5).
 - Untick **Split Overtime Automatically** on the Timesheet to enter OT 1 / OT 2 by hand.
 
-Cost (calculated on save, shown per row and as **Total Labour Cost**, also used as the Timesheet's costing amount):
+Cost (calculated on save, shown per row and as **Total Labour Cost**, also used as the Timesheet's costing amount).
+Employee > **Manpower Costing**:
 
-- **Own staff** (Employee > Manpower Costing: Basic Salary, Allowance, HRA, Transportation):
+- **Own staff**: Basic Salary, Allowance, HRA, Transportation.
   normal hour = (Basic + Allowance + HRA + Transportation) / days in the month / 8;
   OT hour = Basic / days in the month / 8; cost = normal hours x normal hour + (OT 1 x 1.25 + OT 2 x 1.5) x OT hour.
-  Without a Basic Salary the Hourly Cost Rate (or CTC) is used.
-- **Outsourced** (Employee: Outsourced Manpower + Hourly Cost Rate, or the agency rate in Altor Settings):
+  Without a Basic Salary the Hourly Cost Rate is used.
+- **Outsourced**: tick Outsourced Manpower, select the Manpower Supplier / Agency and enter the **Hourly Cost Rate**.
   cost = hourly rate x (normal hours + OT 1 x 1.25 + OT 2 x 1.5).
 
 Submitted Timesheets with a Project count in the **Project Budget** as manpower cost, on the Item Group set in
 Altor Settings (**Manpower Item Group (Own Staff)** / **(Outsourced)**), with **Own Staff Cost** and **Outsourced
-Manpower Cost** shown separately. The Manpower Cost Summary report and the Project Overview dashboard include Timesheets
-(with Manpower Entries). A warning is shown when the same employee is also on a Manpower Entry for that day, as the
-cost would be counted twice.
+Manpower Cost** shown separately. Tick **Outsourced Manpower Invoice** on the agency's Purchase Invoice so that
+labour is not counted twice.
 
-Report: **Employee Overtime** (per employee, or employee and project, for any period): days worked, normal / OT 1 /
-OT 2 hours, weighted OT hours, OT rate, OT amount and total labour cost, as in the monthly overtime sheet.
+Reports: **Manpower Cost Summary** (by project, agency, employee, designation, date or item group) to check agency
+bills, and **Employee Overtime** (per employee, or employee and project): days worked, normal / OT 1 / OT 2 hours,
+weighted OT hours, OT rate, OT amount and total labour cost, as in the monthly overtime sheet.
 
 ### Demo data
 
@@ -100,16 +79,16 @@ bench --site <site> execute altor_project.demo.delete_demo_data
 ```
 
 Creates (and removes) projects, tasks, item group budgets, purchase orders and invoices, own and outsourced
-employees, manpower entries, attendance and leave requests. Every record starts with `DEMO`.
+employees with salary / hourly rates, timesheets, attendance and leave requests. Every record starts with `DEMO`.
 
 ### Division (Cost Center)
 
 Divisions are Cost Centers. Every document carries its division in the `cost_center` field, labelled
 **Division**: Lead and Quotation (mandatory), Sales Order, Delivery Note, Sales Invoice, Project, Project Budget,
-Project Schedule, Manpower Entry, Site Visit, Proforma Invoice, Expense Entry, Material Request, Purchase Order /
+Project Schedule, Site Visit, Proforma Invoice, Expense Entry, Material Request, Purchase Order /
 Receipt / Invoice, Subcontract Work Order / Invoice, Stock Entry, Payment Entry and Expense Claim. Because the
 fieldname is the same everywhere, it is carried along Lead -> Quotation -> Sales Order -> Project / Sales Invoice,
-and Project -> Project Budget / Manpower Entry. Item rows take the document's division unless set otherwise.
+and Project -> Project Budget. Item rows take the document's division unless set otherwise.
 Create one Cost Center per division under the company (e.g. Scaffolding, Equipment Rental, Cradle, Rope Access,
 Construction Hoist, Mast Climber, Trading, Manpower).
 
@@ -196,7 +175,6 @@ details from the site, not from code:
 | Proforma Invoice | Proforma Invoice (bilingual, VAT per line) |
 | Altor Tax Invoice | Sales Invoice: UAE tax invoice / tax credit note (bilingual, VAT per line, bank details) |
 | Altor Purchase Order | Purchase Order |
-| Altor Manpower Sheet | Manpower Entry (daily manpower sheet) |
 | Altor Project Budget | Project Budget (item group wise) |
 | Altor Payment Certificate | Payment Certificate (subcontractor's payment certificate) |
 | Altor Asset Allocation | Asset Allocation (asset issue note) |

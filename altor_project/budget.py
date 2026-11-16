@@ -7,7 +7,7 @@ Amounts per budget line (Project Budget Item):
 
 * Committed  - submitted Purchase Orders + Subcontract Work Orders
 * Actual     - submitted Purchase Invoices + Subcontract Invoices
-* Manpower   - submitted Manpower Entries and Timesheets (own staff +
+* Manpower   - submitted Timesheets (own staff +
                outsourced labour, altor_project.labour)
 * Asset      - depreciation of Project Assets while allocated to the
                project, plus the book value of damaged / lost assets
@@ -17,7 +17,7 @@ Amounts per budget line (Project Budget Item):
                invoice are counted only once.
 
 Purchase Invoices ticked "Outsourced Manpower Invoice" are left out: that
-labour is already counted through Manpower Entries.
+labour is already counted through Timesheets.
 
 Spending is mapped to a budget line through the Item Group tree: an item in
 "Cables" counts against a budget line for "Electrical" if "Cables" sits under
@@ -148,13 +148,12 @@ def get_item_group_spend(project, exclude=None):
 	add(si_rows, "actual")
 	add([frappe._dict(item_group=r.item_group, amount=r.direct) for r in si_rows], "direct_actual")
 
-	# Labour: Manpower Entries + Timesheets (own staff + outsourced)
+	# Labour from Timesheets (own staff + outsourced)
 	from altor_project.labour import labour_sql
 
 	exclude_labour = ""
-	if exclude and exclude.get("doctype") in ("Manpower Entry", "Timesheet") and exclude.get("name"):
-		exclude_labour = " AND NOT (l.source = %(exclude_doctype)s AND l.voucher = %(exclude_name)s)"
-		values["exclude_doctype"] = exclude["doctype"]
+	if exclude and exclude.get("doctype") == "Timesheet" and exclude.get("name"):
+		exclude_labour = " AND l.voucher != %(exclude_name)s"
 	add(
 		frappe.db.sql(
 			f"""
@@ -210,7 +209,7 @@ def get_item_group_spend(project, exclude=None):
 
 
 def _manpower_invoice_clause():
-	"""Leave out agency invoices for labour that Manpower Entries already cover."""
+	"""Leave out agency invoices for labour that Timesheets already cover."""
 	if frappe.db.has_column("Purchase Invoice", "custom_is_manpower_invoice"):
 		return " AND IFNULL(pinv.custom_is_manpower_invoice, 0) = 0"
 	return ""
@@ -227,7 +226,7 @@ def utilized(amounts):
 
 
 def get_manpower_split(project):
-	"""Own staff / outsourced labour cost of a project (Manpower Entries + Timesheets)."""
+	"""Own staff / outsourced labour cost of a project (Timesheets)."""
 	from altor_project.labour import labour_sql
 
 	row = frappe.db.sql(
