@@ -105,6 +105,8 @@ jinja = {
 # ------------
 
 after_install = "altor_project.setup.after_install"
+# Hide Frappe School / marketplace shortcuts and onboarding panels that ERPNext adds back on updates
+after_migrate = "altor_project.custom_and_property_setter.workspace_cleanup.hide_frappe_links"
 before_uninstall = "altor_project.setup.before_uninstall"
 
 # Uninstallation
