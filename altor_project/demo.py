@@ -1,16 +1,27 @@
 # Copyright (c) 2026, Emeron Infospace and contributors
 # For license information, please see license.txt
 
-"""Demo (dummy) data for presentations and testing.
-
-Everything created here starts with "DEMO" so it is easy to recognise and to remove.
+"""Demo data built from the client's ERP_Comments sheet, for presentations and testing.
 
     bench --site <site> execute altor_project.demo.make_demo_data
     bench --site <site> execute altor_project.demo.delete_demo_data
+    bench --site <site> execute altor_project.demo.reset_demo_data     # delete + make
 
-Both are also whitelisted for System Managers (e.g. /api/method/altor_project.demo.make_demo_data).
-Every step is independent: if one fails (for example because the company has no default
-payable account), it is reported and the rest still runs.
+All are whitelisted for System Managers; pass background=1 to run them as a background job and
+read the result with altor_project.demo.demo_status.
+
+Client data (kept by delete_demo_data, as these are the client's own masters):
+  customers (Customer Master sheet), the scaffolding division's standard quotation lines, the
+  asset list (Asset list sheet), the budget cost lines (Budget), the cross hire items of the
+  Rental PO sheets and the two workers of the overtime calculation (Aswin, Manu).
+Demo transactions (names / remarks start with "DEMO", removed by delete_demo_data):
+  one Lead -> Quotation -> Sales Order -> Project chain per division, budgets, the three rental
+  (cross hire) purchase orders exactly as in the sheets, opening Project Assets with sample
+  quantities and costs, asset issues / returns (with damage), Aswin's and Manu's November
+  Timesheets exactly as in the overtime sheet, transport / inspection / consumables bills,
+  the agency bill and a sales invoice.
+
+Every step is independent: if one fails it is reported and the rest still runs.
 """
 
 import random
@@ -21,120 +32,594 @@ import frappe
 from frappe.utils import add_days, cint, flt, get_datetime, getdate, nowdate
 
 PREFIX = "DEMO"
+ASSET_REMARK = f"{PREFIX} opening stock (sample quantity and cost)"
+RESULT_KEY = "altor_demo_result"
 
-ITEM_GROUPS = [
-	"Civil Works",
-	"Electrical Works",
-	"Plumbing Works",
-	"HVAC Works",
-	"Finishing Works",
-	"Manpower",
+# ---------------------------------------------------------------------------
+# Client data (ERP_Comments.xlsx)
+# ---------------------------------------------------------------------------
+
+# division name, division code used when the Cost Center is created
+DIVISIONS = {"scf": ("Scaffolding", "SCF"), "crd": ("Cradle", "CRD"), "eqr": ("Equipment Rental", "EQR")}
+
+# Budget sheet: cost lines of a project budget (Item Groups). "Material Cost" holds the asset groups.
+COST_GROUPS = [
+	"Manpower Cost",
+	"Outsource Manpower Cost",
+	"Material Cost",
+	"Cross Hire Material / Equipment Cost",
+	"Manpower Transportation",
+	"Material Transportation",
+	"Third Party Inspection Charges",
+	"Consumables",
+	"Others",
+]
+ASSET_GROUPS = [
+	"Scaffolding Materials",
+	"Cradle",
+	"Scissor Lift",
+	"Boom Lift",
+	"Construction Hoist",
+	"Mast Climber",
+	"Tower Crane",
+]
+SERVICE_GROUPS = {"scf": "Scaffolding Services", "crd": "Cradle Services", "eqr": "Equipment Rental Services"}
+
+# code, name, uom: the scaffolding division's standard quotation lines (sheet 1), and the other divisions
+SALES_ITEMS = {
+	"scf": [
+		("SCF-SRV-001", "Design and Calculation Charges", "Nos"),
+		("SCF-SRV-002", "Third Party Design Review", "Nos"),
+		("SCF-SRV-003", "Erection and Dismantling Charges", "Nos"),
+		("SCF-SRV-004", "Hire Charges", "Week"),
+		("SCF-SRV-005", "Third Party Inspection Charges", "Nos"),
+		("SCF-SRV-006", "Scaff Tag Renewal Charges", "Nos"),
+		("SCF-SRV-007", "Mob Demob Charges", "Nos"),
+	],
+	"crd": [
+		("CRD-SRV-001", "Cradle Installation and Dismantling Charges", "Nos"),
+		("CRD-SRV-002", "Cradle Hire Charges", "Week"),
+		("CRD-SRV-003", "Cradle Operator Charges", "Day"),
+		("CRD-SRV-004", "Mob Demob Charges (Cradle)", "Nos"),
+	],
+	"eqr": [
+		("EQR-SRV-001", "Equipment Hire Charges", "Day"),
+		("EQR-SRV-002", "Equipment Operator Charges", "Day"),
+		("EQR-SRV-003", "Mob Demob Charges (Equipment)", "Nos"),
+	],
+}
+
+# Asset list sheet. code, name, group, uom, sample unit cost (AED), depreciation months,
+# sample opening qty, division key. Costs and quantities are samples, not from the client.
+ASSET_ITEMS = [
+	(
+		"AST-SCF-001",
+		"Cuplock Standard 3.0mtr (3.2mm, Painted)",
+		"Scaffolding Materials",
+		"Nos",
+		95,
+		60,
+		1500,
+		"scf",
+	),
+	(
+		"AST-SCF-002",
+		"Cuplock Standard 2.5mtr (3.2mm, Painted)",
+		"Scaffolding Materials",
+		"Nos",
+		80,
+		60,
+		800,
+		"scf",
+	),
+	(
+		"AST-SCF-003",
+		"Cuplock Standard 2.0mtr (3.2mm, Painted)",
+		"Scaffolding Materials",
+		"Nos",
+		65,
+		60,
+		800,
+		"scf",
+	),
+	(
+		"AST-SCF-004",
+		"Cuplock Ledger 2.5mtr (3.2mm, Painted)",
+		"Scaffolding Materials",
+		"Nos",
+		45,
+		60,
+		1200,
+		"scf",
+	),
+	(
+		"AST-SCF-005",
+		"Cuplock Ledger 1.8mtr (3.2mm, Painted)",
+		"Scaffolding Materials",
+		"Nos",
+		34,
+		60,
+		900,
+		"scf",
+	),
+	(
+		"AST-SCF-006",
+		"Cuplock Ledger 1.3mtr (3.2mm, Painted)",
+		"Scaffolding Materials",
+		"Nos",
+		26,
+		60,
+		600,
+		"scf",
+	),
+	(
+		"AST-SCF-007",
+		"Cuplock Ledger 1.0mtr (3.2mm, Painted)",
+		"Scaffolding Materials",
+		"Nos",
+		21,
+		60,
+		500,
+		"scf",
+	),
+	(
+		"AST-SCF-008",
+		"Cuplock Ledger 0.9mtr (3.2mm, Painted)",
+		"Scaffolding Materials",
+		"Nos",
+		19,
+		60,
+		400,
+		"scf",
+	),
+	("AST-SCF-009", "Spigot Connector with Nut & Bolt", "Scaffolding Materials", "Nos", 9, 60, 1500, "scf"),
+	(
+		"AST-SCF-010",
+		"Bracing Tube 48.3 ODx3.2mm x 4.0mtr",
+		"Scaffolding Materials",
+		"Nos",
+		75,
+		60,
+		400,
+		"scf",
+	),
+	(
+		"AST-SCF-011",
+		"Bracing Tube 48.3 ODx3.2mm x 3.5mtr",
+		"Scaffolding Materials",
+		"Nos",
+		66,
+		60,
+		300,
+		"scf",
+	),
+	(
+		"AST-SCF-012",
+		"Bracing Tube 48.3 ODx3.2mm x 3.0mtr",
+		"Scaffolding Materials",
+		"Nos",
+		57,
+		60,
+		300,
+		"scf",
+	),
+	(
+		"AST-SCF-013",
+		"Bracing Tube 48.3 ODx3.2mm x 2.5mtr",
+		"Scaffolding Materials",
+		"Nos",
+		48,
+		60,
+		300,
+		"scf",
+	),
+	(
+		"AST-SCF-014",
+		"Bracing Tube 48.3 ODx3.2mm x 2.0mtr",
+		"Scaffolding Materials",
+		"Nos",
+		39,
+		60,
+		300,
+		"scf",
+	),
+	(
+		"AST-SCF-015",
+		"Bracing Tube 48.3 ODx3.2mm x 1.5mtr",
+		"Scaffolding Materials",
+		"Nos",
+		30,
+		60,
+		300,
+		"scf",
+	),
+	("AST-SCF-016", "Swivel Coupler - Drop Forged", "Scaffolding Materials", "Nos", 14, 60, 3000, "scf"),
+	("AST-SCF-017", "Board Retaining Coupler (BRC)", "Scaffolding Materials", "Nos", 9, 60, 2000, "scf"),
+	(
+		"AST-SCF-018",
+		"Intermediate Transom 1.3mtr (3.2mm, Painted)",
+		"Scaffolding Materials",
+		"Nos",
+		30,
+		60,
+		600,
+		"scf",
+	),
+	("AST-SCF-019", "Stair Case Ladder", "Scaffolding Materials", "Nos", 420, 60, 30, "scf"),
+	("AST-SCF-020", "U-Head Jack", "Scaffolding Materials", "Nos", 38, 60, 400, "scf"),
+	(
+		"AST-CRD-001",
+		"Cradle Set Suspended 6.0m Length, 100m Working Height Without Support",
+		"Cradle",
+		"Set",
+		85000,
+		84,
+		6,
+		"crd",
+	),
+	(
+		"AST-SCL-001",
+		"Electric Scissor Lift - Platform Height 9.8M, Working Height 11.8M, Capacity 350KG",
+		"Scissor Lift",
+		"Nos",
+		65000,
+		84,
+		4,
+		"eqr",
+	),
+	(
+		"AST-SCL-002",
+		"Electric Scissor Lift - Platform Height 11.8M, Working Height 13.8M, Capacity 350KG",
+		"Scissor Lift",
+		"Nos",
+		78000,
+		84,
+		3,
+		"eqr",
+	),
+	(
+		"AST-SCL-003",
+		"Electric Scissor Lift - Platform Height 5.8M, Working Height 7.8M, Capacity 250KG",
+		"Scissor Lift",
+		"Nos",
+		42000,
+		84,
+		4,
+		"eqr",
+	),
+	(
+		"AST-BML-001",
+		"Articulating Boom Lift - Platform Height 16M, Working Height 18M, 250/360KG, Lithium Battery",
+		"Boom Lift",
+		"Nos",
+		210000,
+		84,
+		2,
+		"eqr",
+	),
+	(
+		"AST-BML-002",
+		"Articulating Boom Lift - Platform Height 19.38M, Working Height 21.38M, 250/360KG, Lithium Battery",
+		"Boom Lift",
+		"Nos",
+		260000,
+		84,
+		2,
+		"eqr",
+	),
+	(
+		"AST-HST-001",
+		"Construction Hoist - Speed 0-50m/min, Double Cages, 200 Meters, Cable Pulley",
+		"Construction Hoist",
+		"Nos",
+		380000,
+		120,
+		2,
+		"eqr",
+	),
+	(
+		"AST-HST-002",
+		"Construction Hoist - Speed 0-63m/min, Double Cages, 200 Meters, Cable Pulley",
+		"Construction Hoist",
+		"Nos",
+		420000,
+		120,
+		2,
+		"eqr",
+	),
+	(
+		"AST-MCL-001",
+		"Single-Mast Work Platform - 50m Height Configuration",
+		"Mast Climber",
+		"Nos",
+		300000,
+		120,
+		1,
+		"eqr",
+	),
+	(
+		"AST-MCL-002",
+		"Twin-Mast Work Platform - 50m Height Configuration",
+		"Mast Climber",
+		"Nos",
+		520000,
+		120,
+		1,
+		"eqr",
+	),
+	(
+		"AST-TWC-001",
+		"Stationary Tower Crane - Po22b, 50m Jib Length, 10t Max Load",
+		"Tower Crane",
+		"Nos",
+		1100000,
+		120,
+		1,
+		"eqr",
+	),
 ]
 
-# item code, name, group, rate
-ITEMS = [
-	("DEMO-CIV-001", "DEMO Ready Mix Concrete C40 (m3)", "Civil Works", 320),
-	("DEMO-CIV-002", "DEMO Concrete Block 20cm", "Civil Works", 4.5),
-	("DEMO-ELE-001", "DEMO Cable 4C x 16mm (m)", "Electrical Works", 38),
-	("DEMO-ELE-002", "DEMO LED Panel Light 60x60", "Electrical Works", 95),
-	("DEMO-ELE-003", "DEMO Distribution Board 24 Way", "Electrical Works", 1450),
-	("DEMO-PLB-001", "DEMO PPR Pipe 32mm (m)", "Plumbing Works", 12),
-	("DEMO-PLB-002", "DEMO Water Heater 80L", "Plumbing Works", 780),
-	("DEMO-HVC-001", "DEMO Split AC 2 Ton", "HVAC Works", 2600),
-	("DEMO-FIN-001", "DEMO Emulsion Paint 18L", "Finishing Works", 210),
-	("DEMO-FIN-002", "DEMO Porcelain Tile 60x60 (m2)", "Finishing Works", 65),
-	("DEMO-MPW-001", "DEMO Outsourced Manpower Service", "Manpower", 18),
+# Rental PO sheets (cross hire): project, supplier key, period, [(code, name, qty, uom, unit rate, periods)]
+CROSS_HIRE_POS = [
+	(
+		"scf",
+		"cross_hire_scaffold",
+		"Week",
+		[
+			("XH-SCF-001", "Hire - Cuplock Standard 3.0mtr (3.2mm, Painted)", 100, "Nos", 0.5, 4),
+			("XH-SCF-002", "Hire - Cuplock Standard 2.5mtr (3.2mm, Painted)", 40, "Nos", 0.43, 4),
+			("XH-SCF-003", "Hire - Cuplock Standard 2.0mtr (3.2mm, Painted)", 50, "Nos", 0.37, 4),
+			("XH-SCF-004", "Hire - Cuplock Ledger 2.5mtr (3.2mm, Painted)", 56, "Nos", 0.27, 4),
+			("XH-SCF-005", "Hire - Cuplock Ledger 1.8mtr (3.2mm, Painted)", 42, "Nos", 0.19, 4),
+			("XH-SCF-006", "Hire - Cuplock Ledger 1.3mtr (3.2mm, Painted)", 4, "Nos", 0.16, 4),
+			("XH-SCF-007", "Hire - Cuplock Ledger 1.0mtr (3.2mm, Painted)", 55, "Nos", 0.15, 4),
+			("XH-SCF-008", "Hire - Cuplock Ledger 0.9mtr (3.2mm, Painted)", 4, "Nos", 0.15, 4),
+			("XH-SCF-009", "Hire - Spigot Connector with Nut & Bolt", 3, "Nos", 0.06, 4),
+		],
+	),
+	(
+		"crd",
+		"cross_hire_cradle",
+		"Week",
+		[("XH-CRD-001", "Hire - Cradle 6.0m Length with all Accessories", 2, "Set", 375, 4)],
+	),
+	(
+		"eqr",
+		"cross_hire_equipment",
+		"Day",
+		[
+			(
+				"XH-SCL-001",
+				"Hire - Scissor Lift Platform Height 8.0m & Working Height 10.0m",
+				2,
+				"Nos",
+				125,
+				10,
+			)
+		],
+	),
 ]
+
+# Purchased services charged to the project budget: code, name, cost group, uom
+COST_ITEMS = [
+	("SRV-MAT-TRN", "Material Transportation (Truck Trip)", "Material Transportation", "Nos"),
+	("SRV-MP-TRN", "Manpower Transportation (Bus per Day)", "Manpower Transportation", "Day"),
+	("SRV-TPI", "Third Party Inspection Visit", "Third Party Inspection Charges", "Nos"),
+	("SRV-CONS", "Scaffolding Consumables (Tie Wire, Toe Board Clips, Tags)", "Consumables", "Nos"),
+	("SRV-MPW-OUT", "Outsourced Manpower Service", "Outsource Manpower Cost", "Nos"),
+]
+
+# Customer Master sheet
+CUSTOMERS = [
+	{
+		"code": 101,
+		"name": "Al Tayer Stocks LLC",
+		"license": "CN-12456",
+		"trn": "1041500000006",
+		"contact": ("Georgy", "Project Manager", "Georgysamuel@altayer.com", "+971504401604"),
+		"accounts": ("Chandran", "accounts@altayerstocks.com"),
+		"address": ("Ubora Towers, 42nd Floor", "Business Bay", "Dubai", "2623"),
+		"terms": "30 Days Credit",
+		"credit_limit": 250000,
+	},
+	{
+		"code": 102,
+		"name": "Perfect Step Maintenance and Contracting LLC",
+		"license": "CN-24568",
+		"trn": "1041500000006",
+		"contact": ("Abhishek", "Project Engineer", "Abhishek@perfectuae.com", "+9715035578733"),
+		"accounts": ("Ajith", "Ajith@perfectuae.com"),
+		"address": ("Office No: 05, Plot No: 22", "M 26 - Mussafah", "Abu Dhabi", "34567"),
+		"terms": "30 Days Credit",
+		"credit_limit": 100000,
+	},
+	{
+		"code": 103,
+		"name": "Cylingas Engineering & Construction LLC",
+		"license": "CN-799556",
+		"trn": "1054654000004",
+		"contact": ("Binu", "Construction Manager", "Binu@cylingas.com", "+971356757744764"),
+		"accounts": ("Manu", "info@cylingasuae.com"),
+		"address": ("30th Floor, Tiffany Tower", "Cluster W, JLT", "Dubai", "5650"),
+		"terms": "Advance Payment",
+		"credit_limit": 0,
+	},
+]
+PAYMENT_TERMS = {"30 Days Credit": 30, "Advance Payment": 0}
+
+# Calculations sheet: own staff (salary) and outsourced (hourly rate)
+WORKERS = {
+	"aswin": {
+		"first_name": "Aswin",
+		"designation": "Scaffolder",
+		"custom_basic_salary": 1300,
+		"custom_allowance": 400,
+		"custom_hra": 0,
+		"custom_transport_allowance": 0,
+	},
+	"manu": {
+		"first_name": "Manu",
+		"designation": "Scaffolder",
+		"custom_is_outsourced": 1,
+		"agency": "agency",
+		"custom_hourly_cost_rate": 18,
+	},
+}
+OT_MONTH = (2026, 11)
+SUNDAYS = {1, 8, 15, 22, 29}
+ABSENT = {19}
+
+
+def sheet_hours(worker, day):
+	"""(normal, OT 1, OT 2) of a day exactly as in the client's overtime sheet (None = absent)."""
+	if day in ABSENT:
+		return None
+	if day in SUNDAYS:
+		# the sheet books Manu 10 normal hours on Sundays except the 1st, Aswin none
+		return (10 if worker == "manu" and day != 1 else 0, 0, 10)
+	return (10, 2, 0) if worker == "manu" else (8, 2, 0)
+
 
 SUPPLIERS = {
-	"materials": "DEMO Emirates Building Materials LLC",
-	"electrical": "DEMO Al Fajer Electrical Trading",
-	"hvac": "DEMO Cool Air HVAC Contracting",
-	"agency_1": "DEMO Gulf Manpower Supply Services",
-	"agency_2": "DEMO Star Labour Services",
+	"cross_hire_scaffold": f"{PREFIX} Gulf Scaffold Rentals LLC",
+	"cross_hire_cradle": f"{PREFIX} Emirates Cradle Hire LLC",
+	"cross_hire_equipment": f"{PREFIX} Al Quoz Access Equipment Rentals",
+	"agency": f"{PREFIX} Star Manpower Supply Services",
+	"transport": f"{PREFIX} Swift Transport LLC",
+	"inspection": f"{PREFIX} Third Party Inspection Services",
+	"consumables": f"{PREFIX} Builders Consumables Trading",
 }
 
-CUSTOMERS = ["DEMO Al Noor Real Estate", "DEMO Marina Hospitality LLC"]
-
-DESIGNATIONS = [
-	"Site Engineer",
-	"Foreman",
-	"Electrician",
-	"Plumber",
-	"Mason",
-	"Carpenter",
-	"Helper",
-	"Accountant",
-]
-
-# first, last, gender, designation, monthly basic salary, allowance (own staff)
-OWN_STAFF = [
-	("Ahmed", "Khan", "Male", "Site Engineer", 9000, 3000),
-	("Rashid", "Ali", "Male", "Foreman", 3500, 1000),
-	("Suresh", "Kumar", "Male", "Electrician", 2200, 600),
-	("Joseph", "Mathew", "Male", "Plumber", 2000, 500),
-	("Imran", "Shaikh", "Male", "Mason", 1300, 400),
-	("Fatima", "Noor", "Female", "Accountant", 7000, 2000),
-]
-# first, last, gender, designation, agency, hourly rate (outsourced)
-OUTSOURCED = [
-	("Ramesh", "Yadav", "Male", "Mason", "agency_1", 20),
-	("Bilal", "Hussain", "Male", "Electrician", "agency_1", 24),
-	("Santosh", "Rai", "Male", "Helper", "agency_1", 14),
-	("Kamal", "Hossain", "Male", "Helper", "agency_1", 14),
-	("Arjun", "Thapa", "Male", "Carpenter", "agency_2", 22),
-	("Nabin", "Gurung", "Male", "Helper", "agency_2", 13),
-	("Ravi", "Shetty", "Male", "Carpenter", "agency_2", 22),
-	("Mohan", "Das", "Male", "Helper", "agency_2", 13),
-]
-
-# key, name, status, start offset, end offset, progress, customer index, contract
-PROJECTS = [
-	("villa", "DEMO Villa Renovation - Jumeirah", "Open", -95, -5, 72, 0, 640000),
-	("office", "DEMO Office Fit-out - Business Bay", "Open", -50, 20, 41, 1, 480000),
-	("warehouse", "DEMO Warehouse MEP - Al Quoz", "Open", -21, 140, 14, 0, 910000),
-	("shop", "DEMO Retail Shop Interior - Deira", "Completed", -200, -60, 100, 1, 150000),
-]
-
-# budget per project and item group. The villa is set up to go over budget on
-# electrical works and close to the limit on civil works.
-BUDGETS = {
-	"villa": {
-		"Civil Works": 60000,
-		"Electrical Works": 25000,
-		"Plumbing Works": 30000,
-		"Finishing Works": 45000,
-		"Manpower": 70000,
+# One enquiry per division: Lead -> Quotation -> Sales Order -> Project.
+# start / end: days from today; items: (code, qty, rate)
+PROJECTS = {
+	"scf": {
+		"customer": 0,
+		"name": f"{PREFIX} Ubora Towers Facade Scaffolding",
+		"location": "Business Bay, Dubai",
+		"scope": "Design, supply, erection and dismantling of cuplock scaffolding for the east facade, 26 weeks hire",
+		"lpo": "LPO-AT-7781",
+		"start": -32,
+		"end": 150,
+		"progress": 20,
+		"items": [
+			("SCF-SRV-001", 1, 3500),
+			("SCF-SRV-002", 1, 1800),
+			("SCF-SRV-003", 1, 24000),
+			("SCF-SRV-004", 26, 4200),
+			("SCF-SRV-005", 6, 650),
+			("SCF-SRV-006", 26, 120),
+			("SCF-SRV-007", 2, 1500),
+		],
+		# Budget sheet ("Others" is 0 and has no line)
+		"budget": {
+			"Manpower Cost": 60000,
+			"Outsource Manpower Cost": 10000,
+			"Material Cost": 10000,
+			"Cross Hire Material / Equipment Cost": 5000,
+			"Manpower Transportation": 5000,
+			"Material Transportation": 5000,
+			"Third Party Inspection Charges": 4000,
+			"Consumables": 5000,
+		},
+		"tasks": [
+			("Design & Calculation", 0.0, 0.05),
+			("Third Party Design Review", 0.04, 0.08),
+			("Mobilisation & Erection", 0.08, 0.2),
+			("Hire Period & Inspections", 0.2, 0.9),
+			("Dismantling & Demobilisation", 0.9, 1.0),
+		],
 	},
-	"office": {"Electrical Works": 60000, "HVAC Works": 70000, "Finishing Works": 55000, "Manpower": 60000},
-	"warehouse": {
-		"Electrical Works": 150000,
-		"Plumbing Works": 80000,
-		"HVAC Works": 160000,
-		"Manpower": 120000,
+	"crd": {
+		"customer": 1,
+		"name": f"{PREFIX} Mussafah M-26 Building Cradle Hire",
+		"location": "Mussafah, Abu Dhabi",
+		"scope": "Supply, installation and dismantling of 2 suspended cradles 6.0m with operators, 12 weeks hire",
+		"lpo": "LPO-PS-2290",
+		"start": -15,
+		"end": 70,
+		"progress": 15,
+		"items": [
+			("CRD-SRV-001", 2, 6500),
+			("CRD-SRV-002", 12, 2800),
+			("CRD-SRV-003", 60, 350),
+			("CRD-SRV-004", 2, 1200),
+		],
+		"budget": {
+			"Manpower Cost": 15000,
+			"Material Cost": 8000,
+			"Cross Hire Material / Equipment Cost": 2500,
+			"Material Transportation": 2000,
+			"Third Party Inspection Charges": 1500,
+			"Consumables": 1000,
+		},
+		"tasks": [
+			("Mobilisation & Installation", 0.0, 0.12),
+			("Hire Period", 0.12, 0.9),
+			("Dismantling & Demobilisation", 0.9, 1.0),
+		],
+	},
+	"eqr": {
+		"customer": 2,
+		"name": f"{PREFIX} Tiffany Tower JLT Access Equipment Rental",
+		"location": "Cluster W, JLT, Dubai",
+		"scope": "Rental of scissor lifts and an articulating boom lift with operators, 30 days",
+		"lpo": "LPO-CY-0412",
+		"start": -10,
+		"end": 20,
+		"progress": 35,
+		"items": [("EQR-SRV-001", 90, 450), ("EQR-SRV-002", 30, 300), ("EQR-SRV-003", 2, 900)],
+		"budget": {
+			"Manpower Cost": 4000,
+			"Material Cost": 6000,
+			"Cross Hire Material / Equipment Cost": 3000,
+			"Material Transportation": 1500,
+		},
+		"tasks": [("Delivery & Handover", 0.0, 0.1), ("Rental Period", 0.1, 0.95), ("Collection", 0.95, 1.0)],
 	},
 }
 
-# project, supplier key, days ago, [(item, qty)], invoice: None / "full"
-PURCHASE_ORDERS = [
-	("villa", "materials", 80, [("DEMO-CIV-001", 120), ("DEMO-CIV-002", 2000)], "full"),
-	("villa", "electrical", 60, [("DEMO-ELE-001", 400), ("DEMO-ELE-003", 4)], "full"),
-	("villa", "electrical", 20, [("DEMO-ELE-002", 60)], None),
-	("villa", "materials", 30, [("DEMO-PLB-001", 600), ("DEMO-PLB-002", 6)], "full"),
-	("villa", "materials", 10, [("DEMO-FIN-001", 40), ("DEMO-FIN-002", 300)], None),
-	("office", "electrical", 40, [("DEMO-ELE-001", 300), ("DEMO-ELE-002", 120)], "full"),
-	("office", "hvac", 35, [("DEMO-HVC-001", 12)], None),
-	("office", "materials", 15, [("DEMO-FIN-002", 250)], None),
-	("warehouse", "electrical", 18, [("DEMO-ELE-001", 900), ("DEMO-ELE-003", 10)], None),
-	("warehouse", "hvac", 12, [("DEMO-HVC-001", 20)], None),
-	("warehouse", "materials", 8, [("DEMO-PLB-001", 1500)], None),
+# Assets issued to the projects: project, days ago, [(asset item, qty)], returns [(days ago, item, good, damaged)]
+ALLOCATIONS = [
+	(
+		"scf",
+		30,
+		[
+			("AST-SCF-001", 400),
+			("AST-SCF-002", 120),
+			("AST-SCF-003", 150),
+			("AST-SCF-004", 300),
+			("AST-SCF-005", 160),
+			("AST-SCF-006", 60),
+			("AST-SCF-009", 200),
+			("AST-SCF-010", 80),
+			("AST-SCF-016", 600),
+			("AST-SCF-017", 300),
+			("AST-SCF-018", 120),
+			("AST-SCF-019", 6),
+			("AST-SCF-020", 80),
+		],
+		[(5, "AST-SCF-001", 100, 6), (5, "AST-SCF-016", 150, 12)],
+	),
+	("crd", 14, [("AST-CRD-001", 2)], []),
+	("eqr", 10, [("AST-BML-001", 1), ("AST-SCL-001", 2)], []),
 ]
 
-# Direct invoices (no purchase order): project, supplier key, days ago, items
+# Bills on the projects: project, supplier key, days ago, [(item, qty, rate)]
 DIRECT_INVOICES = [
-	("office", "materials", 25, [("DEMO-FIN-001", 30)]),
-	("villa", "materials", 6, [("DEMO-CIV-002", 900)]),
+	("scf", "transport", 29, [("SRV-MAT-TRN", 6, 450)]),
+	("scf", "transport", 10, [("SRV-MP-TRN", 20, 180)]),
+	("scf", "inspection", 24, [("SRV-TPI", 2, 750)]),
+	("scf", "consumables", 27, [("SRV-CONS", 2350, 1)]),
+	("crd", "transport", 14, [("SRV-MAT-TRN", 2, 600)]),
+	("crd", "inspection", 12, [("SRV-TPI", 1, 950)]),
+	("eqr", "transport", 10, [("SRV-MAT-TRN", 2, 450)]),
 ]
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
 
 class DemoLog:
@@ -179,8 +664,7 @@ def _first(doctype, filters=None, fallback=None):
 
 def _set_series(doc):
 	"""Pick the first naming series option when the doctype uses one."""
-	meta = frappe.get_meta(doc.doctype)
-	df = meta.get_field("naming_series")
+	df = frappe.get_meta(doc.doctype).get_field("naming_series")
 	if df and not doc.get("naming_series") and df.options:
 		doc.naming_series = df.options.split("\n")[0]
 
@@ -196,169 +680,370 @@ def _insert(doc, log, submit=False):
 	return doc
 
 
+def _uom(name):
+	return name if frappe.db.exists("UOM", name) else "Nos"
+
+
+def _set_taxes(doc, template_doctype, ctx):
+	"""Copy the company's 5% VAT template rows onto a document."""
+	template = frappe.db.get_value(
+		template_doctype, {"company": ctx.company, "title": ["like", "%VAT 5%"], "disabled": 0}, "name"
+	)
+	if not template:
+		return
+	doc.taxes_and_charges = template
+	fields = (
+		"charge_type",
+		"account_head",
+		"description",
+		"rate",
+		"cost_center",
+		"category",
+		"add_deduct_tax",
+	)
+	for t in frappe.get_doc(template_doctype, template).taxes:
+		doc.append("taxes", {f: t.get(f) for f in fields if t.get(f) is not None})
+
+
+def _cache():
+	"""frappe.cache is an object in v15 and a function before."""
+	cache = frappe.cache
+	return cache if hasattr(cache, "set_value") else cache()
+
+
+def _store_result(result):
+	_cache().set_value(
+		RESULT_KEY, {"finished_on": str(frappe.utils.now_datetime()), **result}, expires_in_sec=86400
+	)
+	return result
+
+
+# ---------------------------------------------------------------------------
+# Entry points
+# ---------------------------------------------------------------------------
+
+
+def _run(method, background, **kwargs):
+	if cint(background):
+		_cache().delete_value(RESULT_KEY)
+		frappe.enqueue(f"altor_project.demo.{method}", queue="long", timeout=3600, **kwargs)
+		return {"queued": True}
+	return globals()[method](**kwargs)
+
+
 @frappe.whitelist()
 def make_demo_data(company=None, background=0):
-	"""Create demo masters and transactions. Returns what was created and any step that failed."""
+	"""Create the demo data. Returns what was created and any step that failed."""
 	frappe.only_for("System Manager")
-	if cint(background):
-		frappe.enqueue("altor_project.demo._make_demo_data", queue="long", timeout=1800, company=company)
-		return {"queued": True}
-	return _make_demo_data(company)
+	return _run("_make_demo_data", background, company=company)
 
 
-def _make_demo_data(company=None):
+@frappe.whitelist()
+def delete_demo_data(background=0):
+	"""Cancel and delete the demo transactions (and older DEMO records). Client masters are kept."""
+	frappe.only_for("System Manager")
+	return _run("_delete_demo_data", background)
+
+
+@frappe.whitelist()
+def reset_demo_data(company=None, background=0):
+	"""delete_demo_data followed by make_demo_data."""
+	frappe.only_for("System Manager")
+	return _run("_reset_demo_data", background, company=company)
+
+
+@frappe.whitelist()
+def demo_status():
+	"""Result of the last background run (None while it is still running)."""
+	frappe.only_for("System Manager")
+	return _cache().get_value(RESULT_KEY)
+
+
+def _reset_demo_data(company=None):
+	deleted = _delete_demo_data(store=False)
+	made = _make_demo_data(company, store=False)
+	return _store_result({"deleted": deleted, "made": made})
+
+
+def _make_demo_data(company=None, store=True):
 	random.seed(42)
 	log = DemoLog()
-	today = getdate(nowdate())
 	company = company or frappe.defaults.get_global_default("company") or _first("Company")
 	if not company:
 		frappe.throw("Create a Company first.")
+	if frappe.db.exists("Project", {"project_name": PROJECTS["scf"]["name"]}):
+		result = {"message": "Demo data already exists. Run delete_demo_data first.", **log.result()}
+		return _store_result(result) if store else result
 
-	if frappe.db.exists("Project", {"project_name": PROJECTS[0][1]}):
-		return {
-			"message": "Demo data already exists. Run delete_demo_data first to recreate it.",
-			**log.result(),
-		}
-
-	abbr = frappe.get_cached_value("Company", company, "abbr")
-	# Budget figures are recalculated once at the end instead of after every document
-	frappe.flags.altor_skip_budget_update = True
+	frappe.flags.altor_skip_budget_update = True  # budgets are recalculated once at the end
 	ctx = frappe._dict(
 		company=company,
-		abbr=abbr,
-		today=today,
+		abbr=frappe.get_cached_value("Company", company, "abbr"),
+		today=getdate(nowdate()),
+		divisions={},
 		groups={},
 		suppliers={},
 		customers=[],
-		employees={},
+		workers={},
 		projects={},
-		department=None,
+		sales_orders={},
+		assets={},
 	)
-
-	with log.step("Masters"):
-		_make_masters(ctx, log)
-	with log.step("Altor Settings"):
-		_update_settings(ctx, log)
-	with log.step("Employees"):
-		_make_employees(ctx, log)
-	with log.step("Projects and tasks"):
-		_make_projects(ctx, log)
-	with log.step("Project budgets"):
-		_make_budgets(ctx, log)
-	for i, po in enumerate(PURCHASE_ORDERS):
-		with log.step(f"Purchase Order {i + 1}"):
-			_make_purchase_order(ctx, log, *po)
-	for i, inv in enumerate(DIRECT_INVOICES):
-		with log.step(f"Direct Purchase Invoice {i + 1}"):
-			_make_direct_invoice(ctx, log, *inv)
-	with log.step("Timesheets"):
-		_make_timesheets(ctx, log)
-	with log.step("Agency invoice"):
-		_make_agency_invoice(ctx, log)
-	with log.step("Attendance"):
-		_make_attendance(ctx, log)
-	with log.step("Employee checkins"):
-		_make_checkins(ctx, log)
-	with log.step("Leave applications"):
-		_make_leave_applications(ctx, log)
+	for title, fn in (
+		("Divisions", _make_divisions),
+		("Item groups", _make_item_groups),
+		("Items", _make_items),
+		("Payment terms", _make_payment_terms),
+		("Customers", _make_customers),
+		("Suppliers", _make_suppliers),
+		("Altor Settings", _update_settings),
+		("Workers", _make_workers),
+	):
+		with log.step(title):
+			fn(ctx, log)
+	for key in PROJECTS:
+		with log.step(f"Sales flow and project ({DIVISIONS[key][0]})"):
+			_make_sales_flow(ctx, log, key)
+	for title, fn in (
+		("Project budgets", _make_budgets),
+		("Project assets", _make_project_assets),
+		("Asset issues and returns", _make_allocations),
+		("Cross hire purchase orders", _make_cross_hire_pos),
+		("Project bills", _make_direct_invoices),
+		("Timesheets (November overtime sheet)", _make_timesheets),
+		("Agency bill", _make_agency_invoice),
+		("Sales invoice", _make_sales_invoice),
+	):
+		with log.step(title):
+			fn(ctx, log)
 	frappe.flags.altor_skip_budget_update = False
 	with log.step("Budget figures"):
+		from altor_project.assets import update_allocation
 		from altor_project.budget import update_project_budget
 
+		for name in frappe.get_all(
+			"Asset Allocation",
+			filters={"project": ["in", list(ctx.projects.values()) or [""]], "docstatus": 1},
+			pluck="name",
+		):
+			update_allocation(name)
 		for project in ctx.projects.values():
 			update_project_budget(project)
-
-	return log.result()
+	result = log.result()
+	return _store_result(result) if store else result
 
 
 # ---------------------------------------------------------------------------
-# Masters
+# Masters (client data)
 # ---------------------------------------------------------------------------
 
 
-def _make_masters(ctx, log):
-	root_group = _first(
-		"Item Group", {"is_group": 1, "parent_item_group": ["in", ["", None]]}, "All Item Groups"
+def _make_divisions(ctx, log):
+	root = frappe.db.get_value(
+		"Cost Center", {"company": ctx.company, "is_group": 1, "parent_cost_center": ["in", ["", None]]}
 	)
-	parent = _get_or_create(
-		"Item Group",
-		f"{PREFIX} Construction",
-		{"item_group_name": f"{PREFIX} Construction", "is_group": 1, "parent_item_group": root_group},
-		log,
-	)
-	for g in ITEM_GROUPS:
-		name = f"{PREFIX} {g}"
-		ctx.groups[g] = _get_or_create(
-			"Item Group", name, {"item_group_name": name, "parent_item_group": parent}, log
+	for key, (name, code) in DIVISIONS.items():
+		existing = frappe.db.get_value(
+			"Cost Center", {"company": ctx.company, "cost_center_name": name, "is_group": 0}
+		)
+		ctx.divisions[key] = (
+			existing
+			or _insert(
+				{
+					"doctype": "Cost Center",
+					"cost_center_name": name,
+					"company": ctx.company,
+					"parent_cost_center": root,
+					"is_group": 0,
+					"custom_division_code": code,
+				},
+				log,
+			).name
 		)
 
-	uom = "Nos" if frappe.db.exists("UOM", "Nos") else _first("UOM")
-	for code, item_name, group, rate in ITEMS:
-		_get_or_create(
-			"Item",
+
+def _group(ctx, log, name, parent, is_group=0):
+	ctx.groups[name] = _get_or_create(
+		"Item Group", name, {"item_group_name": name, "parent_item_group": parent, "is_group": is_group}, log
+	)
+	if is_group and not frappe.db.get_value("Item Group", name, "is_group"):
+		frappe.db.set_value("Item Group", name, "is_group", 1)
+	return ctx.groups[name]
+
+
+def _make_item_groups(ctx, log):
+	root = _first("Item Group", {"is_group": 1, "parent_item_group": ["in", ["", None]]}, "All Item Groups")
+	cost = _group(ctx, log, "Project Cost", root, 1)
+	for name in COST_GROUPS:
+		_group(ctx, log, name, cost, 1 if name == "Material Cost" else 0)
+	for name in ASSET_GROUPS:
+		_group(ctx, log, name, ctx.groups["Material Cost"])
+	services = _group(ctx, log, "Altor Services", root, 1)
+	for name in SERVICE_GROUPS.values():
+		_group(ctx, log, name, services)
+
+
+def _item(log, code, name, group, uom, **extra):
+	values = {
+		"item_code": code,
+		"item_name": name[:140],
+		"description": name,
+		"item_group": group,
+		"stock_uom": _uom(uom),
+		"is_stock_item": 0,
+		"include_item_in_manufacturing": 0,
+		**extra,
+	}
+	return _get_or_create("Item", code, values, log)
+
+
+def _make_items(ctx, log):
+	for key, items in SALES_ITEMS.items():
+		for code, name, uom in items:
+			_item(log, code, name, SERVICE_GROUPS[key], uom, is_sales_item=1, is_purchase_item=0)
+	for code, name, group, uom, cost, months, _qty, _div in ASSET_ITEMS:
+		_item(
+			log,
 			code,
+			name,
+			group,
+			uom,
+			is_stock_item=1,
+			is_sales_item=0,
+			is_purchase_item=1,
+			valuation_rate=cost,
+			custom_is_project_asset=1,
+			custom_depreciation_months=months,
+		)
+	for _project, _supplier, period, rows in CROSS_HIRE_POS:
+		for code, name, _qty, uom, _rate, _n in rows:
+			_item(
+				log,
+				code,
+				f"{name} (per {period.lower()})",
+				"Cross Hire Material / Equipment Cost",
+				uom,
+				is_sales_item=0,
+			)
+	for code, name, group, uom in COST_ITEMS:
+		_item(log, code, name, group, uom, is_sales_item=0)
+
+
+def _make_payment_terms(ctx, log):
+	for name, days in PAYMENT_TERMS.items():
+		term = {
+			"invoice_portion": 100,
+			"due_date_based_on": "Day(s) after invoice date",
+			"credit_days": days,
+		}
+		_get_or_create("Payment Term", name, {"payment_term_name": name, **term}, log)
+		_get_or_create(
+			"Payment Terms Template",
+			name,
+			{"template_name": name, "terms": [{"payment_term": name, **term}]},
+			log,
+		)
+
+
+def _make_customers(ctx, log):
+	group = (
+		"Commercial"
+		if frappe.db.exists("Customer Group", "Commercial")
+		else _first("Customer Group", {"is_group": 0})
+	)
+	territory = (
+		"United Arab Emirates"
+		if frappe.db.exists("Territory", "United Arab Emirates")
+		else _first("Territory", {"is_group": 0})
+	)
+	for c in CUSTOMERS:
+		existing = frappe.db.get_value("Customer", {"customer_name": c["name"]})
+		if existing:
+			ctx.customers.append(existing)
+			continue
+		customer = _insert(
 			{
-				"item_code": code,
-				"item_name": item_name,
-				"item_group": ctx.groups[group],
-				"stock_uom": uom,
-				"is_stock_item": 0,
-				"is_purchase_item": 1,
-				"is_sales_item": 1,
-				"include_item_in_manufacturing": 0,
-				"standard_rate": rate,
-				"valuation_rate": rate,
-				"description": item_name,
+				"doctype": "Customer",
+				"customer_name": c["name"],
+				"customer_type": "Company",
+				"customer_group": group,
+				"territory": territory,
+				"default_currency": "AED",
+				"tax_id": c["trn"],
+				"payment_terms": c["terms"],
+				"customer_details": f"Customer Code: {c['code']}\nTrade License: {c['license']}",
+				"credit_limits": [{"company": ctx.company, "credit_limit": c["credit_limit"]}]
+				if c["credit_limit"]
+				else [],
+			},
+			log,
+		)
+		ctx.customers.append(customer.name)
+		link = [{"link_doctype": "Customer", "link_name": customer.name}]
+		first, title, email, phone = c["contact"]
+		_insert(
+			{
+				"doctype": "Contact",
+				"first_name": first,
+				"designation": title,
+				"company_name": c["name"],
+				"is_primary_contact": 1,
+				"email_ids": [{"email_id": email, "is_primary": 1}],
+				"phone_nos": [{"phone": phone, "is_primary_mobile_no": 1}],
+				"links": link,
+			},
+			log,
+		)
+		acc_name, acc_email = c["accounts"]
+		_insert(
+			{
+				"doctype": "Contact",
+				"first_name": acc_name,
+				"designation": "Accounts",
+				"company_name": c["name"],
+				"email_ids": [{"email_id": acc_email, "is_primary": 1}],
+				"links": link,
+			},
+			log,
+		)
+		line1, line2, city, po_box = c["address"]
+		_insert(
+			{
+				"doctype": "Address",
+				"address_title": c["name"],
+				"address_type": "Billing",
+				"address_line1": line1,
+				"address_line2": line2,
+				"city": city,
+				"pincode": po_box,
+				"country": "United Arab Emirates",
+				"is_primary_address": 1,
+				"links": link,
 			},
 			log,
 		)
 
-	supplier_group = _first("Supplier Group", {"is_group": 0}) or _first("Supplier Group")
+
+def _make_suppliers(ctx, log):
+	group = _first("Supplier Group", {"is_group": 0}) or _first("Supplier Group")
 	for key, name in SUPPLIERS.items():
 		ctx.suppliers[key] = _get_or_create(
 			"Supplier",
 			name,
-			{"supplier_name": name, "supplier_group": supplier_group, "supplier_type": "Company"},
+			{"supplier_name": name, "supplier_group": group, "supplier_type": "Company"},
 			log,
 			filters={"supplier_name": name},
 		)
 
-	customer_group = _first("Customer Group", {"is_group": 0}) or _first("Customer Group")
-	territory = _first("Territory", {"is_group": 0}) or _first("Territory")
-	for name in CUSTOMERS:
-		ctx.customers.append(
-			_get_or_create(
-				"Customer",
-				name,
-				{
-					"customer_name": name,
-					"customer_type": "Company",
-					"customer_group": customer_group,
-					"territory": territory,
-				},
-				log,
-				filters={"customer_name": name},
-			)
-		)
-
-	for d in DESIGNATIONS:
-		_get_or_create("Designation", d, {"designation_name": d}, log)
-
-	dept_name = f"{PREFIX} Site Operations"
-	parent_dept = _first("Department", {"is_group": 1}) or "All Departments"
-	ctx.department = _get_or_create(
-		"Department",
-		f"{dept_name} - {ctx.abbr}",
-		{"department_name": dept_name, "company": ctx.company, "parent_department": parent_dept},
-		log,
-		filters={"department_name": dept_name, "company": ctx.company},
-	)
-
 
 def _update_settings(ctx, log):
 	settings = frappe.get_single("Altor Settings")
-	if not settings.get("default_manpower_item_group"):
-		settings.default_manpower_item_group = ctx.groups["Manpower"]
+	for field, group in (
+		("default_manpower_item_group", "Manpower Cost"),
+		("outsourced_manpower_item_group", "Outsource Manpower Cost"),
+	):
+		if not settings.get(field) or settings.get(field).startswith(PREFIX):
+			settings.set(field, ctx.groups[group])
 	settings.ot_multiplier = settings.get("ot_multiplier") or 1.25
 	settings.ot2_multiplier = settings.get("ot2_multiplier") or 1.5
 	settings.working_hours_per_day = settings.get("working_hours_per_day") or 8
@@ -368,122 +1053,133 @@ def _update_settings(ctx, log):
 	log.add("Altor Settings")
 
 
-def _employee(ctx, log, first, last, gender, designation, joined_days_ago, extra):
-	full = f"{PREFIX} {first} {last}"
-	existing = frappe.db.get_value("Employee", {"employee_name": full, "company": ctx.company}, "name")
-	if existing:
-		return existing
-	t = ctx.today
-	# Spread birthdays / anniversaries / passport expiry so the HR dashboard has something to show
-	dob = getdate(add_days(t, random.randint(-10, 40)))
-	try:
-		dob = dob.replace(year=t.year - random.randint(24, 48))
-	except ValueError:  # 29 Feb
-		dob = dob.replace(day=28, year=t.year - 30)
-	doj = add_days(t, -joined_days_ago)
-	values = {
-		"doctype": "Employee",
-		"first_name": f"{PREFIX} {first}",
-		"last_name": last,
-		"gender": gender,
-		"date_of_birth": dob,
-		"date_of_joining": doj,
-		"company": ctx.company,
-		"status": "Active",
-		"designation": designation,
-		"department": ctx.department,
-		**extra,
-	}
-	meta = frappe.get_meta("Employee")
-	if meta.has_field("valid_upto"):
-		values["passport_number"] = f"P{random.randint(1000000, 9999999)}"
-		values["valid_upto"] = add_days(t, random.choice([-12, 25, 45, 200, 400, 700]))
-	if meta.has_field("employment_type") and frappe.db.exists("Employment Type", "Full-time"):
-		values["employment_type"] = (
-			"Full-time"
-			if not extra.get("custom_is_outsourced")
-			else ("Contract" if frappe.db.exists("Employment Type", "Contract") else "Full-time")
-		)
-	return _insert(values, log).name
-
-
-def _make_employees(ctx, log):
-	for i, (first, last, gender, designation, basic, allowance) in enumerate(OWN_STAFF):
-		ctx.employees.setdefault("own", []).append(
-			_employee(
-				ctx,
-				log,
-				first,
-				last,
-				gender,
-				designation,
-				random.choice([365 * 2 - 20, 400, 365 * 3 - 5, 900, 30, 365 + 10]) if i else 365 * 4 - 8,
-				{"custom_basic_salary": basic, "custom_allowance": allowance},
-			)
-		)
-	for first, last, gender, designation, agency, hourly in OUTSOURCED:
-		ctx.employees.setdefault("outsourced", []).append(
-			_employee(
-				ctx,
-				log,
-				first,
-				last,
-				gender,
-				designation,
-				random.randint(10, 500),
-				{
-					"custom_is_outsourced": 1,
-					"custom_manpower_supplier": ctx.suppliers[agency],
-					"custom_hourly_cost_rate": hourly,
-				},
-			)
-		)
-
-
-# ---------------------------------------------------------------------------
-# Projects, tasks, budgets
-# ---------------------------------------------------------------------------
-
-
-def _make_projects(ctx, log):
-	t = ctx.today
-	for key, name, status, start, end, progress, cust, contract in PROJECTS:
-		doc = frappe.get_doc(
+def _make_workers(ctx, log):
+	for key, w in WORKERS.items():
+		_get_or_create("Designation", w["designation"], {"designation_name": w["designation"]}, log)
+		values = {k: v for k, v in w.items() if k.startswith("custom_")}
+		if w.get("agency"):
+			values["custom_manpower_supplier"] = ctx.suppliers[w["agency"]]
+		existing = frappe.db.get_value("Employee", {"employee_name": w["first_name"], "company": ctx.company})
+		if existing:
+			frappe.db.set_value("Employee", existing, values)
+			ctx.workers[key] = existing
+			continue
+		ctx.workers[key] = _insert(
 			{
-				"doctype": "Project",
-				"project_name": name,
+				"doctype": "Employee",
+				"first_name": w["first_name"],
+				"gender": "Male",
+				"date_of_birth": "1995-05-10",
+				"date_of_joining": "2024-03-01",
 				"company": ctx.company,
-				"customer": ctx.customers[cust],
-				"expected_start_date": add_days(t, start),
-				"expected_end_date": add_days(t, end),
-				"percent_complete_method": "Manual",
-				"percent_complete": progress,
-				"estimated_costing": contract * 0.78,
-				"status": "Open",
-				"location": name.split(" - ")[-1],
-				"scope_of_work": name.replace(f"{PREFIX} ", ""),
-			}
-		)
-		_insert(doc, log)
-		ctx.projects[key] = doc.name
-		_make_tasks(ctx, log, doc, start, end, progress)
-		if status != "Open":
-			frappe.db.set_value("Project", doc.name, "status", status)
+				"status": "Active",
+				"designation": w["designation"],
+				**values,
+			},
+			log,
+		).name
 
 
-def _make_tasks(ctx, log, project, start, end, progress):
+# ---------------------------------------------------------------------------
+# Sales flow, projects, budgets
+# ---------------------------------------------------------------------------
+
+
+def _make_sales_flow(ctx, log, key):
+	"""Lead -> Quotation -> Sales Order -> Project, numbered by division (CRM-SCF-LEAD-... -> PRJ-SCF-...)."""
+	from erpnext.crm.doctype.lead.lead import make_quotation
+	from erpnext.selling.doctype.quotation.quotation import make_sales_order
+	from erpnext.selling.doctype.sales_order.sales_order import make_project
+
+	p = PROJECTS[key]
+	c = CUSTOMERS[p["customer"]]
+	customer = ctx.customers[p["customer"]]
 	t = ctx.today
-	span = end - start
-	phases = [
-		("Mobilisation & Site Setup", 0.0, 0.1),
-		("Civil & Structural", 0.1, 0.45),
-		("MEP Installation", 0.35, 0.8),
-		("Finishing & Handover", 0.75, 1.0),
-	]
-	for subject, a, b in phases:
-		s, e = add_days(t, start + int(span * a)), add_days(t, start + int(span * b))
-		phase_progress = max(0, min(100, (progress - a * 100) / max((b - a), 0.01)))
-		status = "Completed" if phase_progress >= 100 else ("Working" if phase_progress > 0 else "Open")
+	first, title, email, phone = c["contact"]
+	start = add_days(t, p["start"])
+
+	lead = frappe.get_doc(
+		{
+			"doctype": "Lead",
+			"first_name": first,
+			"job_title": title,
+			"company_name": c["name"],
+			"email_id": email,
+			"mobile_no": phone,
+			"source": "Existing Customer",
+			"company": ctx.company,
+			"cost_center": ctx.divisions[key],
+		}
+	)
+	for field, value in (("custom_location", p["location"]), ("custom_scope_of_work", p["scope"])):
+		if lead.meta.has_field(field):
+			lead.set(field, value)
+	lead = _insert(lead, log)
+	# the customer already exists: link it to the lead so the Sales Order uses it
+	frappe.db.set_value("Customer", customer, "lead_name", lead.name)
+
+	q = make_quotation(lead.name)
+	q.update(
+		{
+			"transaction_date": add_days(start, -20),
+			"valid_till": add_days(start, 10),
+			"company": ctx.company,
+			"cost_center": ctx.divisions[key],
+			"custom_project": p["name"],
+			"custom_location": p["location"],
+			"custom_scope_of_work": p["scope"],
+		}
+	)
+	q.set("items", [])
+	for code, qty, rate in p["items"]:
+		q.append("items", {"item_code": code, "qty": qty, "rate": rate})
+	_set_taxes(q, "Sales Taxes and Charges Template", ctx)
+	q = _insert(q, log, submit=True)
+
+	so = make_sales_order(q.name)
+	so.update(
+		{
+			"transaction_date": add_days(start, -5),
+			"delivery_date": add_days(t, p["end"]),
+			"po_no": p["lpo"],
+			"po_date": add_days(start, -6),
+		}
+	)
+	for row in so.items:
+		row.delivery_date = so.delivery_date
+	so = _insert(so, log, submit=True)
+	ctx.sales_orders[key] = so.name
+
+	project = make_project(so.name)
+	project.update(
+		{
+			"project_name": p["name"],
+			"company": ctx.company,
+			"customer": customer,
+			"cost_center": ctx.divisions[key],
+			"quotation": q.name,
+			"expected_start_date": start,
+			"expected_end_date": add_days(t, p["end"]),
+			"percent_complete_method": "Manual",
+			"percent_complete": p["progress"],
+			"status": "Open",
+			"location": p["location"],
+			"scope_of_work": p["scope"],
+			"lpo_ref": p["lpo"],
+			"lpo_date": add_days(start, -6),
+		}
+	)
+	project = _insert(project, log)
+	ctx.projects[key] = project.name
+	_make_tasks(ctx, log, project, p)
+
+
+def _make_tasks(ctx, log, project, p):
+	t, span = ctx.today, p["end"] - p["start"]
+	for subject, a, b in p["tasks"]:
+		s, e = add_days(t, p["start"] + int(span * a)), add_days(t, p["start"] + int(span * b))
+		progress = max(0, min(100, (p["progress"] - a * 100) / max((b - a), 0.01)))
+		status = "Completed" if progress >= 100 else ("Working" if progress > 0 else "Open")
 		if status != "Completed" and getdate(e) < t:
 			status = "Overdue"
 		_insert(
@@ -494,29 +1190,29 @@ def _make_tasks(ctx, log, project, start, end, progress):
 				"exp_start_date": s,
 				"exp_end_date": e,
 				"status": status,
-				"progress": round(phase_progress),
+				"progress": round(progress),
 				"completed_on": e if status == "Completed" else None,
-				"priority": random.choice(["Low", "Medium", "High"]),
 			},
 			log,
 		)
 
 
 def _make_budgets(ctx, log):
-	for key, lines in BUDGETS.items():
+	for key, project in ctx.projects.items():
 		doc = frappe.get_doc(
 			{
 				"doctype": "Project Budget",
-				"project": ctx.projects[key],
-				"posting_date": add_days(ctx.today, -90),
+				"project": project,
+				"cost_center": ctx.divisions[key],
+				"posting_date": add_days(ctx.today, PROJECTS[key]["start"] - 3),
 				"warning_threshold": 90,
 				"applicable_on_material_request": 1,
 				"action_if_annual_budget_exceeded_on_mr": "Warn",
 				"applicable_on_purchase_order": 1,
 				"action_if_annual_budget_exceeded_on_po": "Warn",
 				"budget_items": [
-					{"category": ctx.groups[g], "budgeted_amount": amt, "quoted_amount": round(amt * 1.22)}
-					for g, amt in lines.items()
+					{"category": ctx.groups[g], "budgeted_amount": amount}
+					for g, amount in PROJECTS[key]["budget"].items()
 				],
 			}
 		)
@@ -525,49 +1221,102 @@ def _make_budgets(ctx, log):
 
 
 # ---------------------------------------------------------------------------
+# Project assets
+# ---------------------------------------------------------------------------
+
+
+def _make_project_assets(ctx, log):
+	for code, name, _group_name, _uom_name, cost, months, qty, div in ASSET_ITEMS:
+		asset = _insert(
+			{
+				"doctype": "Project Asset",
+				"asset_name": name[:140],
+				"item_code": code,
+				"company": ctx.company,
+				"cost_center": ctx.divisions[div],
+				"purchase_date": add_days(ctx.today, -random.choice([120, 240, 400, 540, 700])),
+				"qty": qty,
+				"unit_cost": cost,
+				"salvage_value": round(cost * 0.05, 2),
+				"depreciation_months": months,
+				"remarks": ASSET_REMARK,
+			},
+			log,
+		)
+		ctx.assets[code] = asset.name
+
+
+def _make_allocations(ctx, log):
+	from altor_project.altor_project.doctype.asset_allocation.asset_allocation import make_asset_return
+
+	for key, days_ago, items, returns in ALLOCATIONS:
+		alloc = _insert(
+			{
+				"doctype": "Asset Allocation",
+				"project": ctx.projects[key],
+				"company": ctx.company,
+				"cost_center": ctx.divisions[key],
+				"delivery_date": add_days(ctx.today, -days_ago),
+				"delivery_ref": f"{PREFIX}-DN-{random.randint(1000, 9999)}",
+				"items": [{"project_asset": ctx.assets[code], "qty": qty} for code, qty in items],
+			},
+			log,
+			submit=True,
+		)
+		for ret_days_ago, code, good, damaged in returns:
+			ret = make_asset_return(alloc.name)
+			ret.return_date = add_days(ctx.today, -ret_days_ago)
+			ret.return_ref = f"{PREFIX}-RN-{random.randint(1000, 9999)}"
+			keep = []
+			for row in ret.items:
+				if row.project_asset == ctx.assets[code]:
+					row.returned_qty, row.damaged_qty = good, damaged
+					if damaged:
+						row.damage_remarks = "Bent / lost during dismantling"
+					keep.append(row)
+			ret.set("items", keep)
+			_insert(ret, log, submit=True)
+
+
+# ---------------------------------------------------------------------------
 # Purchasing
 # ---------------------------------------------------------------------------
 
 
-def _rate(item_code):
-	return next(r for c, _n, _g, r in ITEMS if c == item_code)
+def _make_cross_hire_pos(ctx, log):
+	"""The client's Rental PO sheets: qty x unit rate x weeks / days."""
+	for key, supplier, period, rows in CROSS_HIRE_POS:
+		date = add_days(ctx.today, PROJECTS[key]["start"] + 2)
+		unit = period.lower()
+		po = frappe.get_doc(
+			{
+				"doctype": "Purchase Order",
+				"company": ctx.company,
+				"supplier": ctx.suppliers[supplier],
+				"transaction_date": date,
+				"schedule_date": add_days(date, 2),
+				"cost_center": ctx.divisions[key],
+				"items": [
+					{
+						"item_code": code,
+						"qty": qty,
+						"uom": _uom(uom),
+						"rate": round(rate * periods, 4),
+						"description": f"{name}: {qty} x AED {rate} per {unit} x {periods} {unit}s",
+						"schedule_date": add_days(date, 2),
+						"project": ctx.projects[key],
+						"cost_center": ctx.divisions[key],
+					}
+					for code, name, qty, uom, rate, periods in rows
+				],
+			}
+		)
+		_set_taxes(po, "Purchase Taxes and Charges Template", ctx)
+		_insert(po, log, submit=True)
+		frappe.clear_messages()  # budget warnings are expected
 
 
-def _make_purchase_order(ctx, log, project_key, supplier_key, days_ago, items, invoice):
-	date = add_days(ctx.today, -days_ago)
-	po = frappe.get_doc(
-		{
-			"doctype": "Purchase Order",
-			"company": ctx.company,
-			"supplier": ctx.suppliers[supplier_key],
-			"transaction_date": date,
-			"schedule_date": add_days(date, 7),
-			"items": [
-				{
-					"item_code": code,
-					"qty": qty,
-					"rate": _rate(code),
-					"schedule_date": add_days(date, 7),
-					"project": ctx.projects[project_key],
-				}
-				for code, qty in items
-			],
-		}
-	)
-	_insert(po, log, submit=True)
-	frappe.clear_messages()  # budget warnings are expected here
-	if invoice:
-		from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_invoice
-
-		pi = make_purchase_invoice(po.name)
-		pi.set_posting_time = 1
-		pi.posting_date = add_days(date, 10) if add_days(date, 10) <= ctx.today else ctx.today
-		pi.bill_no = f"{PREFIX}-{po.name}"
-		pi.bill_date = pi.posting_date
-		_insert(pi, log, submit=True)
-
-
-def _make_direct_invoice(ctx, log, project_key, supplier_key, days_ago, items, manpower=False):
+def _purchase_invoice(ctx, log, key, supplier_key, days_ago, items, manpower=False):
 	date = add_days(ctx.today, -days_ago)
 	pi = frappe.get_doc(
 		{
@@ -576,11 +1325,18 @@ def _make_direct_invoice(ctx, log, project_key, supplier_key, days_ago, items, m
 			"supplier": ctx.suppliers[supplier_key],
 			"set_posting_time": 1,
 			"posting_date": date,
-			"bill_no": f"{PREFIX}-INV-{random.randint(1000, 9999)}",
+			"bill_no": f"{PREFIX}-INV-{random.randint(10000, 99999)}",
 			"bill_date": date,
+			"cost_center": ctx.divisions[key],
 			"items": [
-				{"item_code": code, "qty": qty, "rate": _rate(code), "project": ctx.projects[project_key]}
-				for code, qty in items
+				{
+					"item_code": code,
+					"qty": qty,
+					"rate": rate,
+					"project": ctx.projects[key],
+					"cost_center": ctx.divisions[key],
+				}
+				for code, qty, rate in items
 			],
 		}
 	)
@@ -589,123 +1345,75 @@ def _make_direct_invoice(ctx, log, project_key, supplier_key, days_ago, items, m
 	_insert(pi, log, submit=True)
 
 
+def _make_direct_invoices(ctx, log):
+	for key, supplier, days_ago, items in DIRECT_INVOICES:
+		_purchase_invoice(ctx, log, key, supplier, days_ago, items)
+
+
 def _make_agency_invoice(ctx, log):
-	"""An agency bill for labour already costed on Timesheets (left out of the budget)."""
-	hours = frappe.db.sql(
-		"""SELECT SUM(td.hours)
-		FROM `tabTimesheet Detail` td INNER JOIN `tabTimesheet` ts ON ts.name = td.parent
-		WHERE ts.docstatus = 1 AND td.project = %s AND ts.custom_manpower_supplier = %s""",
-		(ctx.projects["villa"], ctx.suppliers["agency_1"]),
+	"""The agency's bill for Manu: already costed on Timesheets, so left out of the budget."""
+	cost = frappe.db.sql(
+		"SELECT SUM(custom_total_labour_cost) FROM `tabTimesheet` WHERE docstatus = 1 AND employee = %s",
+		ctx.workers["manu"],
 	)[0][0]
-	if flt(hours):
-		_make_direct_invoice(ctx, log, "villa", "agency_1", 1, [("DEMO-MPW-001", flt(hours))], manpower=True)
+	if flt(cost):
+		_purchase_invoice(ctx, log, "scf", "agency", 0, [("SRV-MPW-OUT", 1, flt(cost, 2))], manpower=True)
 
 
 # ---------------------------------------------------------------------------
-# Manpower, attendance, leave
+# Timesheets: the client's November overtime sheet
 # ---------------------------------------------------------------------------
 
 
 def _make_timesheets(ctx, log):
-	"""One Timesheet per worker and project: a row per working day, some overtime, a few Sundays."""
-	own, out = ctx.employees.get("own", []), ctx.employees.get("outsourced", [])
-	# Fixed crews per project so nobody is booked on two projects at the same time
-	crews = {
-		"villa": own[1:3] + out[0:4],
-		"office": own[3:5] + out[4:6],
-		"warehouse": own[0:1] + out[6:8],
-	}
-	outsourced = set(out)
-	for key, employees in crews.items():
-		start = max(-26, PROJECTS[[p[0] for p in PROJECTS].index(key)][3])
-		for emp in employees:
-			normal = 10 if emp in outsourced else 8
-			logs = []
-			for offset in range(start, 1):
-				day = getdate(add_days(ctx.today, offset))
-				sunday = day.weekday() == 6
-				if (sunday and random.random() < 0.7) or random.random() < 0.15:
-					continue  # Sundays mostly off, and not every day worked
-				hours = 8 if sunday else normal + random.choice([0, 0, 1, 2])
-				from_time = get_datetime(f"{day} 07:00:00")
-				logs.append(
-					{
-						"from_time": from_time,
-						"to_time": from_time + timedelta(hours=hours),
-						"hours": hours,
-						"project": ctx.projects[key],
-					}
-				)
-			if logs:
-				_insert(
-					{"doctype": "Timesheet", "company": ctx.company, "employee": emp, "time_logs": logs},
-					log,
-					submit=True,
-				)
-				frappe.clear_messages()
-
-
-def _make_attendance(ctx, log):
-	if not frappe.db.exists("DocType", "Attendance"):
-		return
-	employees = ctx.employees.get("own", []) + ctx.employees.get("outsourced", [])
-	for offset in range(-6, 1):
-		day = add_days(ctx.today, offset)
-		if getdate(day).weekday() == 6:
-			continue
-		for emp in employees:
-			status = random.choices(["Present", "Absent", "Half Day", "Work From Home"], [86, 6, 5, 3])[0]
-			try:
-				_insert(
-					{
-						"doctype": "Attendance",
-						"employee": emp,
-						"attendance_date": day,
-						"status": status,
-						"company": ctx.company,
-					},
-					log,
-					submit=True,
-				)
-			except Exception:
-				frappe.clear_messages()  # holiday or already marked: skip this one
-
-
-def _make_checkins(ctx, log):
-	if not frappe.db.exists("DocType", "Employee Checkin"):
-		return
-	for emp in (ctx.employees.get("own", []) + ctx.employees.get("outsourced", []))[:10]:
-		time = get_datetime(f"{ctx.today} 07:{random.randint(10, 55):02d}:00")
-		try:
-			_insert({"doctype": "Employee Checkin", "employee": emp, "log_type": "IN", "time": time}, log)
-		except Exception:
-			frappe.clear_messages()
-
-
-def _make_leave_applications(ctx, log):
-	if not frappe.db.exists("DocType", "Leave Application"):
-		return
-	leave_type = frappe.db.get_value("Leave Type", {"is_lwp": 1}, "name") or _first("Leave Type")
-	if not leave_type:
-		return
-	own = ctx.employees.get("own", [])
-	for emp, start, days in ((own[2], 3, 2), (own[5], 10, 4)) if len(own) > 5 else ():
-		try:
-			_insert(
+	year, month = OT_MONTH
+	for worker, employee in ctx.workers.items():
+		logs = []
+		for day in range(1, 31):
+			hours = sheet_hours(worker, day)
+			if not hours:
+				continue
+			normal, ot1, ot2 = hours
+			total = normal + ot1 + ot2
+			start = get_datetime(f"{year}-{month:02d}-{day:02d} 07:00:00")
+			logs.append(
 				{
-					"doctype": "Leave Application",
-					"employee": emp,
-					"leave_type": leave_type,
-					"from_date": add_days(ctx.today, start),
-					"to_date": add_days(ctx.today, start + days - 1),
-					"status": "Open",
-					"description": "DEMO leave request",
-					"company": ctx.company,
-				},
-				log,
+					"from_time": start,
+					"to_time": start + timedelta(hours=total),
+					"hours": total,
+					"project": ctx.projects["scf"],
+					"custom_ot1_hours": ot1,
+					"custom_ot2_hours": ot2,
+					"description": "Scaffolding erection - east facade",
+				}
 			)
-		except Exception:
-			frappe.clear_messages()
+		_insert(
+			{
+				"doctype": "Timesheet",
+				"company": ctx.company,
+				"employee": employee,
+				"custom_auto_overtime": 0,  # hours split as in the sheet
+				"note": f"{PREFIX} November overtime sheet",
+				"time_logs": logs,
+			},
+			log,
+			submit=True,
+		)
+		frappe.clear_messages()
+
+
+def _make_sales_invoice(ctx, log):
+	"""First bill of the scaffolding project: design, design review and mobilisation."""
+	from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice
+
+	si = make_sales_invoice(ctx.sales_orders["scf"])
+	si.set("items", [r for r in si.items if r.item_code in ("SCF-SRV-001", "SCF-SRV-002", "SCF-SRV-007")])
+	for row in si.items:
+		if row.item_code == "SCF-SRV-007":
+			row.qty = 1
+	si.project = ctx.projects["scf"]
+	si.remarks = f"{PREFIX} first bill"
+	_insert(si, log, submit=True)
 
 
 # ---------------------------------------------------------------------------
@@ -713,18 +1421,18 @@ def _make_leave_applications(ctx, log):
 # ---------------------------------------------------------------------------
 
 
-@frappe.whitelist()
-def delete_demo_data():
-	"""Cancel and delete everything make_demo_data created (names starting with DEMO)."""
-	frappe.only_for("System Manager")
+def _delete_demo_data(store=True):
 	log = DemoLog()
-	like = f"{PREFIX} %"
+	like = f"{PREFIX}%"
 	projects = frappe.get_all("Project", filters={"project_name": ["like", like]}, pluck="name")
 	suppliers = frappe.get_all("Supplier", filters={"supplier_name": ["like", like]}, pluck="name")
+	customers = frappe.get_all("Customer", filters={"customer_name": ["like", like]}, pluck="name")
 	employees = frappe.get_all("Employee", filters={"employee_name": ["like", like]}, pluck="name")
 
-	def remove(doctype, names):
-		for name in names:
+	def remove(doctype, docnames):
+		for name in dict.fromkeys(n for n in docnames if n):
+			if not frappe.db.exists(doctype, name):
+				continue
 			with log.step(f"{doctype} {name}"):
 				doc = frappe.get_doc(doctype, name)
 				if doc.docstatus == 1:
@@ -733,37 +1441,96 @@ def delete_demo_data():
 				frappe.delete_doc(doctype, name, force=True, ignore_permissions=True)
 				log.add(doctype)
 
-	def names(doctype, filters):
-		return frappe.get_all(doctype, filters=filters, pluck="name", order_by="creation desc")
+	def names(doctype, filters=None, or_filters=None):
+		if not frappe.db.exists("DocType", doctype):
+			return []
+		return frappe.get_all(
+			doctype, filters=filters, or_filters=or_filters, pluck="name", order_by="creation desc"
+		)
 
+	def parents(child, field, values):
+		if not values:
+			return []
+		return frappe.get_all(child, filters={field: ["in", list(values)]}, pluck="parent", distinct=True)
+
+	# the sales chain of the demo projects and of older DEMO customers / leads
+	sales_orders = [s for s in (frappe.db.get_value("Project", p, "sales_order") for p in projects) if s]
+	quotations = [q for q in (frappe.db.get_value("Project", p, "quotation") for p in projects) if q]
+	if sales_orders:
+		quotations += frappe.get_all(
+			"Sales Order Item",
+			filters={"parent": ["in", sales_orders], "prevdoc_docname": ["is", "set"]},
+			pluck="prevdoc_docname",
+			distinct=True,
+		)
+	if customers:
+		sales_orders += names("Sales Order", {"customer": ["in", customers]})
+		quotations += names("Quotation", {"party_name": ["in", customers]})
+	quotations += names("Quotation", {"customer_name": ["like", like]})
+	quotations = list(dict.fromkeys(quotations))
+	leads = [
+		q.party_name
+		for q in frappe.get_all(
+			"Quotation", filters={"name": ["in", quotations or [""]]}, fields=["party_name", "quotation_to"]
+		)
+		if q.quotation_to == "Lead"
+	]
+	leads += names("Lead", or_filters={"company_name": ["like", like], "lead_name": ["like", like]})
+	leads = list(dict.fromkeys(leads))
+
+	if projects:
+		remove("Timesheet", parents("Timesheet Detail", "project", projects))
+		remove("Asset Return", names("Asset Return", {"project": ["in", projects]}))
+		remove("Asset Allocation", names("Asset Allocation", {"project": ["in", projects]}))
+		remove("Payment Certificate", names("Payment Certificate", {"project": ["in", projects]}))
+		remove("Project Budget", names("Project Budget", {"project": ["in", projects]}))
+		remove("Sales Invoice", parents("Sales Invoice Item", "sales_order", sales_orders))
+		remove("Sales Invoice", names("Sales Invoice", {"project": ["in", projects]}))
+		remove("Purchase Invoice", parents("Purchase Invoice Item", "project", projects))
+		remove("Purchase Order", parents("Purchase Order Item", "project", projects))
+		remove("Material Request", names("Material Request", {"custom_project": ["in", projects]}))
 	if suppliers:
 		remove("Purchase Invoice", names("Purchase Invoice", {"supplier": ["in", suppliers]}))
 		remove("Purchase Order", names("Purchase Order", {"supplier": ["in", suppliers]}))
-	if projects:
-		remove("Project Budget", names("Project Budget", {"project": ["in", projects]}))
+	if customers:
+		remove("Sales Invoice", names("Sales Invoice", {"customer": ["in", customers]}))
+		remove("Proforma Invoice", names("Proforma Invoice", {"customer": ["in", customers]}))
+	remove("Project Asset", names("Project Asset", {"remarks": ["like", f"{PREFIX} %"]}))
 	if employees:
 		for dt in ("Timesheet", "Attendance", "Employee Checkin", "Leave Application"):
-			if frappe.db.exists("DocType", dt):
-				remove(dt, names(dt, {"employee": ["in", employees]}))
+			remove(dt, names(dt, {"employee": ["in", employees]}))
 	if projects:
 		remove("Task", names("Task", {"project": ["in", projects]}))
+		remove("Project Schedule", names("Project Schedule", {"project": ["in", projects]}))
 		remove("Project", projects)
+	remove("Sales Order", sales_orders)
+	if quotations:
+		remove("Proforma Invoice", names("Proforma Invoice", {"quotation": ["in", quotations]}))
+	remove("Quotation", quotations)
+	if leads:
+		for customer in names("Customer", {"lead_name": ["in", leads]}):
+			frappe.db.set_value("Customer", customer, "lead_name", None)
+		remove("Site Visit", names("Site Visit", {"lead": ["in", leads]}))
+	remove("Lead", leads)
 	remove("Employee", employees)
 
 	with log.step("Altor Settings"):
 		settings = frappe.get_single("Altor Settings")
-		if (settings.get("default_manpower_item_group") or "").startswith(PREFIX):
-			settings.default_manpower_item_group = None
+		for field in ("default_manpower_item_group", "outsourced_manpower_item_group"):
+			if (settings.get(field) or "").startswith(PREFIX):
+				settings.set(field, None)
 		settings.flags.ignore_permissions = True
 		settings.save()
 
 	remove("Item", names("Item", {"item_code": ["like", f"{PREFIX}-%"]}))
 	remove("Supplier", suppliers)
-	remove("Customer", names("Customer", {"customer_name": ["like", like]}))
+	if customers:
+		remove("Contact", parents("Dynamic Link", "link_name", customers))
+		remove("Address", parents("Dynamic Link", "link_name", customers))
+	remove("Customer", customers)
 	remove("Department", names("Department", {"department_name": ["like", like]}))
-	remove(
-		"Item Group",
-		[g for g in names("Item Group", {"name": ["like", like]}) if g != f"{PREFIX} Construction"],
-	)
-	remove("Item Group", names("Item Group", {"name": f"{PREFIX} Construction"}))
-	return log.result()
+	groups = names("Item Group", {"name": ["like", like]})
+	remove("Item Group", [g for g in groups if not frappe.db.get_value("Item Group", g, "is_group")])
+	remove("Item Group", [g for g in groups if frappe.db.exists("Item Group", g)])
+	result = log.result()
+	return _store_result(result) if store else result
