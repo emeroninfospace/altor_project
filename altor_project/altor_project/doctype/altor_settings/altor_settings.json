@@ -8,10 +8,13 @@
   "default_service_item",
   "manpower_section",
   "default_manpower_item_group",
+  "outsourced_manpower_item_group",
   "ot_multiplier",
+  "ot2_multiplier",
   "column_break_mp",
   "working_days_per_month",
   "working_hours_per_day",
+  "outsourced_hours_per_day",
   "manpower_rates",
   "manpower_automation_section",
   "auto_create_manpower_entries",
@@ -43,16 +46,30 @@
   {
    "fieldname": "default_manpower_item_group",
    "fieldtype": "Link",
-   "label": "Default Manpower Item Group",
+   "label": "Manpower Item Group (Own Staff)",
    "options": "Item Group",
-   "description": "Budget line used for labour cost in Manpower Entries"
+   "description": "Budget line (Item Group) for own staff labour cost from Timesheets and Manpower Entries"
+  },
+  {
+   "fieldname": "outsourced_manpower_item_group",
+   "fieldtype": "Link",
+   "label": "Manpower Item Group (Outsourced)",
+   "options": "Item Group",
+   "description": "Budget line for outsourced labour from Timesheets. Empty: same as own staff"
   },
   {
    "fieldname": "ot_multiplier",
    "fieldtype": "Float",
-   "label": "OT Multiplier",
+   "label": "OT 1 Multiplier",
    "default": "1.25",
-   "description": "OT hourly rate = hourly rate x this, when no OT rate is set"
+   "description": "Overtime on working days (hours above Working Hours per Day)"
+  },
+  {
+   "fieldname": "ot2_multiplier",
+   "fieldtype": "Float",
+   "label": "OT 2 Multiplier",
+   "default": "1.5",
+   "description": "All hours on holidays / weekly off (Employee Holiday List)"
   },
   {
    "fieldname": "column_break_mp",
@@ -67,9 +84,16 @@
   {
    "fieldname": "working_hours_per_day",
    "fieldtype": "Float",
-   "label": "Working Hours per Day",
+   "label": "Working Hours per Day (Own Staff)",
    "default": "8",
-   "description": "Own staff hourly cost = CTC / 12 / working days / working hours, when no Hourly Cost Rate is set on the Employee"
+   "description": "Normal hours per day for own staff (Timesheet hours above this are OT 1) and the hour basis of the salary rate"
+  },
+  {
+   "fieldname": "outsourced_hours_per_day",
+   "fieldtype": "Float",
+   "label": "Normal Hours per Day (Outsourced)",
+   "default": "10",
+   "description": "Outsourced workers: Timesheet hours above this per day are OT 1"
   },
   {
    "fieldname": "manpower_rates",
@@ -174,7 +198,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-11-08 10:00:00.000000",
+ "modified": "2026-11-16 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Altor Settings",

@@ -49,6 +49,7 @@ doctype_js = {
 	"Material Request": "public/js/material_request.js",
 	"Task": "public/js/task.js",
 	"Lead": "public/js/lead.js",
+	"Timesheet": "public/js/timesheet.js",
 }
 
 override_doctype_class = {"Quotation": "altor_project.events.quotation.CustomQuotation"}
@@ -199,6 +200,19 @@ doc_events = {
 		"on_submit": "altor_project.budget.on_transaction_change",
 		"on_cancel": "altor_project.budget.on_transaction_change",
 	},
+	# Timesheet labour cost: normal / OT 1 / OT 2 hours, own staff and outsourced
+	"Timesheet": {
+		"validate": "altor_project.labour.calculate_timesheet",
+		"on_submit": "altor_project.labour.on_timesheet_change",
+		"on_cancel": "altor_project.labour.on_timesheet_change",
+	},
+	# GRN of "Project Asset" items creates Project Assets
+	"Purchase Receipt": {
+		"validate": "altor_project.events.purchase_receipt.validate",
+		"on_submit": "altor_project.events.purchase_receipt.on_submit",
+		"before_cancel": "altor_project.events.purchase_receipt.before_cancel",
+		"on_cancel": "altor_project.events.purchase_receipt.on_cancel",
+	},
 }
 
 # Division numbering: CRM-SCF-LEAD-2026-0001 -> QT-SCF-2026-0001 -> SO-... -> PRJ-...
@@ -257,7 +271,10 @@ fixtures = [
 # ---------------
 
 scheduler_events = {
-	"daily": ["altor_project.budget.refresh_all_budgets"],
+	"daily": [
+		"altor_project.assets.refresh_open_allocations",
+		"altor_project.budget.refresh_all_budgets",
+	],
 	"cron": {
 		# 01:30 every night: book yesterday's manpower (only when enabled in Altor Settings)
 		"30 1 * * *": ["altor_project.manpower_automation.scheduled_create"]

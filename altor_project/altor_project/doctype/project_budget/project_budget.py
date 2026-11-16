@@ -161,7 +161,7 @@ class ProjectBudget(Document):
 @frappe.whitelist()
 def get_unbudgeted_spend(project, budget=None):
 	"""Spend on item groups that are not part of the budget, for the form dashboard."""
-	from altor_project.budget import UNBUDGETED, get_category_spend
+	from altor_project.budget import UNBUDGETED, get_category_spend, utilized
 
 	frappe.has_permission("Project Budget", "read", throw=True)
 	categories = []
@@ -175,9 +175,9 @@ def get_unbudgeted_spend(project, budget=None):
 	return [
 		{
 			"item_group": g if g != UNBUDGETED else _("(no item group)"),
-			"utilized": flt(v["committed"]) + flt(v["direct_actual"]),
+			"utilized": utilized(v),
 			"actual": flt(v["actual"]),
 		}
 		for g, v in unbudgeted.items()
-		if flt(v["committed"]) or flt(v["actual"])
+		if utilized(v) or flt(v["actual"])
 	]

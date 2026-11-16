@@ -1,0 +1,189 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-16 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "project_asset",
+  "asset_name",
+  "uom",
+  "available_qty",
+  "qty",
+  "daily_rate",
+  "daily_amount",
+  "item_code",
+  "item_group",
+  "charge_until",
+  "column_break_status",
+  "on_site_qty",
+  "returned_qty",
+  "damaged_qty",
+  "returned_charge",
+  "depreciation_to_date",
+  "damage_cost"
+ ],
+ "fields": [
+  {
+   "fieldname": "project_asset",
+   "fieldtype": "Link",
+   "label": "Project Asset",
+   "options": "Project Asset",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 3
+  },
+  {
+   "fieldname": "asset_name",
+   "fieldtype": "Data",
+   "label": "Asset Name",
+   "fetch_from": "project_asset.asset_name",
+   "in_list_view": 1,
+   "columns": 2,
+   "read_only": 1
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM",
+   "fetch_from": "project_asset.uom",
+   "in_list_view": 1,
+   "columns": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "available_qty",
+   "fieldtype": "Float",
+   "label": "Available",
+   "fetch_from": "project_asset.available_qty",
+   "in_list_view": 1,
+   "columns": 1,
+   "print_hide": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "label": "Qty",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 1,
+   "non_negative": 1
+  },
+  {
+   "fieldname": "daily_rate",
+   "fieldtype": "Currency",
+   "label": "Rate / Unit / Day",
+   "options": "Company:company:default_currency",
+   "precision": "4",
+   "in_list_view": 1,
+   "columns": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "daily_amount",
+   "fieldtype": "Currency",
+   "label": "Per Day",
+   "options": "Company:company:default_currency",
+   "in_list_view": 1,
+   "columns": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item",
+   "fetch_from": "project_asset.item_code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group (Budget Line)",
+   "options": "Item Group",
+   "fetch_from": "project_asset.item_group",
+   "read_only": 1
+  },
+  {
+   "fieldname": "charge_until",
+   "fieldtype": "Date",
+   "label": "Depreciated Until",
+   "fetch_from": "project_asset.depreciation_end_date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_status",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "on_site_qty",
+   "fieldtype": "Float",
+   "label": "On Site",
+   "allow_on_submit": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "returned_qty",
+   "fieldtype": "Float",
+   "label": "Returned",
+   "allow_on_submit": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "damaged_qty",
+   "fieldtype": "Float",
+   "label": "Damaged / Lost",
+   "allow_on_submit": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "returned_charge",
+   "fieldtype": "Currency",
+   "label": "Depreciation of Returned Qty",
+   "options": "Company:company:default_currency",
+   "allow_on_submit": 1,
+   "hidden": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "depreciation_to_date",
+   "fieldtype": "Currency",
+   "label": "Depreciation to Date",
+   "options": "Company:company:default_currency",
+   "allow_on_submit": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "damage_cost",
+   "fieldtype": "Currency",
+   "label": "Damage Cost",
+   "options": "Company:company:default_currency",
+   "allow_on_submit": 1,
+   "no_copy": 1,
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-16 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Altor Project",
+ "name": "Asset Allocation Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1
+}

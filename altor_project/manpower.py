@@ -12,6 +12,9 @@ Order of preference for the hourly rate of a worker:
 
 OT rate: OT Hourly Rate on the Employee, then the agency OT rate, then
 hourly rate x OT Multiplier.
+
+Timesheets are costed in altor_project.labour (own staff from the salary
+fields on the Employee, OT 1 / OT 2 multipliers).
 """
 
 import frappe
@@ -31,9 +34,14 @@ def get_settings():
 			rates[(row.supplier, row.designation or "")] = (flt(row.hourly_rate), flt(row.ot_hourly_rate))
 		frappe.local.altor_manpower_settings = frappe._dict(
 			item_group=s.get("default_manpower_item_group"),
+			outsourced_item_group=s.get("outsourced_manpower_item_group"),
 			ot_multiplier=flt(s.get("ot_multiplier")) or 1.25,
+			ot2_multiplier=flt(s.get("ot2_multiplier")) or 1.5,
 			days=flt(s.get("working_days_per_month")) or 26,
 			hours=flt(s.get("working_hours_per_day")) or 8,
+			outsourced_hours=flt(s.get("outsourced_hours_per_day"))
+			or flt(s.get("working_hours_per_day"))
+			or 8,
 			rates=rates,
 		)
 	return frappe.local.altor_manpower_settings
@@ -47,6 +55,10 @@ def _employee_fields():
 		"custom_manpower_supplier",
 		"custom_hourly_cost_rate",
 		"custom_ot_hourly_rate",
+		"custom_basic_salary",
+		"custom_allowance",
+		"custom_hra",
+		"custom_transport_allowance",
 		"ctc",
 	):
 		if meta.has_field(f):

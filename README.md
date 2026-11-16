@@ -63,6 +63,35 @@ then `bench --site <site> migrate`. Data comes from `altor_project/api/dashboard
   The Manpower Entry list has a **Create from Attendance** button to run it for any past date.
 - Report: **Manpower Cost Summary** (by project, agency, employee, designation, date or item group) to check agency bills.
 
+### Timesheet Labour Cost (normal hours, OT 1, OT 2)
+
+Workers' hours are entered on ERPNext **Timesheets** (one per employee, a row per day / project). Each row's hours are
+split into **Normal**, **OT 1** and **OT 2**:
+
+- Normal: up to the normal hours per day (Altor Settings: **Working Hours per Day (Own Staff)** 8,
+  **Normal Hours per Day (Outsourced)** 10); several rows on the same day share it.
+- OT 1: hours above that on a working day (x **OT 1 Multiplier**, 1.25).
+- OT 2: all hours on a holiday / weekly off of the employee's Holiday List (x **OT 2 Multiplier**, 1.5).
+- Untick **Split Overtime Automatically** on the Timesheet to enter OT 1 / OT 2 by hand.
+
+Cost (calculated on save, shown per row and as **Total Labour Cost**, also used as the Timesheet's costing amount):
+
+- **Own staff** (Employee > Manpower Costing: Basic Salary, Allowance, HRA, Transportation):
+  normal hour = (Basic + Allowance + HRA + Transportation) / days in the month / 8;
+  OT hour = Basic / days in the month / 8; cost = normal hours x normal hour + (OT 1 x 1.25 + OT 2 x 1.5) x OT hour.
+  Without a Basic Salary the Hourly Cost Rate (or CTC) is used.
+- **Outsourced** (Employee: Outsourced Manpower + Hourly Cost Rate, or the agency rate in Altor Settings):
+  cost = hourly rate x (normal hours + OT 1 x 1.25 + OT 2 x 1.5).
+
+Submitted Timesheets with a Project count in the **Project Budget** as manpower cost, on the Item Group set in
+Altor Settings (**Manpower Item Group (Own Staff)** / **(Outsourced)**), with **Own Staff Cost** and **Outsourced
+Manpower Cost** shown separately. The Manpower Cost Summary report and the Project Overview dashboard include Timesheets
+(with Manpower Entries). A warning is shown when the same employee is also on a Manpower Entry for that day, as the
+cost would be counted twice.
+
+Report: **Employee Overtime** (per employee, or employee and project, for any period): days worked, normal / OT 1 /
+OT 2 hours, weighted OT hours, OT rate, OT amount and total labour cost, as in the monthly overtime sheet.
+
 ### Demo data
 
 ```bash
@@ -102,6 +131,33 @@ Lead, Quotation, Sales Order and Project are numbered by division, and one enqui
 - The shared part is stored as **Division Ref No.** (SCF-2026-0007) on all four documents.
 - Formats, digits and on/off: **Altor Settings > Division Numbering**. Documents without a division keep the
   standard naming series.
+
+### Project Assets (asset allocation to projects)
+
+Scaffolding materials and equipment that are bought once and issued to projects (Cuplock standards, ledgers,
+couplers, cradles, scissor lifts, hoists ...). Office furniture and computers stay in ERPNext's own Asset module.
+
+1. **Item**: tick **Project Asset** and enter the **Depreciation Period (Months)**.
+2. **Purchase Receipt (GRN)**: on submit, every Project Asset item row becomes a **Project Asset** with the purchase
+   price of the row (net, company currency) and the depreciation period (editable on the row). Existing stock is
+   entered by hand as Project Assets (purchase date, quantity, unit cost, months).
+3. **Project Asset** (the asset list): quantity purchased, unit cost, salvage value, depreciation months and
+   - Depreciation per unit per day = (Unit Cost - Salvage Value) / (Months x 30)
+   - Available / On Projects / Damaged quantities, and which projects have it now.
+4. **Asset Allocation** (issue to a project): the quantity on the project is taken off the available quantity. The
+   project is charged qty x rate per unit per day x days from the delivery date (both days counted, never past the end
+   of the depreciation period).
+5. **Asset Return** (Create > Asset Return on the allocation): returned (good) and **damaged / lost** quantities.
+   Depreciation of the returned quantity stops on the return date. Damaged / lost units are written off and charged
+   to the project at their book value on the return date (unit cost less depreciation since purchase, not below the
+   salvage value); the charge per unit can be changed on the row.
+6. **Project Budget**: depreciation and damage cost count against the budget line of the asset's Item Group
+   (shown as **Asset Cost**, included in Utilized). They are refreshed after each allocation / return and every
+   night, as depreciation grows each day the asset stays on site.
+7. **Project Asset Cost** report: depreciation and damage cost charged to each project in any period (month end
+   costing), with the quantity on site at the period end.
+
+These figures are for project costing; no accounting (GL) entries are posted for the depreciation.
 
 ### Payment Certificate
 
@@ -143,6 +199,8 @@ details from the site, not from code:
 | Altor Manpower Sheet | Manpower Entry (daily manpower sheet) |
 | Altor Project Budget | Project Budget (item group wise) |
 | Altor Payment Certificate | Payment Certificate (subcontractor's payment certificate) |
+| Altor Asset Allocation | Asset Allocation (asset issue note) |
+| Altor Asset Return | Asset Return (asset return note, with damaged / lost) |
 
 Helpers used by the templates are in `altor_project/print_utils.py` (registered as Jinja methods in `hooks.py`).
 

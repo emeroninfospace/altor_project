@@ -29,6 +29,7 @@ def project(data):
 	_add(data, _("Planning"), ["Project Schedule"])
 	_add(data, _("Subcontract"), ["Subcontract Work Order", "Payment Certificate", "Subcontract Invoice"])
 	_add(data, _("Selling"), ["Quotation"], internal={"Quotation": "quotation"})
+	_add(data, _("Assets"), ["Asset Allocation", "Asset Return"])
 	# Material Requests made from a project carry it in the header field custom_project
 	data["non_standard_fieldnames"].setdefault("Material Request", "custom_project")
 	return data
