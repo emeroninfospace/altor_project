@@ -1122,7 +1122,8 @@ def _make_sales_flow(ctx, log, key):
 	q.update(
 		{
 			"transaction_date": add_days(start, -20),
-			"valid_till": add_days(start, 10),
+			# still valid today: ERPNext refuses a Sales Order from an expired quotation
+			"valid_till": add_days(t, 15),
 			"company": ctx.company,
 			"cost_center": ctx.divisions[key],
 			"custom_project": p["name"],
@@ -1137,6 +1138,10 @@ def _make_sales_flow(ctx, log, key):
 	q = _insert(q, log, submit=True)
 
 	so = make_sales_order(q.name)
+	# the quotation's contact belongs to the Lead; the order takes the customer's own contact
+	from frappe.contacts.doctype.contact.contact import get_default_contact
+
+	so.contact_person = get_default_contact("Customer", customer)
 	so.update(
 		{
 			"transaction_date": add_days(start, -5),
@@ -1227,6 +1232,10 @@ def _make_budgets(ctx, log):
 
 def _make_project_assets(ctx, log):
 	for code, name, _group_name, _uom_name, cost, months, qty, div in ASSET_ITEMS:
+		existing = frappe.db.get_value("Project Asset", {"item_code": code, "remarks": ASSET_REMARK})
+		if existing:  # a re-run keeps the opening stock already created
+			ctx.assets[code] = existing
+			continue
 		asset = _insert(
 			{
 				"doctype": "Project Asset",
@@ -1367,6 +1376,8 @@ def _make_agency_invoice(ctx, log):
 
 def _make_timesheets(ctx, log):
 	year, month = OT_MONTH
+	# ERPNext needs an Activity Type on each row before a Timesheet can be submitted
+	activity = _get_or_create("Activity Type", "Scaffolding Work", {"activity_type": "Scaffolding Work"}, log)
 	for worker, employee in ctx.workers.items():
 		logs = []
 		for day in range(1, 31):
@@ -1378,6 +1389,7 @@ def _make_timesheets(ctx, log):
 			start = get_datetime(f"{year}-{month:02d}-{day:02d} 07:00:00")
 			logs.append(
 				{
+					"activity_type": activity,
 					"from_time": start,
 					"to_time": start + timedelta(hours=total),
 					"hours": total,
