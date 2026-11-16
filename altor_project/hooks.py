@@ -318,6 +318,7 @@ override_doctype_dashboards = {
 	"Project": "altor_project.events.dashboards.project",
 	"Quotation": "altor_project.events.dashboards.quotation",
 	"Lead": "altor_project.events.dashboards.lead",
+	"Asset": "altor_project.events.dashboards.asset",
 	"Supplier": "altor_project.events.dashboards.supplier",
 	"Employee": "altor_project.events.dashboards.employee",
 }
