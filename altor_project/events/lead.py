@@ -1,6 +1,10 @@
 import frappe
 from erpnext.crm.doctype.lead.lead import Lead
 
+SITE_VISIT_DONE = "Site Visit Completed"
+# a site visit moves a lead forward only from these; a quoted / converted lead keeps its status
+EARLY_STATUSES = ("Lead", "Open", "Replied", "Opportunity", "Interested")
+
 
 def update_lead_status(lead_name, status):
 	if not lead_name:
@@ -11,7 +15,18 @@ def update_lead_status(lead_name, status):
 
 
 def on_site_visit_submit(doc, method=None):
-	update_lead_status(doc.lead, "Site Visit Completed")
+	"""doc_event (Site Visit on_submit): the lead becomes "Site Visit Completed"."""
+	if doc.lead and frappe.db.get_value("Lead", doc.lead, "status") in EARLY_STATUSES:
+		update_lead_status(doc.lead, SITE_VISIT_DONE)
+
+
+def on_site_visit_cancel(doc, method=None):
+	"""doc_event (Site Visit on_cancel): back to Open when no other submitted visit remains."""
+	if not doc.lead or frappe.db.get_value("Lead", doc.lead, "status") != SITE_VISIT_DONE:
+		return
+	other = frappe.db.exists("Site Visit", {"lead": doc.lead, "docstatus": 1, "name": ["!=", doc.name]})
+	if not other:
+		update_lead_status(doc.lead, "Open")
 
 
 # Lead form (Altor): "First Name" is labelled Company Name and "Contact Name" (custom_contact_name)
