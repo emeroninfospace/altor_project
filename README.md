@@ -138,6 +138,15 @@ Lead, Quotation, Sales Order and Project are numbered by division, and one enqui
   items (quantity not yet on a submitted proforma), taxes and terms are filled from it. Also from the Sales Order:
   Create > Proforma Invoice. Submitted proformas of an order cannot exceed its total.
 
+### Assignment notifications
+
+- **Assign To** on any document (Lead, Task, ...): the assignee gets a bell notification (and the notification
+  email once an outgoing Email Account is set up). Frappe sends it itself; a job every minute
+  (`notifications.notify_missed_assignments`) adds it for open assignments made by someone else that got none
+  (seen on the live site when a lead was re-assigned back), so re-assigning a lead or assigning a task always
+  notifies the new assignee within a minute.
+- **Lead Owner**: changing it to another user notifies the new owner.
+
 ### Project Assets (asset allocation to projects)
 
 Scaffolding materials and equipment bought once and issued to projects. **ERPNext's Asset module keeps the
