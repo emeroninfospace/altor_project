@@ -1075,7 +1075,8 @@
    "fieldname": "sales_order",
    "fieldtype": "Link",
    "label": "Sales Order",
-   "options": "Sales Order"
+   "options": "Sales Order",
+   "description": "Select a submitted Sales Order to fill the customer, items, taxes and terms from it"
   },
   {
    "fieldname": "cost_center",
@@ -1090,7 +1091,7 @@
  "idx": 82,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-09 10:00:00.000000",
+ "modified": "2026-11-20 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Proforma Invoice",

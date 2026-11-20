@@ -51,9 +51,13 @@ doctype_js = {
 	"Lead": "public/js/lead.js",
 	"Timesheet": "public/js/timesheet.js",
 	"Item": "public/js/item.js",
+	"Sales Order": "public/js/sales_order.js",
 }
 
-override_doctype_class = {"Quotation": "altor_project.events.quotation.CustomQuotation"}
+override_doctype_class = {
+	"Quotation": "altor_project.events.quotation.CustomQuotation",
+	"Lead": "altor_project.events.lead.CustomLead",
+}
 
 doctype_list_js = {"Project": "public/js/project_list.js", "Lead": "public/js/lead_list.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
@@ -215,6 +219,10 @@ doc_events = {
 		"on_cancel": "altor_project.asset_accounting.on_asset_cancel",
 	},
 	"Item": {"validate": "altor_project.asset_accounting.validate_item"},
+	# a Sales Order comes from a Quotation (Altor Settings > Sales Order Only from Quotation)
+	"Sales Order": {"validate": "altor_project.events.sales_order.require_quotation"},
+	# the new Lead Owner gets a notification
+	"Lead": {"on_update": "altor_project.notifications.on_lead_update"},
 }
 
 # Division numbering: CRM-SCF-LEAD-2026-0001 -> QT-SCF-2026-0001 -> SO-... -> PRJ-...
@@ -279,6 +287,8 @@ scheduler_events = {
 	],
 	# 1st of the month: last month's project asset depreciation to projects (when enabled)
 	"monthly": ["altor_project.asset_accounting.scheduled_allocation"],
+	# assignment notifications Frappe did not create (lead re-assigned, task assigned, ...)
+	"cron": {"* * * * *": ["altor_project.notifications.notify_missed_assignments"]},
 }
 
 # scheduler_events = {
