@@ -12,6 +12,7 @@
  "field_order": [
   "customer_section",
   "naming_series",
+  "sales_order",
   "title",
   "party_name",
   "customer_name",
@@ -30,7 +31,6 @@
   "sales_person",
   "proforma_invoice_to",
   "quotation",
-  "sales_order",
   "currency_and_price_list",
   "currency",
   "conversion_rate",
@@ -178,7 +178,8 @@
    "label": "Proforma Invoice To",
    "options": "DocType",
    "print_hide": 1,
-   "reqd": 1
+   "reqd": 1,
+   "read_only": 1
   },
   {
    "bold": 1,
@@ -1076,7 +1077,8 @@
    "fieldtype": "Link",
    "label": "Sales Order",
    "options": "Sales Order",
-   "description": "Select a submitted Sales Order to fill the customer, items, taxes and terms from it"
+   "description": "Select the submitted Sales Order: the customer, items, taxes and terms fill in from it",
+   "reqd": 1
   },
   {
    "fieldname": "cost_center",
@@ -1091,7 +1093,7 @@
  "idx": 82,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-20 10:00:00.000000",
+ "modified": "2026-11-21 15:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Proforma Invoice",

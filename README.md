@@ -140,7 +140,8 @@ Lead, Quotation, Sales Order and Project are numbered by division, and one enqui
 - **Sales Order**: only from a submitted Quotation (Quotation > Create > Sales Order, or Get Items From >
   Quotation). A line without a quotation is refused on save (`events/sales_order.py`); switch it off in
   **Altor Settings > Sales > Sales Order Only from Quotation**.
-- **Proforma Invoice**: select the **Sales Order** and the customer, addresses, contact, division, price list,
+- **Proforma Invoice**: the **Sales Order** is mandatory (first field); the Quotation has no Create > Proforma
+  Invoice / Sales Invoice any more. Select the **Sales Order** and the customer, addresses, contact, division, price list,
   items (quantity not yet on a submitted proforma), taxes and terms are filled from it. Also from the Sales Order:
   Create > Proforma Invoice. Submitted proformas of an order cannot exceed its total.
 
