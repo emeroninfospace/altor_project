@@ -61,17 +61,13 @@ frappe.ui.form.on('Project', {
 					});
 				}, __('Create'));
 
-				if (frm.doc.sales_order || frm.doc.quotation) {
-					frm.add_custom_button(__('Material Request'), () => {
-						frappe.call({
-							method:   'altor_project.events.project.create_material_request',
-							args:     { name: frm.doc.name },
-							callback(r) {
-								if (r.message) frappe.set_route('Form', 'Material Request', r.message);
-							}
-						});
-					}, __('Create'));
-				}
+				// any project: lines still to request from its Sales Order / Quotation, else an empty request
+				frm.add_custom_button(__('Material Request'), () => {
+					frappe.model.open_mapped_doc({
+						method: 'altor_project.events.project.create_material_request',
+						frm: frm,
+					});
+				}, __('Create'));
 
 				frm.add_custom_button(__('Subcontract Work Order'), () => {
 					create_subcontracting_order(frm);
