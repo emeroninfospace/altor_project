@@ -223,7 +223,18 @@ doc_events = {
 	},
 	"Item": {"validate": "altor_project.asset_accounting.validate_item"},
 	# a Sales Order comes from a Quotation (Altor Settings > Sales Order Only from Quotation)
-	"Sales Order": {"validate": "altor_project.events.sales_order.require_quotation"},
+	"Sales Order": {
+		"validate": "altor_project.events.sales_order.require_quotation",
+		"on_submit": "altor_project.events.sales_order.on_submit",
+	},
+	# a quotation is for a Lead; the lead's status follows its quotations
+	"Quotation": {
+		"validate": "altor_project.events.quotation.require_lead",
+		"after_insert": "altor_project.events.lead.refresh_quotation_status",
+		"on_submit": "altor_project.events.lead.refresh_quotation_status",
+		"on_cancel": "altor_project.events.lead.refresh_quotation_status",
+		"on_trash": "altor_project.events.lead.refresh_quotation_status",
+	},
 	# the new Lead Owner gets a notification
 	"Lead": {"on_update": "altor_project.notifications.on_lead_update"},
 }
@@ -320,9 +331,10 @@ scheduler_events = {
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "altor_project.event.get_events"
-# }
+# Quotation > Create > Sales Order: a lead's Existing Customer is used (no duplicate customer)
+override_whitelisted_methods = {
+	"erpnext.selling.doctype.quotation.quotation.make_sales_order": "altor_project.events.quotation.make_sales_order"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,

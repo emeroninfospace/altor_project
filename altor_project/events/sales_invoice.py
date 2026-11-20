@@ -1,6 +1,8 @@
 import frappe
 from erpnext.crm.doctype.lead.lead import _make_customer
 
+from altor_project.events.lead import customer_of_lead
+
 
 def on_submit(doc, method=None):
 	if doc.custom_quotation:
@@ -41,8 +43,7 @@ def _convert_lead_to_customer(quotation_name):
 
 	lead_name = quotation.party_name
 
-	existing_customer = frappe.db.get_value("Customer", {"lead_name": lead_name}, "name")
-	if existing_customer:
+	if customer_of_lead(lead_name, link=True):
 		return
 
 	customer_doc = _make_customer(lead_name, ignore_permissions=True)
