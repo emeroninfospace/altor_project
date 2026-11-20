@@ -14,6 +14,12 @@ frappe.query_reports["Project Budget Variance"] = {
     ],
 
     formatter(value, row, column, data, default_formatter) {
+        if (data && data.is_total_row) {
+            // totals row: plain bold text (no links), utilization = utilized / budget
+            const text = column.fieldname === "category" ? __("Total")
+                : (column.fieldtype === "Link" || column.fieldtype === "Data") ? "" : default_formatter(value, row, column, {});
+            return text ? `<b>${text}</b>` : "";
+        }
         value = default_formatter(value, row, column, data);
         if (!data) return value;
         if (column.fieldname === "budget_status") {

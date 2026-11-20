@@ -58,7 +58,28 @@ def execute(filters=None):
 			line.project_budget = line.parent
 			data.append(line)
 
-	return get_columns(), data, None, get_chart(data)
+	chart = get_chart(data)
+	if data:
+		data.append(total_row(data))
+	return get_columns(), data, None, chart
+
+
+def total_row(data):
+	"""Sums of the amounts; Utilization % = utilized / budget (not the average of the lines)."""
+	row = frappe._dict(category=_("Total"), is_total_row=1)
+	for field in (
+		"quoted_amount",
+		"budgeted_amount",
+		"committed_amount",
+		"actual_amount",
+		"utilized_amount",
+		"variance",
+	):
+		row[field] = sum(flt(line.get(field)) for line in data)
+	row.utilization_percentage = (
+		flt(row.utilized_amount / row.budgeted_amount * 100, 2) if row.budgeted_amount else 0
+	)
+	return row
 
 
 def get_columns():

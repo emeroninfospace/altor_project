@@ -4,9 +4,7 @@ frappe.ui.form.on('Task', {
 		const is_supervisor    = frappe.user.has_role('Supervisor');
 		const is_system_manager = frappe.user.has_role('System Manager');
 		const is_admin          = frappe.session.user === 'Administrator';
-        console.log('is_supervisor:', is_supervisor, 'is_system_manager:', is_system_manager, 'is_admin:', is_admin);
 		if (is_supervisor && !is_system_manager && !is_admin) {
-            console.log('Supervisor restrictions applied to Task form');
 			lock_fields_for_supervisor(frm);
 		}
 	}

@@ -9,7 +9,7 @@ from erpnext.controllers.selling_controller import SellingController
 from erpnext.controllers.taxes_and_totals import calculate_taxes_and_totals as _ERPNextTaxesAndTotals
 from frappe import _
 from frappe.model.mapper import get_mapped_doc
-from frappe.utils import flt, getdate, nowdate
+from frappe.utils import add_months, flt, getdate, nowdate
 
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
@@ -452,86 +452,6 @@ class ProformaInvoice(SellingController):
 
 
 @frappe.whitelist()
-def load_target_items(docname):
-	"""
-	Load checked target items from items table to custom_service_item table
-	"""
-	doc = frappe.get_doc("Proforma Invoice", docname)
-	doc.check_permission("write")
-
-	# Get checked items
-	checked_items = [item for item in doc.items if item.custom_target_items == 1]
-
-	if not checked_items:
-		frappe.msgprint(_("No items are marked as target items"))
-		return
-
-	# Get existing item codes in custom_service_item to avoid duplicates
-	existing_item_codes = [row.item_code for row in doc.custom_service_item if row.item_code]
-
-	# Add to service items table (append to existing items)
-	added_count = 0
-	for item in checked_items:
-		# Skip if item already exists in custom_service_item table
-		if item.item_code in existing_item_codes:
-			continue
-
-		service_item = doc.append("custom_service_item", {})
-		service_item.item_code = item.item_code
-		service_item.item_name = item.item_name
-		service_item.description = item.description
-		service_item.qty = item.qty
-		service_item.warehouse = item.warehouse
-		service_item.uom = item.uom
-		service_item.rate = item.rate
-		service_item.amount = item.amount
-
-		# Required fields for custom_service_item
-		# UOM Conversion Factor
-		service_item.conversion_factor = getattr(item, "conversion_factor", None) or 1.0
-
-		# Rate (Company Currency) - use base_rate if available, otherwise use rate
-		service_item.base_rate = getattr(item, "base_rate", None) or item.rate
-
-		# Amount (Company Currency) - use base_amount if available, otherwise use amount
-		service_item.base_amount = getattr(item, "base_amount", None) or item.amount
-
-		# Income Account - try to get from item, or fetch from item defaults
-		income_account = getattr(item, "income_account", None)
-		if not income_account and item.item_code:
-			# Try to get income account from item defaults for the company
-			try:
-				income_account = frappe.get_value(
-					"Item Default", {"parent": item.item_code, "company": doc.company}, "income_account"
-				)
-				# If not found in item defaults, try to get from item group or brand
-				if not income_account:
-					item_doc = frappe.get_doc("Item", item.item_code)
-					if hasattr(item_doc, "item_group") and item_doc.item_group:
-						income_account = frappe.get_value("Item Group", item_doc.item_group, "income_account")
-			except Exception:
-				pass
-
-		service_item.income_account = income_account
-		added_count += 1
-
-	# Calculate totals from custom_service_item table
-	total_qty = sum(flt(item.qty) or 0 for item in doc.custom_service_item)
-	total_amount = sum(flt(item.amount) or 0 for item in doc.custom_service_item)
-
-	doc.consumable_total_quantity = total_qty
-	doc.consumable_total = total_amount
-
-	if added_count == 0:
-		frappe.msgprint(_("No new items to add. All selected items already exist in service items table."))
-	else:
-		doc.save()
-		frappe.msgprint(_(f"{added_count} item(s) added successfully"))
-
-	return doc.as_dict()
-
-
-@frappe.whitelist()
 def make_proforma_invoice(quotation):
 
 	frappe.get_doc("Quotation", quotation).check_permission("read")
@@ -640,6 +560,7 @@ def make_proforma_invoice_from_sales_order(source_name, target_doc=None):
 		target.party_name = source.customer
 		target.customer_name = source.customer_name
 		target.transaction_date = nowdate()
+		target.valid_till = default_valid_till(target.transaction_date)
 		target.quotation = next((r.prevdoc_docname for r in source.items if r.prevdoc_docname), None)
 		# the "Contact Person" text at the top of the form (the contact link is on Address & Contact)
 		if source.contact_person and not target.get("contact_persons"):
@@ -687,3 +608,8 @@ def make_proforma_invoice_from_sales_order(source_name, target_doc=None):
 			_("Everything on Sales Order {0} is already on a submitted Proforma Invoice.").format(source_name)
 		)
 	return pi
+
+
+def default_valid_till(transaction_date):
+	"""Valid for one month, as on a new Proforma Invoice form."""
+	return add_months(transaction_date, 1)
