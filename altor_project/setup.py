@@ -18,8 +18,6 @@ def after_install():
 
 
 def before_uninstall():
-
-	print("delete custom field")
 	delete_custom_fields(CREATE_FIELDS)
 	delete_property_setters()
 	remove_division_fields()

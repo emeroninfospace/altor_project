@@ -9,19 +9,6 @@ erpnext.pre_sales.set_as_lost("Proforma Invoice");
 erpnext.sales_common.setup_selling_controller();
 
 frappe.ui.form.on("Proforma Invoice", {
-	custom_item_load: function(frm) {
-		frappe.call({
-			method: 'power_tech.power_tech.doctype.proforma_invoice.proforma_invoice.load_target_items',
-			args: {
-				docname: frm.doc.name
-			},
-			callback: function(r) {
-				if (r.message) {
-					frm.reload_doc();
-				}
-			}
-		});
-	},
 	setup: function (frm) {
 		// submitted orders that can still be invoiced, of the selected customer
 		frm.set_query("sales_order", function () {
@@ -62,6 +49,7 @@ frappe.ui.form.on("Proforma Invoice", {
 	},
 
 	refresh: function (frm) {
+		frm.toggle_display("scan_barcode", false);
 		frm.trigger("set_label");
 		frm.trigger("set_dynamic_field_label");
 
@@ -158,41 +146,6 @@ erpnext.selling.ProformaInvoiceController = class ProformaInvoiceController exte
 					this.frm.trigger("set_as_lost_dialog");
 				});
 			}
-		}
-
-		if (this.frm.doc.docstatus === 0 && frappe.model.can_read("Opportunity")) {
-			this.frm.add_custom_button(
-				__("Opportunity"),
-				function () {
-					erpnext.utils.map_current_doc({
-						method: "erpnext.crm.doctype.opportunity.opportunity.make_quotation",
-						source_doctype: "Opportunity",
-						target: me.frm,
-						setters: [
-							{
-								label: "Party",
-								fieldname: "party_name",
-								fieldtype: "Link",
-								options: me.frm.doc.proforma_invoice_to,
-								default: me.frm.doc.party_name || undefined,
-							},
-							{
-								label: "Opportunity Type",
-								fieldname: "opportunity_type",
-								fieldtype: "Link",
-								options: "Opportunity Type",
-								default: me.frm.doc.order_type || undefined,
-							},
-						],
-						get_query_filters: {
-							status: ["not in", ["Lost", "Closed"]],
-							company: me.frm.doc.company,
-						},
-					});
-				},
-				__("Get Items From"),
-				"btn-default"
-			);
 		}
 
 		this.toggle_reqd_lead_customer();
