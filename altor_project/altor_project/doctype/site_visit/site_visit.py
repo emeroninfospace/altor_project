@@ -8,8 +8,11 @@ from frappe.model.document import Document
 class SiteVisit(Document):
 	def validate(self):
 		self.set_from_lead()
-		if self.docstatus == 0 and not self.status:
-			self.status = "Open"
+
+	def before_submit(self):
+		# a submitted visit is done (the lead becomes "Site Visit Completed")
+		if self.status in (None, "", "Draft"):
+			self.status = "Closed"
 
 	def before_cancel(self):
 		self.status = "Cancelled"

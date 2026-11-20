@@ -50,40 +50,54 @@ def create_project_schedule(project):
 
 
 @frappe.whitelist()
-def create_material_request(name):
+def create_material_request(source_name=None, target_doc=None, name=None):
+	"""Project > Create > Material Request: a new (unsaved) request for the project and its division,
+	with the purchasable lines of its Sales Order / Quotation not requested yet. With none (service or
+	hire lines only, or everything already requested) it opens empty to add the items."""
+	name = source_name or name
 	project = frappe.get_doc("Project", name)
 	project.check_permission("read")
 	frappe.has_permission("Material Request", "create", throw=True)
-	source_doctype, source_name, items = get_project_source_items(project)
-
-	# Only stock / purchase items can be requested (not hire or service lines)
-	purchasable = set()
-	if items:
-		purchasable = set(
-			frappe.get_all(
-				"Item",
-				filters={
-					"name": ["in", list({i.item_code for i in items if i.item_code})],
-					"is_purchase_item": 1,
-				},
-				pluck="name",
-			)
-		)
-	items = [i for i in items if i.item_code in purchasable]
-	if not items:
-		frappe.throw(
-			_(
-				"No purchasable items found on the project's Sales Order or Quotation. Create the Material Request manually."
-			)
-		)
 
 	request = frappe.new_doc("Material Request")
 	request.custom_project = name
 	request.material_request_type = "Purchase"
-	if project.get("cost_center") and frappe.get_meta("Material Request").has_field("cost_center"):
+	request.transaction_date = nowdate()
+	request.schedule_date = nowdate()
+	if project.get("company"):
+		request.company = project.company
+	if project.get("cost_center") and request.meta.has_field("cost_center"):
 		request.cost_center = project.cost_center
 
-	item_codes = list({item.item_code for item in items})
+	for item in remaining_project_items(project):
+		request.append(
+			"items",
+			{
+				"item_code": item.item_code,
+				"item_name": item.item_name,
+				"uom": item.uom,
+				"qty": item.qty,
+				"schedule_date": nowdate(),
+				"project": name,
+				"cost_center": request.get("cost_center"),
+			},
+		)
+	return request
+
+
+def remaining_project_items(project):
+	"""Purchasable lines of the project's Sales Order / Quotation, less what earlier (non-cancelled)
+	Material Requests of the project asked for."""
+	_doctype, _name, items = get_project_source_items(project)
+	codes = list({i.item_code for i in items if i.item_code})
+	if not codes:
+		return []
+	purchasable = set(
+		frappe.get_all("Item", filters={"name": ["in", codes], "is_purchase_item": 1}, pluck="name")
+	)
+	items = [i for i in items if i.item_code in purchasable]
+	if not items:
+		return []
 	requested = dict(
 		frappe.db.sql(
 			"""
@@ -92,37 +106,19 @@ def create_material_request(name):
 			WHERE project = %s AND item_code IN %s AND docstatus != 2
 			GROUP BY item_code
 			""",
-			(name, tuple(item_codes)),
+			(project.name, tuple({i.item_code for i in items})),
 		)
 	)
-
+	remaining = []
 	for item in items:
-		# Quantity still to request: sold qty minus what earlier (non-cancelled) requests asked for.
-		# Repeated lines for the same item share the requested quantity.
-		used_qty_val = flt(requested.get(item.item_code))
-		available_qty = flt(item.qty) - used_qty_val
-		requested[item.item_code] = max(used_qty_val - flt(item.qty), 0)
-
-		if available_qty > 0:
-			request.append(
-				"items",
-				{
-					"item_code": item.item_code,
-					"item_name": item.item_name,
-					"uom": item.uom,
-					"qty": available_qty,
-					"schedule_date": nowdate(),
-					"project": name,
-				},
-			)
-
-	if not request.items:
-		frappe.throw(
-			_("Everything on {0} {1} has already been requested.").format(_(source_doctype), source_name)
-		)
-
-	request.save(ignore_permissions=True)
-	return request.name
+		# repeated lines for the same item share the requested quantity
+		used = flt(requested.get(item.item_code))
+		open_qty = flt(item.qty) - used
+		requested[item.item_code] = max(used - flt(item.qty), 0)
+		if open_qty > 0:
+			item.qty = open_qty
+			remaining.append(item)
+	return remaining
 
 
 @frappe.whitelist()

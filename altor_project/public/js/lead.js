@@ -10,6 +10,16 @@ const LEAD_STATUS_COLORS = {
 };
 
 frappe.ui.form.on("Lead", {
+    // a lead for a customer you already have: its name becomes the Company Name
+    customer(frm) {
+        if (!frm.doc.customer) return;
+        frappe.db.get_value("Customer", frm.doc.customer, "customer_name").then((r) => {
+            const name = r && r.message && r.message.customer_name;
+            if (name) frm.set_value("first_name", name);
+        });
+        if (frm.doc.source !== "Existing Customer") frm.set_value("source", "Existing Customer");
+    },
+
     refresh(frm) {
         const color = LEAD_STATUS_COLORS[frm.doc.status];
         if (color) {

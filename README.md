@@ -131,10 +131,17 @@ Lead, Quotation, Sales Order and Project are numbered by division, and one enqui
   of that name, and the lead's Contact is created for the Contact Name (`events/lead.py`, `CustomLead`).
 - **Quotation**: no LPO fields; the client's LPO is recorded on the Sales Order (Customer's Purchase Order) and the
   Project (LPO Ref / Date).
+- **Lead > Existing Customer** (the standard customer link, relabelled and always shown): for a customer you
+  already have, choose it on the Lead; Company Name and Source fill in, and the Sales Order / Sales Invoice /
+  Project made from the lead's quotation is booked on that customer (no duplicate customer).
+- **Quotation**: only for a Lead (`events/quotation.require_lead`, Altor Settings > Sales > Quotation Only for a
+  Lead). The lead's status follows: a quotation (draft or submitted) makes it **Quotation**, deleting / cancelling
+  the last one puts it back to Site Visit Completed or Open, and a submitted Sales Order makes it **Converted**.
 - **Sales Order**: only from a submitted Quotation (Quotation > Create > Sales Order, or Get Items From >
   Quotation). A line without a quotation is refused on save (`events/sales_order.py`); switch it off in
   **Altor Settings > Sales > Sales Order Only from Quotation**.
-- **Proforma Invoice**: select the **Sales Order** and the customer, addresses, contact, division, price list,
+- **Proforma Invoice**: the **Sales Order** is mandatory (first field); the Quotation has no Create > Proforma
+  Invoice / Sales Invoice any more. Select the **Sales Order** and the customer, addresses, contact, division, price list,
   items (quantity not yet on a submitted proforma), taxes and terms are filled from it. Also from the Sales Order:
   Create > Proforma Invoice. Submitted proformas of an order cannot exceed its total.
 

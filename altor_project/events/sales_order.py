@@ -31,3 +31,14 @@ def require_quotation(doc, method=None):
 		+ f"<ul>{lines}</ul>",
 		title=_("Quotation Required"),
 	)
+
+
+def on_submit(doc, method=None):
+	"""doc_event (Sales Order on_submit): the leads of its quotations are Converted."""
+	from altor_project.events.lead import mark_converted
+
+	quotations = {row.prevdoc_docname for row in doc.get("items") or [] if row.get("prevdoc_docname")}
+	for quotation in quotations:
+		party = frappe.db.get_value("Quotation", quotation, ["quotation_to", "party_name"], as_dict=True)
+		if party and party.quotation_to == "Lead" and party.party_name:
+			mark_converted(party.party_name)

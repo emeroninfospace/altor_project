@@ -452,67 +452,6 @@ class ProformaInvoice(SellingController):
 
 
 @frappe.whitelist()
-def make_proforma_invoice(quotation):
-
-	frappe.get_doc("Quotation", quotation).check_permission("read")
-
-	billed_qty_map = defaultdict(float)
-
-	billed_items = frappe.db.sql(
-		"""
-    SELECT
-        pii.item_code,
-        SUM(pii.qty) AS billed_qty
-    FROM `tabProforma Invoice Item` pii
-    INNER JOIN `tabProforma Invoice` pi
-        ON pi.name = pii.parent
-    WHERE pi.quotation = %s
-    AND pi.docstatus = 1
-    GROUP BY pii.item_code
-""",
-		quotation,
-		as_dict=True,
-	)
-
-	for row in billed_items:
-		billed_qty_map[row.item_code] = row.billed_qty or 0
-
-	pi = get_mapped_doc(
-		"Quotation",
-		quotation,
-		{
-			"Quotation": {"doctype": "Proforma Invoice", "field_map": {"name": "quotation"}},
-			"Quotation Item": {"doctype": "Proforma Invoice Item", "field_map": {"name": "quotation_item"}},
-		},
-	)
-
-	remaining_items = []
-
-	for item in pi.items:
-		quotation_item_qty = (
-			frappe.db.get_value("Quotation Item", {"parent": quotation, "item_code": item.item_code}, "qty")
-			or 0
-		)
-
-		billed_qty = billed_qty_map.get(item.item_code, 0)
-		remaining_qty = quotation_item_qty - billed_qty
-
-		if remaining_qty > 0:
-			item.qty = remaining_qty
-			item.amount = remaining_qty * item.rate
-			remaining_items.append(item)
-
-	pi.set("items", remaining_items)
-
-	if not pi.items:
-		frappe.throw("All items in this Quotation are already fully billed.")
-
-	pi.run_method("calculate_taxes_and_totals")
-
-	return pi
-
-
-@frappe.whitelist()
 def make_proforma_invoice_from_sales_order(source_name, target_doc=None):
 	"""Proforma Invoice filled from a submitted Sales Order: customer, addresses, contact, items
 	(quantity not yet on a submitted proforma), taxes and terms.

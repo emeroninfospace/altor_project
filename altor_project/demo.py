@@ -1112,6 +1112,7 @@ def _make_sales_flow(ctx, log, key):
 			"email_id": email,
 			"mobile_no": phone,
 			"source": "Existing Customer",
+			"customer": customer,  # Existing Customer: the order is booked on it
 			"company": ctx.company,
 			"cost_center": ctx.divisions[key],
 		}
@@ -1121,7 +1122,9 @@ def _make_sales_flow(ctx, log, key):
 			lead.set(field, value)
 	lead = _insert(lead, log)
 	# the customer already exists: link it to the lead so the Sales Order uses it
-	frappe.db.set_value("Customer", customer, "lead_name", lead.name)
+	from altor_project.events.lead import customer_of_lead
+
+	customer_of_lead(lead.name, link=True)
 
 	q = make_quotation(lead.name)
 	q.update(
