@@ -641,6 +641,11 @@ def make_proforma_invoice_from_sales_order(source_name, target_doc=None):
 		target.customer_name = source.customer_name
 		target.transaction_date = nowdate()
 		target.quotation = next((r.prevdoc_docname for r in source.items if r.prevdoc_docname), None)
+		# the "Contact Person" text at the top of the form (the contact link is on Address & Contact)
+		if source.contact_person and not target.get("contact_persons"):
+			target.contact_persons = (
+				frappe.db.get_value("Contact", source.contact_person, "full_name") or source.contact_person
+			)
 		target.run_method("calculate_taxes_and_totals")
 
 	def update_item(source, target, source_parent):
