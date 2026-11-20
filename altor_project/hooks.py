@@ -187,7 +187,10 @@ doc_events = {
 		"on_cancel": "altor_project.events.sales_invoice.on_cancel",
 	},
 	"Task": {"on_update": "altor_project.events.task.update_parent_task_progress"},
-	"Site Visit": {"on_submit": "altor_project.events.lead.on_site_visit_submit"},
+	"Site Visit": {
+		"on_submit": "altor_project.events.lead.on_site_visit_submit",
+		"on_cancel": "altor_project.events.lead.on_site_visit_cancel",
+	},
 	# Item Group wise Project Budget: checks and live figures
 	"Material Request": {"validate": "altor_project.budget.validate_budget"},
 	"Purchase Order": {

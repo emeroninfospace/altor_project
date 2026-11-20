@@ -2,6 +2,15 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("Site Visit", {
+	onload(frm) {
+		// the visit is usually made by the person entering it
+		if (frm.is_new() && !frm.doc.visited_by) {
+			frappe.db.get_value("Employee", { user_id: frappe.session.user, status: "Active" }, "name").then((r) => {
+				if (r && r.message && r.message.name) frm.set_value("visited_by", r.message.name);
+			});
+		}
+	},
+
 	refresh(frm) {
 		if (frm.doc.docstatus === 1 && frm.doc.lead) {
 			frm.add_custom_button(__("Quotation"), () => {
