@@ -6,6 +6,8 @@
  "engine": "InnoDB",
  "field_order": [
   "default_service_item",
+  "sales_section",
+  "sales_order_from_quotation_only",
   "manpower_section",
   "default_manpower_item_group",
   "outsourced_manpower_item_group",
@@ -33,6 +35,18 @@
    "fieldtype": "Link",
    "label": "Default Service Item",
    "options": "Item"
+  },
+  {
+   "fieldname": "sales_section",
+   "fieldtype": "Section Break",
+   "label": "Sales"
+  },
+  {
+   "default": "1",
+   "description": "A Sales Order can only be made from a submitted Quotation (Quotation > Create > Sales Order)",
+   "fieldname": "sales_order_from_quotation_only",
+   "fieldtype": "Check",
+   "label": "Sales Order Only from Quotation"
   },
   {
    "fieldname": "manpower_section",
@@ -165,7 +179,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-11-16 16:00:00.000000",
+ "modified": "2026-11-20 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Altor Settings",

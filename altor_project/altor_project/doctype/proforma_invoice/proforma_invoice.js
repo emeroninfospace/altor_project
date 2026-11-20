@@ -23,6 +23,16 @@ frappe.ui.form.on("Proforma Invoice", {
 		});
 	},
 	setup: function (frm) {
+		// submitted orders that can still be invoiced, of the selected customer
+		frm.set_query("sales_order", function () {
+			const filters = { docstatus: 1, status: ["not in", ["Closed", "On Hold"]] };
+			if (frm.doc.company) filters.company = frm.doc.company;
+			if (frm.doc.proforma_invoice_to === "Customer" && frm.doc.party_name) {
+				filters.customer = frm.doc.party_name;
+			}
+			return { filters };
+		});
+
 		frm.set_query("proforma_invoice_to", function () {
 			return {
 				filters: {
@@ -69,6 +79,23 @@ frappe.ui.form.on("Proforma Invoice", {
 				};
 			};
 		}
+	},
+
+	sales_order: function (frm) {
+		// fill the whole proforma from the selected Sales Order
+		if (!frm.doc.sales_order || frm.doc.docstatus !== 0) return;
+		frappe.call({
+			method: "altor_project.altor_project.doctype.proforma_invoice.proforma_invoice.make_proforma_invoice_from_sales_order",
+			args: { source_name: frm.doc.sales_order, target_doc: frm.doc },
+			freeze: true,
+			freeze_message: __("Getting the Sales Order..."),
+			callback(r) {
+				if (!r.message) return;
+				frappe.model.sync(r.message);
+				frm.dirty();
+				frm.refresh();
+			},
+		});
 	},
 
 	proforma_invoice_to: function (frm) {

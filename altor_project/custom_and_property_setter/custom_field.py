@@ -18,13 +18,6 @@ CREATE_FIELDS = {
 			"fieldtype": "Small Text",
 			"insert_after": "custom_location",
 		},
-		{
-			"fieldname": "lpo_ref",
-			"label": "LPO Ref",
-			"fieldtype": "Data",
-			"insert_after": "custom_scope_of_work",
-		},
-		{"fieldname": "lpo_date", "label": "LPO Date", "fieldtype": "Date", "insert_after": "lpo_ref"},
 	],
 	"Project": [
 		{

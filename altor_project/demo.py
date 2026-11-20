@@ -1106,9 +1106,9 @@ def _make_sales_flow(ctx, log, key):
 	lead = frappe.get_doc(
 		{
 			"doctype": "Lead",
-			"first_name": first,
+			"first_name": c["name"],  # labelled Company Name
+			"custom_contact_name": first,
 			"job_title": title,
-			"company_name": c["name"],
 			"email_id": email,
 			"mobile_no": phone,
 			"source": "Existing Customer",

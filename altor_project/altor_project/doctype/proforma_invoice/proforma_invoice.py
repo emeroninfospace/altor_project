@@ -419,27 +419,36 @@ class ProformaInvoice(SellingController):
 		return list(filter(can_map, self.get("items")))
 
 	def over_billing(self):
-		if not self.quotation:
+		"""The submitted proformas of a Sales Order (or else of a Quotation) stay within its total."""
+		if self.sales_order:
+			doctype, field, source = "Sales Order", "sales_order", self.sales_order
+		elif self.quotation:
+			doctype, field, source = "Quotation", "quotation", self.quotation
+		else:
 			return
 
-		quotation_total = frappe.db.get_value("Quotation", self.quotation, "grand_total") or 0
+		source_total = frappe.db.get_value(doctype, source, "grand_total") or 0
 
 		billed = (
 			frappe.db.sql(
-				"""
+				f"""
 			SELECT SUM(grand_total)
 			FROM `tabProforma Invoice`
-			WHERE quotation = %s
+			WHERE `{field}` = %s
 			AND docstatus = 1
 			AND name != %s
 		""",
-				(self.quotation, self.name),
+				(source, self.name),
 			)[0][0]
 			or 0
 		)
 
-		if billed + self.grand_total > quotation_total:
-			frappe.throw("Proforma Invoice amount exceeds remaining Quotation balance.")
+		if flt(billed + self.grand_total, 2) > flt(source_total, 2):
+			frappe.throw(
+				_("Proforma Invoice amount exceeds the remaining balance of {0} {1}.").format(
+					_(doctype), source
+				)
+			)
 
 
 @frappe.whitelist()
@@ -580,4 +589,96 @@ def make_proforma_invoice(quotation):
 
 	pi.run_method("calculate_taxes_and_totals")
 
+	return pi
+
+
+@frappe.whitelist()
+def make_proforma_invoice_from_sales_order(source_name, target_doc=None):
+	"""Proforma Invoice filled from a submitted Sales Order: customer, addresses, contact, items
+	(quantity not yet on a submitted proforma), taxes and terms.
+
+	Used by the Sales Order field on the Proforma Invoice (target_doc = the form) and by
+	Sales Order > Create > Proforma Invoice.
+	"""
+	frappe.has_permission("Proforma Invoice", "create", throw=True)
+	so = frappe.get_doc("Sales Order", source_name)
+	so.check_permission("read")
+	if so.docstatus != 1:
+		frappe.throw(_("Submit Sales Order {0} first.").format(source_name))
+	if so.status in ("Closed", "On Hold"):
+		frappe.throw(_("Sales Order {0} is {1}.").format(source_name, _(so.status)))
+
+	if isinstance(target_doc, str):
+		target_doc = json.loads(target_doc)
+	current = None
+	if target_doc:
+		target_doc = frappe.get_doc(target_doc)
+		current = target_doc.name
+		# the order replaces what was on the form
+		for table in ("items", "taxes", "packed_items", "payment_schedule"):
+			target_doc.set(table, [])
+
+	proformed = defaultdict(float)
+	for row in frappe.db.sql(
+		"""
+		SELECT pii.sales_order_item, SUM(pii.qty) AS qty
+		FROM `tabProforma Invoice Item` pii
+		INNER JOIN `tabProforma Invoice` pi ON pi.name = pii.parent
+		WHERE pi.sales_order = %s AND pi.docstatus = 1 AND pi.name != %s
+		GROUP BY pii.sales_order_item
+		""",
+		(source_name, current or ""),
+		as_dict=True,
+	):
+		proformed[row.sales_order_item] = flt(row.qty)
+
+	def remaining(row):
+		return flt(row.qty) - proformed[row.name]
+
+	def set_missing_values(source, target):
+		target.proforma_invoice_to = "Customer"
+		target.party_name = source.customer
+		target.customer_name = source.customer_name
+		target.transaction_date = nowdate()
+		target.quotation = next((r.prevdoc_docname for r in source.items if r.prevdoc_docname), None)
+		target.run_method("calculate_taxes_and_totals")
+
+	def update_item(source, target, source_parent):
+		target.qty = remaining(source)
+		target.stock_qty = flt(target.qty) * flt(source.conversion_factor or 1)
+
+	pi = get_mapped_doc(
+		"Sales Order",
+		source_name,
+		{
+			"Sales Order": {
+				"doctype": "Proforma Invoice",
+				"field_map": {"name": "sales_order"},
+				"field_no_map": [
+					"naming_series",
+					"title",
+					"status",
+					"transaction_date",
+					"valid_till",
+					"amended_from",
+					"payment_schedule",
+				],
+				"validation": {"docstatus": ["=", 1]},
+			},
+			"Sales Order Item": {
+				"doctype": "Proforma Invoice Item",
+				"field_map": {"name": "sales_order_item"},
+				"postprocess": update_item,
+				"condition": lambda row: remaining(row) > 0,
+			},
+			"Sales Taxes and Charges": {"doctype": "Sales Taxes and Charges", "reset_value": True},
+		},
+		target_doc,
+		set_missing_values,
+	)
+
+	if not pi.items:
+		frappe.throw(
+			_("Everything on Sales Order {0} is already on a submitted Proforma Invoice.").format(source_name)
+		)
 	return pi

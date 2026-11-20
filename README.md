@@ -124,6 +124,20 @@ Lead, Quotation, Sales Order and Project are numbered by division, and one enqui
 - Formats, digits and on/off: **Altor Settings > Division Numbering**. Documents without a division keep the
   standard naming series.
 
+### Sales flow rules
+
+- **Lead**: First Name is labelled **Company Name** (mandatory) and **Contact Name** holds the person; Middle and
+  Last Name are hidden. The company also fills Organization Name, so a converted lead becomes a Company customer
+  of that name, and the lead's Contact is created for the Contact Name (`events/lead.py`, `CustomLead`).
+- **Quotation**: no LPO fields; the client's LPO is recorded on the Sales Order (Customer's Purchase Order) and the
+  Project (LPO Ref / Date).
+- **Sales Order**: only from a submitted Quotation (Quotation > Create > Sales Order, or Get Items From >
+  Quotation). A line without a quotation is refused on save (`events/sales_order.py`); switch it off in
+  **Altor Settings > Sales > Sales Order Only from Quotation**.
+- **Proforma Invoice**: select the **Sales Order** and the customer, addresses, contact, division, price list,
+  items (quantity not yet on a submitted proforma), taxes and terms are filled from it. Also from the Sales Order:
+  Create > Proforma Invoice. Submitted proformas of an order cannot exceed its total.
+
 ### Project Assets (asset allocation to projects)
 
 Scaffolding materials and equipment bought once and issued to projects. **ERPNext's Asset module keeps the
