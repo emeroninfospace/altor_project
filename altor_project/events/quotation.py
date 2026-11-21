@@ -1,7 +1,9 @@
+import re
+
 import frappe
+from erpnext.selling.doctype.quotation.quotation import Quotation
 from frappe import _
-from frappe.model.mapper import get_mapped_doc
-from frappe.utils import cint, date_diff, flt, nowdate
+from frappe.utils import cint
 
 from altor_project.events.lead import customer_of_lead
 
@@ -35,61 +37,6 @@ def make_sales_order(source_name, target_doc=None, args=None):
 	if quotation and quotation.quotation_to == "Lead":
 		customer_of_lead(quotation.party_name, link=True)
 	return erpnext_make_sales_order(source_name, target_doc, args)
-
-
-@frappe.whitelist()
-def make_project(source_name, target_doc=None):
-	"""Create Project from Quotation"""
-
-	def set_missing_values(source, target):
-		if source.quotation_to == "Lead":
-			customer_name = customer_of_lead(source.party_name, link=True) or frappe.db.get_value(
-				"Customer", {"customer_name": source.customer_name}, "name"
-			)
-			if not customer_name:
-				customer = frappe.get_doc(
-					{
-						"doctype": "Customer",
-						"customer_name": source.customer_name,
-						"customer_type": "Individual",
-						"customer_group": frappe.db.get_default("customer_group") or "All Customer Groups",
-						"territory": frappe.db.get_default("territory") or "All Territories",
-					}
-				)
-				customer.flags.ignore_permissions = True
-				customer.insert()
-				customer_name = customer.name
-		else:
-			customer_name = source.party_name
-
-		target.customer = customer_name
-		target.quotation = source.name
-
-	doclist = get_mapped_doc(
-		"Quotation",
-		source_name,
-		{
-			"Quotation": {
-				"doctype": "Project",
-				"field_map": {
-					"custom_project": "project_name",
-					"remarks": "notes",
-					"custom_scope_of_work": "scope_of_work",
-					"custom_location": "location",
-				},
-			}
-		},
-		target_doc,
-		set_missing_values,
-	)
-
-	return doclist
-
-
-import re
-
-import frappe
-from erpnext.selling.doctype.quotation.quotation import Quotation
 
 
 class CustomQuotation(Quotation):

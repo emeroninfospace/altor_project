@@ -1,6 +1,6 @@
 import frappe
 from frappe import _
-from frappe.utils import flt, nowdate
+from frappe.utils import cint, flt, nowdate
 
 
 def get_project_source_items(project_doc):
@@ -25,6 +25,56 @@ def get_project_source_items(project_doc):
 		if rows:
 			return doctype, name, rows
 	return None, None, []
+
+
+def project_needs_sales_order():
+	"""Altor Settings > Project Only from Sales Order (on unless switched off)."""
+	value = frappe.get_cached_doc("Altor Settings").get("project_from_sales_order_only")
+	return 1 if value is None else cint(value)
+
+
+def validate_project(doc, method=None):
+	"""doc_event (Project validate): a new project comes from a submitted Sales Order, and takes the
+	order's customer LPO (Customer's Purchase Order No. / Date) and quotation."""
+	if doc.is_new() and not doc.flags.ignore_sales_order_check and project_needs_sales_order():
+		if not doc.get("sales_order"):
+			frappe.throw(
+				_(
+					"A Project is made from a submitted Sales Order: open the Sales Order and use Create > Project."
+				),
+				title=_("Sales Order Required"),
+			)
+		if frappe.db.get_value("Sales Order", doc.sales_order, "docstatus") != 1:
+			frappe.throw(_("Submit Sales Order {0} before creating its project.").format(doc.sales_order))
+	fill_from_sales_order(doc)
+
+
+def fill_from_sales_order(doc):
+	if not doc.get("sales_order"):
+		return
+	so = frappe.db.get_value("Sales Order", doc.sales_order, ["po_no", "po_date"], as_dict=True)
+	if not so:
+		return
+	if doc.meta.has_field("lpo_ref") and not doc.get("lpo_ref") and so.po_no:
+		doc.lpo_ref = so.po_no
+	if doc.meta.has_field("lpo_date") and not doc.get("lpo_date") and so.po_date:
+		doc.lpo_date = so.po_date
+	if doc.meta.has_field("quotation") and not doc.get("quotation"):
+		doc.quotation = frappe.db.get_value(
+			"Sales Order Item",
+			{"parent": doc.sales_order, "prevdoc_docname": ["is", "set"]},
+			"prevdoc_docname",
+		)
+
+
+def sync_lpo_to_projects(doc, method=None):
+	"""doc_event (Sales Order on_update_after_submit): a corrected customer LPO goes to its projects."""
+	if not doc.has_value_changed("po_no") and not doc.has_value_changed("po_date"):
+		return
+	if not frappe.db.has_column("Project", "lpo_ref"):
+		return
+	for project in frappe.get_all("Project", filters={"sales_order": doc.name}, pluck="name"):
+		frappe.db.set_value("Project", project, {"lpo_ref": doc.po_no, "lpo_date": doc.po_date})
 
 
 @frappe.whitelist()

@@ -137,6 +137,10 @@ Lead, Quotation, Sales Order and Project are numbered by division, and one enqui
 - **Quotation**: only for a Lead (`events/quotation.require_lead`, Altor Settings > Sales > Quotation Only for a
   Lead). The lead's status follows: a quotation (draft or submitted) makes it **Quotation**, deleting / cancelling
   the last one puts it back to Site Visit Completed or Open, and a submitted Sales Order makes it **Converted**.
+- **Project**: only from a submitted Sales Order (Sales Order > Create > Project; Altor Settings > Sales > Project
+  Only from Sales Order). It takes the order's Customer's Purchase Order No. / Date as LPO Ref / Date and the
+  quotation; a corrected LPO on the submitted order updates its projects (`events/project.validate_project`).
+  The Quotation has no Create > Project.
 - **Sales Order**: only from a submitted Quotation (Quotation > Create > Sales Order, or Get Items From >
   Quotation). A line without a quotation is refused on save (`events/sales_order.py`); switch it off in
   **Altor Settings > Sales > Sales Order Only from Quotation**.
