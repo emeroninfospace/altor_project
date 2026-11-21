@@ -107,7 +107,7 @@ Construction Hoist, Mast Climber, Trading, Manpower).
 
 #### Division numbering
 
-Lead, Quotation, Sales Order and Project are numbered by division, and one enquiry keeps one number:
+Lead, Quotation, Sales Order, Project and Site Visit are numbered by division, and one enquiry keeps one number:
 
 | Document | Default format | Example |
 |---|---|---|
@@ -115,6 +115,7 @@ Lead, Quotation, Sales Order and Project are numbered by division, and one enqui
 | Quotation (from that lead) | `QT-{division}-{year}-{seq}` | QT-SCF-2026-0007 |
 | Sales Order (from that quotation) | `SO-{division}-{year}-{seq}` | SO-SCF-2026-0007 |
 | Project (from that sales order / quotation) | `PRJ-{division}-{year}-{seq}` | PRJ-SCF-2026-0007 |
+| Site Visit (from that lead; a second visit gets `-V2`) | `SV-{division}-{year}-{seq}` | SV-SCF-2026-0007 |
 
 - `{division}` is the **Division Code** on the Cost Center (e.g. SCF, CRD). Without one, known division names map
   to SCF, CRD, EQR, RPA, CHS, MCL, TRD, MPW, otherwise the initials are used.

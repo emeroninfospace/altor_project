@@ -11,6 +11,7 @@
   "lead",
   "lead_name",
   "cost_center",
+  "custom_division_ref",
   "company",
   "visit_date",
   "visited_by",
@@ -148,13 +149,22 @@
    "link_filters": "[[\"Cost Center\",\"is_group\",\"=\",0]]",
    "fetch_from": "lead.cost_center",
    "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "custom_division_ref",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Division Ref No.",
+   "no_copy": 1,
+   "read_only": 1,
+   "search_index": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-21 10:00:00.000000",
+ "modified": "2026-11-22 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Site Visit",

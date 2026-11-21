@@ -6,6 +6,10 @@ from frappe.model.document import Document
 
 
 class SiteVisit(Document):
+	def before_insert(self):
+		# before the number is given: the division (and so SV-SCF-...) comes from the lead
+		self.set_from_lead()
+
 	def validate(self):
 		self.set_from_lead()
 

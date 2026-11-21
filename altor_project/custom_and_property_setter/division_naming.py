@@ -7,6 +7,7 @@
     Quotation     QT-SCF-2026-0007      (made from that lead)
     Sales Order   SO-SCF-2026-0007      (made from that quotation)
     Project       PRJ-SCF-2026-0007     (made from that sales order)
+    Site Visit    SV-SCF-2026-0007      (made from that lead; a second visit SV-SCF-2026-0007-V2)
 
 * {division} is the Division Code of the document's Division (Cost Center), e.g. SCF.
 * Each division has its own counter per year. A document that starts a new enquiry
@@ -33,18 +34,21 @@ DEFAULT_FORMATS = {
 	"Quotation": "QT-{division}-{year}-{seq}",
 	"Sales Order": "SO-{division}-{year}-{seq}",
 	"Project": "PRJ-{division}-{year}-{seq}",
+	"Site Visit": "SV-{division}-{year}-{seq}",
 }
 SETTING_FIELDS = {
 	"Lead": "lead_number_format",
 	"Quotation": "quotation_number_format",
 	"Sales Order": "sales_order_number_format",
 	"Project": "project_number_format",
+	"Site Visit": "site_visit_number_format",
 }
 DATE_FIELDS = {
 	"Lead": None,
 	"Quotation": "transaction_date",
 	"Sales Order": "transaction_date",
 	"Project": "expected_start_date",
+	"Site Visit": "visit_date",
 }
 # Codes used when a Division (Cost Center) has no Division Code set
 KNOWN_CODES = {
@@ -107,6 +111,8 @@ def source_ref(doc):
 				return _ref_of("Quotation", row.prevdoc_docname)
 	elif doc.doctype == "Project":
 		return _ref_of("Sales Order", doc.get("sales_order")) or _ref_of("Quotation", doc.get("quotation"))
+	elif doc.doctype == "Site Visit":
+		return _ref_of("Lead", doc.get("lead"))
 	return None
 
 
@@ -146,7 +152,7 @@ def unique_name(doctype, name):
 
 
 def set_division_name(doc, method=None):
-	"""doc_event (autoname) for Lead, Quotation, Sales Order and Project."""
+	"""doc_event (autoname) for Lead, Quotation, Sales Order, Project and Site Visit."""
 	if doc.get("amended_from") or doc.doctype not in DEFAULT_FORMATS:
 		return
 	settings = get_settings()

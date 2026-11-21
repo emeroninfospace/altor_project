@@ -241,8 +241,8 @@ doc_events = {
 	"Lead": {"on_update": "altor_project.notifications.on_lead_update"},
 }
 
-# Division numbering: CRM-SCF-LEAD-2026-0001 -> QT-SCF-2026-0001 -> SO-... -> PRJ-...
-for _doctype in ("Lead", "Quotation", "Sales Order", "Project"):
+# Division numbering: CRM-SCF-LEAD-2026-0001 -> QT-SCF-2026-0001 -> SO-... -> PRJ-... (and SV-... for site visits)
+for _doctype in ("Lead", "Quotation", "Sales Order", "Project", "Site Visit"):
 	_events = doc_events.setdefault(_doctype, {})
 	_events["autoname"] = "altor_project.custom_and_property_setter.division_naming.set_division_name"
 	_existing = _events.get("validate") or []

@@ -29,7 +29,8 @@
   "lead_number_format",
   "quotation_number_format",
   "sales_order_number_format",
-  "project_number_format"
+  "project_number_format",
+  "site_visit_number_format"
  ],
  "fields": [
   {
@@ -189,13 +190,20 @@
    "label": "Project Number Format",
    "default": "PRJ-{division}-{year}-{seq}",
    "depends_on": "enable_division_numbering"
+  },
+  {
+   "fieldname": "site_visit_number_format",
+   "fieldtype": "Data",
+   "label": "Site Visit Number Format",
+   "default": "SV-{division}-{year}-{seq}",
+   "depends_on": "enable_division_numbering"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-11-21 18:00:00.000000",
+ "modified": "2026-11-22 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Altor Settings",
