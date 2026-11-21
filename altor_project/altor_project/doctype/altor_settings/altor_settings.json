@@ -9,6 +9,7 @@
   "sales_section",
   "quotation_for_lead_only",
   "sales_order_from_quotation_only",
+  "project_from_sales_order_only",
   "manpower_section",
   "default_manpower_item_group",
   "outsourced_manpower_item_group",
@@ -55,6 +56,13 @@
    "fieldname": "sales_order_from_quotation_only",
    "fieldtype": "Check",
    "label": "Sales Order Only from Quotation"
+  },
+  {
+   "default": "1",
+   "description": "A Project is made from a submitted Sales Order (Sales Order > Create > Project); it takes the order's customer LPO no. and date",
+   "fieldname": "project_from_sales_order_only",
+   "fieldtype": "Check",
+   "label": "Project Only from Sales Order"
   },
   {
    "fieldname": "manpower_section",
@@ -187,7 +195,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-11-21 12:00:00.000000",
+ "modified": "2026-11-21 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Altor Settings",

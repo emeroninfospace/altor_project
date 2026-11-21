@@ -44,7 +44,6 @@ app_license = "mit"
 
 # include js in doctype views
 doctype_js = {
-	"Quotation": "public/js/quotation.js",
 	"Project": "public/js/project.js",
 	"Material Request": "public/js/material_request.js",
 	"Task": "public/js/task.js",
@@ -226,7 +225,10 @@ doc_events = {
 	"Sales Order": {
 		"validate": "altor_project.events.sales_order.require_quotation",
 		"on_submit": "altor_project.events.sales_order.on_submit",
+		"on_update_after_submit": "altor_project.events.project.sync_lpo_to_projects",
 	},
+	# a project comes from a submitted Sales Order and takes its customer LPO
+	"Project": {"validate": "altor_project.events.project.validate_project"},
 	# a quotation is for a Lead; the lead's status follows its quotations
 	"Quotation": {
 		"validate": "altor_project.events.quotation.require_lead",

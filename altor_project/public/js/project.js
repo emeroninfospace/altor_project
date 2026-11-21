@@ -8,6 +8,14 @@ frappe.ui.form.on('Project', {
 		const is_admin          = frappe.session.user === 'Administrator';
 		const is_restricted     = is_supervisor && !is_system_manager && !is_admin;
 
+		// a project is made from a submitted Sales Order (Altor Settings > Project Only from Sales Order)
+		if (frm.is_new() && !frm.doc.sales_order && !is_restricted) {
+			frm.set_intro(
+				__('Make projects from a submitted Sales Order: Sales Order > Create > Project. The customer LPO comes from the order.'),
+				'orange'
+			);
+		}
+
 		if (is_restricted) {
 			if (frm.is_new()) {
 				frm.set_intro(

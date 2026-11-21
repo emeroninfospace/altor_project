@@ -1178,11 +1178,9 @@ def _make_sales_flow(ctx, log, key):
 			"status": "Open",
 			"location": p["location"],
 			"scope_of_work": p["scope"],
-			"lpo_ref": p["lpo"],
-			"lpo_date": add_days(start, -6),
 		}
 	)
-	project = _insert(project, log)
+	project = _insert(project, log)  # LPO Ref / Date come from the Sales Order's customer PO
 	ctx.projects[key] = project.name
 	_make_tasks(ctx, log, project, p)
 

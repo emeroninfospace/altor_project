@@ -21,3 +21,4 @@ altor_project.patches.v2026_11.fixed_asset_labels
 altor_project.patches.v2026_11.lead_company_and_quotation_lpo
 altor_project.patches.v2026_11.budget_variance_own_total_row
 altor_project.patches.v2026_11.quotation_for_lead_only
+altor_project.patches.v2026_11.project_from_sales_order_only
