@@ -1,0 +1,147 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-24 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-24 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Altor Project",
+ "owner": "Administrator",
+ "row_format": "Dynamic",
+ "states": [],
+ "name": "Daily Timesheet Detail",
+ "istable": 1,
+ "editable_grid": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "worker_type",
+  "project",
+  "task",
+  "activity_type",
+  "column_break_t",
+  "from_time",
+  "hours",
+  "ot1_hours",
+  "ot2_hours",
+  "description",
+  "section_result",
+  "timesheet",
+  "labour_cost"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "fetch_from": "employee.employee_name",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "worker_type",
+   "fieldtype": "Data",
+   "label": "Own / Outsourced",
+   "read_only": 1
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "Project",
+   "options": "Project",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "task",
+   "fieldtype": "Link",
+   "label": "Task",
+   "options": "Task"
+  },
+  {
+   "fieldname": "activity_type",
+   "fieldtype": "Link",
+   "label": "Activity Type",
+   "options": "Activity Type"
+  },
+  {
+   "fieldname": "column_break_t",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "from_time",
+   "fieldtype": "Time",
+   "label": "Start Time",
+   "description": "Empty: 08:00, or after the employee's earlier hours that day"
+  },
+  {
+   "fieldname": "hours",
+   "fieldtype": "Float",
+   "label": "Hours",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 1,
+   "non_negative": 1
+  },
+  {
+   "fieldname": "ot1_hours",
+   "fieldtype": "Float",
+   "label": "OT 1 Hours",
+   "description": "Only when Split Overtime Automatically is off",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "ot2_hours",
+   "fieldtype": "Float",
+   "label": "OT 2 Hours",
+   "description": "Only when Split Overtime Automatically is off",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "section_result",
+   "fieldtype": "Section Break",
+   "label": "Result"
+  },
+  {
+   "fieldname": "timesheet",
+   "fieldtype": "Link",
+   "label": "Timesheet",
+   "options": "Timesheet",
+   "read_only": 1,
+   "no_copy": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "labour_cost",
+   "fieldtype": "Currency",
+   "label": "Labour Cost",
+   "options": "Company:company:default_currency",
+   "read_only": 1,
+   "no_copy": 1
+  }
+ ],
+ "permissions": []
+}

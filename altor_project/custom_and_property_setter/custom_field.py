@@ -228,6 +228,16 @@ CREATE_FIELDS = {
 			"insert_after": "custom_worker_type",
 		},
 		{
+			"fieldname": "custom_daily_timesheet",
+			"label": "Daily Timesheet",
+			"fieldtype": "Link",
+			"options": "Daily Timesheet",
+			"read_only": 1,
+			"no_copy": 1,
+			"insert_after": "custom_manpower_supplier",
+			"description": "Made from this crew sheet (one date, many employees)",
+		},
+		{
 			"fieldname": "custom_labour_section",
 			"label": "Labour Cost",
 			"fieldtype": "Section Break",

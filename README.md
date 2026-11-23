@@ -153,6 +153,16 @@ Lead, Quotation, Sales Order, Project and Site Visit are numbered by division, a
   items (quantity not yet on a submitted proforma), taxes and terms are filled from it. Also from the Sales Order:
   Create > Proforma Invoice. Submitted proformas of an order cannot exceed its total.
 
+### Daily Timesheet (crew sheet)
+
+One date, many employees: **Projects > Daily Timesheet** (also on the Altor workspace and the Project's
+connections). Pick the date, project and default activity, **Add Employees** (several at once), adjust the hours
+per row (a row can have its own project, task, start time and, with "Split Overtime Automatically" unticked, its
+own OT 1 / OT 2). On submit each employee gets a standard ERPNext **Timesheet** for the date (rows back to back
+from 08:00, or after the hours already booked that day), costed as usual (own staff / outsourced, OT, budget);
+the rows show the Timesheet and its labour cost. Cancelling the Daily Timesheet cancels those Timesheets.
+Timesheets keep working on their own as before.
+
 ### My Assignments (dashboard)
 
 The **My Work** workspace (first in the sidebar) and the top of the **Altor** workspace show the logged-in
