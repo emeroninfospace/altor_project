@@ -151,27 +151,56 @@ def unique_name(doctype, name):
 	return f"{name}-V{i}"
 
 
-def set_division_name(doc, method=None):
-	"""doc_event (autoname) for Lead, Quotation, Sales Order, Project and Site Visit."""
-	if doc.get("amended_from") or doc.doctype not in DEFAULT_FORMATS:
-		return
-	settings = get_settings()
+def division_name(doc, settings=None):
+	"""(name, Division Ref No.) the division numbering gives this document, or (None, None)."""
+	settings = settings or get_settings()
 	if not settings.enabled:
-		return
-
+		return None, None
 	code = division_code(doc.get("cost_center"))
 	ref = source_ref(doc)
 	ref_code, year, seq = split_ref(ref)
 	if not ref_code or (code and ref_code != code):
 		# nothing to continue from (or the division was changed): start a new number
 		if not code:
-			return  # no division: keep the standard naming series
+			return None, None  # no division: keep the standard naming series
 		ref = new_ref(doc.doctype, code, doc, settings.digits)
 		ref_code, year, seq = split_ref(ref)
+	return unique_name(doc.doctype, build_name(settings.formats[doc.doctype], ref_code, year, seq)), ref
 
-	doc.name = unique_name(doc.doctype, build_name(settings.formats[doc.doctype], ref_code, year, seq))
+
+def set_division_name(doc, method=None):
+	"""doc_event (autoname) for Lead, Quotation, Sales Order, Project and Site Visit."""
+	if doc.get("amended_from") or doc.doctype not in DEFAULT_FORMATS:
+		return
+	name, ref = division_name(doc)
+	if not name:
+		return
+	doc.name = name
 	if doc.meta.has_field(REF_FIELD):
 		doc.set(REF_FIELD, ref)
+
+
+@frappe.whitelist()
+def use_division_number(doctype, name):
+	"""Rename a document made before it had a division (e.g. Altor-PR-2026-00007) to its division
+	number (PRJ-SCF-2026-0014). Links on other documents follow the rename."""
+	if doctype not in DEFAULT_FORMATS:
+		frappe.throw(_("{0} is not numbered by division.").format(_(doctype)))
+	doc = frappe.get_doc(doctype, name)
+	doc.check_permission("write")
+	if doc.get(REF_FIELD):
+		frappe.throw(_("{0} already has a division number.").format(name))
+	if not doc.get("cost_center"):
+		frappe.throw(_("Set the Division on {0} and save it first.").format(name))
+	if not get_settings().enabled:
+		frappe.throw(_("Division numbering is switched off in Altor Settings."))
+	new_name, ref = division_name(doc)
+	if not new_name:
+		frappe.throw(_("No division number could be made for {0}.").format(name))
+	new_name = frappe.rename_doc(doctype, name, new_name, ignore_permissions=True)
+	if frappe.get_meta(doctype).has_field(REF_FIELD):
+		frappe.db.set_value(doctype, new_name, REF_FIELD, ref, update_modified=False)
+	return new_name
 
 
 def keep_ref_on_amend(doc, method=None):

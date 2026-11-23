@@ -87,6 +87,27 @@ frappe.ui.form.on('Project', {
 				}, __('View'));
 			}
 
+			// a project made before it had a division (e.g. Altor-PR-2026-00007): rename it to PRJ-<division>-...
+			if (!is_restricted && !frm.doc.custom_division_ref && frm.perm[0] && frm.perm[0].write) {
+				frm.add_custom_button(__('Use Division Number'), () => {
+					if (!frm.doc.cost_center) {
+						frappe.msgprint(__('Set the Division on this project and save it first.'));
+						return;
+					}
+					frappe.confirm(
+						__('Rename {0} to its division number? Tasks, timesheets, budgets and other linked documents follow.', [`<b>${frappe.utils.escape_html(frm.doc.name)}</b>`]),
+						() => frappe.call({
+							method: 'altor_project.custom_and_property_setter.division_naming.use_division_number',
+							args: { doctype: 'Project', name: frm.doc.name },
+							freeze: true,
+							callback(r) {
+								if (r.message) frappe.set_route('Form', 'Project', r.message);
+							},
+						})
+					);
+				}, __('Actions'));
+			}
+
 			const btn = frm.add_custom_button(__('Project Report'), () => {
 				frappe.set_route('query-report', 'Project Wise', {
 					project: frm.doc.name

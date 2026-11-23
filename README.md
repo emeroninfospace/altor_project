@@ -121,6 +121,9 @@ Lead, Quotation, Sales Order, Project and Site Visit are numbered by division, a
   to SCF, CRD, EQR, RPA, CHS, MCL, TRD, MPW, otherwise the initials are used.
 - Each division has its own counter per year. Documents not made from an earlier step (a direct quotation to a
   customer) take the next number. A second quotation from the same lead gets `-V2`; revisions stay `-R1`, `-R2`.
+- A project made before it had a division (e.g. Altor-PR-2026-00007): set its Division, save, then **Actions >
+  Use Division Number** renames it (PRJ-SCF-2026-0014); linked documents follow. A new project without a division
+  takes its Sales Order's before it is numbered.
 - The shared part is stored as **Division Ref No.** (SCF-2026-0007) on all four documents.
 - Formats, digits and on/off: **Altor Settings > Division Numbering**. Documents without a division keep the
   standard naming series.
