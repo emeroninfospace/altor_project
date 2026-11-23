@@ -3,8 +3,9 @@
 
 import frappe
 from frappe import _
-from frappe.desk.form import assign_to
 from frappe.model.document import Document
+
+from altor_project.notifications import add_assignment
 
 
 class ProjectSchedule(Document):
@@ -48,7 +49,7 @@ class ProjectSchedule(Document):
 					team = frappe.get_doc("Project Team", row.project_team)
 					team_users[row.project_team] = [m.user for m in team.employee_and_user if m.user]
 				if team_users[row.project_team]:
-					assign_to.add(
+					add_assignment(
 						{
 							"assign_to": team_users[row.project_team],
 							"doctype": "Task",

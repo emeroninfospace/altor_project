@@ -170,6 +170,9 @@ The navbar bell shows the number of unread notifications (`public/js/notificatio
   (`notifications.notify_missed_assignments`) adds it for open assignments made by someone else that got none
   (seen on the live site when a lead was re-assigned back), so re-assigning a lead or assigning a task always
   notifies the new assignee within a minute.
+- **Instant**: Assign To (`frappe.desk.form.assign_to.add` / `add_multiple`, replaced in hooks) writes the
+  assignee's notification in the same request instead of Frappe's background job; the minute check stays as a
+  safety net. Assigning something to yourself sends no notification (Frappe's rule); it still shows on My Work.
 - **Lead Owner**: changing it to another user notifies the new owner.
 
 ### Project Assets (asset allocation to projects)
