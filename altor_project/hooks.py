@@ -228,7 +228,10 @@ doc_events = {
 		"on_update_after_submit": "altor_project.events.project.sync_lpo_to_projects",
 	},
 	# a project comes from a submitted Sales Order and takes its customer LPO
-	"Project": {"validate": "altor_project.events.project.validate_project"},
+	"Project": {
+		"before_insert": "altor_project.events.project.division_from_sales_order",
+		"validate": "altor_project.events.project.validate_project",
+	},
 	# a quotation is for a Lead; the lead's status follows its quotations
 	"Quotation": {
 		"validate": "altor_project.events.quotation.require_lead",
@@ -271,6 +274,7 @@ for _doctype in (
 app_include_js = [
 	"/assets/altor_project/js/project_calendar.js",
 	"/assets/altor_project/js/workspace_supervisor.js",
+	"/assets/altor_project/js/notification_count.js",
 ]
 
 fixtures = [
@@ -281,7 +285,7 @@ fixtures = [
 				"name",
 				"in",
 				[
-					"Task Dashboard",
+					"My Assignments",
 					"Project Overview Dashboard",
 					"HR Dashboard",
 					"Stock Overview Dashboard",

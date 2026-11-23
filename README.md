@@ -121,6 +121,9 @@ Lead, Quotation, Sales Order, Project and Site Visit are numbered by division, a
   to SCF, CRD, EQR, RPA, CHS, MCL, TRD, MPW, otherwise the initials are used.
 - Each division has its own counter per year. Documents not made from an earlier step (a direct quotation to a
   customer) take the next number. A second quotation from the same lead gets `-V2`; revisions stay `-R1`, `-R2`.
+- A project made before it had a division (e.g. Altor-PR-2026-00007): set its Division, save, then **Actions >
+  Use Division Number** renames it (PRJ-SCF-2026-0014); linked documents follow. A new project without a division
+  takes its Sales Order's before it is numbered.
 - The shared part is stored as **Division Ref No.** (SCF-2026-0007) on all four documents.
 - Formats, digits and on/off: **Altor Settings > Division Numbering**. Documents without a division keep the
   standard naming series.
@@ -149,6 +152,16 @@ Lead, Quotation, Sales Order, Project and Site Visit are numbered by division, a
   Invoice / Sales Invoice any more. Select the **Sales Order** and the customer, addresses, contact, division, price list,
   items (quantity not yet on a submitted proforma), taxes and terms are filled from it. Also from the Sales Order:
   Create > Proforma Invoice. Submitted proformas of an order cannot exceed its total.
+
+### My Assignments (dashboard)
+
+The **My Work** workspace (first in the sidebar) and the top of the **Altor** workspace show the logged-in
+user's assigned work: every open Assign To (ToDo) on a Lead, Task, Project, Site Visit or any other document,
+with who assigned it, the due date (the ToDo date, else the task / project end date), priority and the
+document's status. Users change the status in place (documents with a Select status they may edit, e.g. Lead
+and Task) and close the assignment with **Done**; "Done in the last 30 days" lists what they closed.
+API: `altor_project/api/assignments.py`. It replaces the old Task Dashboard block (removed by a patch).
+The navbar bell shows the number of unread notifications (`public/js/notification_count.js`).
 
 ### Assignment notifications
 

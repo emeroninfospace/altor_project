@@ -33,6 +33,18 @@ def project_needs_sales_order():
 	return 1 if value is None else cint(value)
 
 
+def division_from_sales_order(doc, method=None):
+	"""doc_event (Project before_insert): before the number is given, a project without a division
+	takes its Sales Order's (or Quotation's), so it is numbered PRJ-SCF-... and not by the series."""
+	if doc.get("cost_center"):
+		return
+	for doctype, name in (("Sales Order", doc.get("sales_order")), ("Quotation", doc.get("quotation"))):
+		division = name and frappe.db.get_value(doctype, name, "cost_center")
+		if division:
+			doc.cost_center = division
+			return
+
+
 def validate_project(doc, method=None):
 	"""doc_event (Project validate): a new project comes from a submitted Sales Order, and takes the
 	order's customer LPO (Customer's Purchase Order No. / Date) and quotation."""
