@@ -339,7 +339,10 @@ scheduler_events = {
 #
 # Quotation > Create > Sales Order: a lead's Existing Customer is used (no duplicate customer)
 override_whitelisted_methods = {
-	"erpnext.selling.doctype.quotation.quotation.make_sales_order": "altor_project.events.quotation.make_sales_order"
+	"erpnext.selling.doctype.quotation.quotation.make_sales_order": "altor_project.events.quotation.make_sales_order",
+	# Assign To: the assignee's notification is written at once (not via a background job)
+	"frappe.desk.form.assign_to.add": "altor_project.notifications.add_assignment",
+	"frappe.desk.form.assign_to.add_multiple": "altor_project.notifications.add_multiple_assignments",
 }
 #
 # each overriding function accepts a `data` argument;
