@@ -274,6 +274,7 @@ for _doctype in (
 app_include_js = [
 	"/assets/altor_project/js/project_calendar.js",
 	"/assets/altor_project/js/workspace_supervisor.js",
+	"/assets/altor_project/js/notification_count.js",
 ]
 
 fixtures = [
@@ -284,7 +285,7 @@ fixtures = [
 				"name",
 				"in",
 				[
-					"Task Dashboard",
+					"My Assignments",
 					"Project Overview Dashboard",
 					"HR Dashboard",
 					"Stock Overview Dashboard",

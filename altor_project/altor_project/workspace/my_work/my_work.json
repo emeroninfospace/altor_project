@@ -1,0 +1,71 @@
+{
+ "charts": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "idx": 0,
+ "is_hidden": 0,
+ "modified_by": "Administrator",
+ "module": "Altor Project",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "name": "My Work",
+ "label": "My Work",
+ "title": "My Work",
+ "icon": "users",
+ "indicator_color": "cyan",
+ "sequence_id": 0.5,
+ "creation": "2026-11-23 10:00:00.000000",
+ "modified": "2026-11-23 10:00:00.000000",
+ "links": [],
+ "custom_blocks": [
+  {
+   "custom_block_name": "My Assignments",
+   "label": "My Assignments"
+  }
+ ],
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "label": "Lead",
+   "link_to": "Lead",
+   "stats_filter": "[[\"Lead\", \"status\", \"in\", [\"Lead\", \"Open\", \"Replied\", \"Interested\", \"Site Visit Completed\"], false]]",
+   "type": "DocType",
+   "format": "{} Open"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Task",
+   "link_to": "Task",
+   "stats_filter": "[[\"Task\", \"status\", \"=\", \"Overdue\", false]]",
+   "type": "DocType",
+   "format": "{} Overdue"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "ToDo",
+   "link_to": "ToDo",
+   "stats_filter": "[[\"ToDo\", \"status\", \"=\", \"Open\", false]]",
+   "type": "DocType",
+   "format": "{} Open"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "",
+   "label": "Altor Home",
+   "link_to": null,
+   "stats_filter": "[]",
+   "type": "URL",
+   "url": "/app/altor"
+  }
+ ],
+ "content": "[{\"id\": \"mywblock01\", \"type\": \"custom_block\", \"data\": {\"custom_block_name\": \"My Assignments\", \"col\": 12}}, {\"id\": \"mywhead001\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Shortcuts</b></span>\", \"col\": 12}}, {\"id\": \"mywsc00001\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Lead\", \"col\": 3}}, {\"id\": \"mywsc00002\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Task\", \"col\": 3}}, {\"id\": \"mywsc00003\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"ToDo\", \"col\": 3}}, {\"id\": \"mywsc00004\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Altor Home\", \"col\": 3}}]"
+}

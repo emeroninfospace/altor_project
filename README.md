@@ -153,6 +153,16 @@ Lead, Quotation, Sales Order, Project and Site Visit are numbered by division, a
   items (quantity not yet on a submitted proforma), taxes and terms are filled from it. Also from the Sales Order:
   Create > Proforma Invoice. Submitted proformas of an order cannot exceed its total.
 
+### My Assignments (dashboard)
+
+The **My Work** workspace (first in the sidebar) and the top of the **Altor** workspace show the logged-in
+user's assigned work: every open Assign To (ToDo) on a Lead, Task, Project, Site Visit or any other document,
+with who assigned it, the due date (the ToDo date, else the task / project end date), priority and the
+document's status. Users change the status in place (documents with a Select status they may edit, e.g. Lead
+and Task) and close the assignment with **Done**; "Done in the last 30 days" lists what they closed.
+API: `altor_project/api/assignments.py`. It replaces the old Task Dashboard block (removed by a patch).
+The navbar bell shows the number of unread notifications (`public/js/notification_count.js`).
+
 ### Assignment notifications
 
 - **Assign To** on any document (Lead, Task, ...): the assignee gets a bell notification (and the notification
