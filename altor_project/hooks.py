@@ -231,6 +231,7 @@ doc_events = {
 	"Project": {
 		"before_insert": "altor_project.events.project.division_from_sales_order",
 		"validate": "altor_project.events.project.validate_project",
+		"after_insert": "altor_project.events.project.set_sales_amount",
 	},
 	# a quotation is for a Lead; the lead's status follows its quotations
 	"Quotation": {

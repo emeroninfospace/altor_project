@@ -62,11 +62,16 @@ def validate_project(doc, method=None):
 
 
 def fill_from_sales_order(doc):
+	"""Customer, LPO and quotation from the Sales Order; for a new project also its name, location and
+	scope from the quotation (ERPNext names it after the order and leaves the customer empty: the
+	field is "no copy")."""
 	if not doc.get("sales_order"):
 		return
-	so = frappe.db.get_value("Sales Order", doc.sales_order, ["po_no", "po_date"], as_dict=True)
+	so = frappe.db.get_value("Sales Order", doc.sales_order, ["customer", "po_no", "po_date"], as_dict=True)
 	if not so:
 		return
+	if not doc.get("customer") and so.customer:
+		doc.customer = so.customer
 	if doc.meta.has_field("lpo_ref") and not doc.get("lpo_ref") and so.po_no:
 		doc.lpo_ref = so.po_no
 	if doc.meta.has_field("lpo_date") and not doc.get("lpo_date") and so.po_date:
@@ -77,6 +82,35 @@ def fill_from_sales_order(doc):
 			{"parent": doc.sales_order, "prevdoc_docname": ["is", "set"]},
 			"prevdoc_docname",
 		)
+	if doc.is_new() and doc.get("quotation"):
+		fill_from_quotation(doc)
+
+
+def fill_from_quotation(doc):
+	"""The quotation's Project / Location / Scope of Work on a new project."""
+	meta = frappe.get_meta("Quotation")
+	fields = [f for f in ("custom_project", "custom_location", "custom_scope_of_work") if meta.has_field(f)]
+	if not fields:
+		return
+	q = frappe.db.get_value("Quotation", doc.quotation, fields, as_dict=True) or {}
+	if q.get("custom_project") and doc.get("project_name") in (None, "", doc.sales_order):
+		doc.project_name = q.custom_project
+	for source, target in (("custom_location", "location"), ("custom_scope_of_work", "scope_of_work")):
+		if q.get(source) and doc.meta.has_field(target) and not doc.get(target):
+			doc.set(target, q.get(source))
+
+
+def set_sales_amount(doc, method=None):
+	"""doc_event (Project after_insert): Total Sales Amount from its Sales Order (ERPNext links the
+	order to the project after insert but leaves the amount at 0 until the next save)."""
+	if not doc.get("sales_order") or doc.get("total_sales_amount"):
+		return
+	total = frappe.db.sql(
+		"SELECT SUM(base_net_total) FROM `tabSales Order` WHERE (project = %s OR name = %s) AND docstatus = 1",
+		(doc.name, doc.sales_order),
+	)[0][0]
+	if total:
+		doc.db_set("total_sales_amount", total, update_modified=False)
 
 
 def sync_lpo_to_projects(doc, method=None):
