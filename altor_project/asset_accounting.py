@@ -80,13 +80,27 @@ def on_asset_submit(doc, method=None):
 		pa.update(values_from_asset(doc))
 		pa.flags.ignore_permissions = True
 		pa.insert()
-		frappe.msgprint(
-			_("Project Asset {0} created for issuing this asset to projects.").format(
-				get_link_to_form("Project Asset", pa.name)
-			),
-			alert=True,
-			indicator="green",
+		from altor_project.assets import item_stock
+
+		stock = item_stock(pa.item_code, pa.company)
+		message = _("Project Asset {0} created for issuing this asset to projects.").format(
+			get_link_to_form("Project Asset", pa.name)
 		)
+		if stock.purchases > 1:
+			# the same item bought before: show what is now available in total and at what average cost
+			message += " " + _(
+				"{0} now has {1} {2} available from {3} purchases, average unit cost {4}."
+			).format(
+				frappe.bold(stock.asset_name or pa.item_code),
+				flt(stock.available),
+				stock.uom or "",
+				stock.purchases,
+				frappe.utils.fmt_money(
+					stock.avg_unit_cost,
+					currency=frappe.get_cached_value("Company", pa.company, "default_currency"),
+				),
+			)
+		frappe.msgprint(message, alert=True, indicator="green")
 	except Exception as e:
 		frappe.db.rollback(save_point="altor_project_asset")
 		frappe.log_error(title=f"Project Asset not created for {doc.name}")

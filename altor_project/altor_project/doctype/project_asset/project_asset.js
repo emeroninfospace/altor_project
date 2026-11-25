@@ -24,16 +24,20 @@ frappe.ui.form.on("Project Asset", {
                 "orange"
             );
         }
-        if (!frm.is_new() && !frm.doc.disabled && flt(frm.doc.available_qty) > 0) {
+        render_item_stock(frm);
+        const stock = (frm.doc.__onload || {}).item_stock;
+        const item_available = stock ? flt(stock.available) : flt(frm.doc.available_qty);
+        if (!frm.is_new() && !frm.doc.disabled && item_available > 0) {
+            // issued from all purchases of the item (oldest first) at the item's average rate
             frm.add_custom_button(__("Issue to Project"), () => {
                 const doc = frappe.model.get_new_doc("Asset Allocation");
                 doc.company = frm.doc.company;
                 const row = frappe.model.add_child(doc, "items");
                 Object.assign(row, {
-                    project_asset: frm.doc.name, asset_name: frm.doc.asset_name, uom: frm.doc.uom,
+                    asset_name: frm.doc.asset_name, uom: frm.doc.uom,
                     item_code: frm.doc.item_code, item_group: frm.doc.item_group,
-                    daily_rate: frm.doc.daily_rate, charge_until: frm.doc.depreciation_end_date,
-                    available_qty: frm.doc.available_qty,
+                    daily_rate: stock ? stock.avg_daily_rate : frm.doc.daily_rate,
+                    available_qty: item_available,
                 });
                 frappe.set_route("Form", "Asset Allocation", doc.name);
             }, __("Create"));
@@ -98,4 +102,41 @@ function render_on_projects(frm) {
         html += `<div class="text-muted small">${__("Not on any project right now.")}</div>`;
     }
     wrapper.html(html);
+}
+
+// all purchases of the item: total quantity, available and the average rate
+function render_item_stock(frm) {
+    const field = frm.get_field("item_stock_html");
+    if (!field) return;
+    const s = (frm.doc.__onload || {}).item_stock;
+    if (!s || !s.purchases) {
+        field.$wrapper.html("");
+        return;
+    }
+    const cur = frappe.defaults.get_default("currency");
+    const money = (v) => format_currency(v, cur);
+    const num = (v) => format_number(flt(v), null, flt(v) % 1 ? 2 : 0);
+    const tile = (label, value) => `<div style="flex:1;min-width:120px;padding:8px 12px;border:1px solid var(--border-color);border-radius:8px">
+        <div class="text-muted small">${label}</div><div style="font-size:16px;font-weight:600">${value}</div></div>`;
+    const rows = (s.lots || []).map((l) => `<tr${l.name === frm.doc.name ? ' style="font-weight:600"' : ""}>
+        <td><a href="/app/project-asset/${encodeURIComponent(l.name)}">${frappe.utils.escape_html(l.name)}</a></td>
+        <td>${l.purchase_date ? frappe.datetime.str_to_user(l.purchase_date) : ""}</td>
+        <td class="text-right">${num(l.qty)}</td><td class="text-right">${money(l.unit_cost)}</td>
+        <td class="text-right">${num(l.available_qty)}</td><td class="text-right">${num(l.allocated_qty)}</td>
+        <td class="text-right">${num(l.damaged_qty)}</td></tr>`).join("");
+    field.$wrapper.html(`
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+            ${tile(__("Purchased"), `${num(s.qty)} ${frappe.utils.escape_html(s.uom || "")}`)}
+            ${tile(__("Available"), num(s.available))}
+            ${tile(__("On Projects"), num(s.on_projects))}
+            ${tile(__("Average Unit Cost"), money(s.avg_unit_cost))}
+            ${tile(__("Average Rate / Unit / Day"), format_currency(s.avg_daily_rate, cur, 4))}
+        </div>
+        <table class="table table-bordered table-sm small" style="margin:0">
+            <thead><tr><th>${__("Purchase")}</th><th>${__("Date")}</th><th class="text-right">${__("Qty")}</th>
+            <th class="text-right">${__("Unit Cost")}</th><th class="text-right">${__("Available")}</th>
+            <th class="text-right">${__("On Projects")}</th><th class="text-right">${__("Damaged / Lost")}</th></tr></thead>
+            <tbody>${rows}</tbody>
+        </table>
+        <div class="text-muted small" style="margin-top:6px">${__("Each purchase keeps its own Fixed Asset for the accounts. Issuing by item takes the oldest purchase first, and projects are charged the item's average rate.")}</div>`);
 }

@@ -10,6 +10,7 @@ frappe.ui.form.on("Asset Allocation", {
                 frm.doc.company ? { company: frm.doc.company } : {}
             ),
         }));
+        frm.set_query("item_code", "items", () => ({ filters: { custom_is_project_asset: 1, disabled: 0 } }));
         frm.set_query("cost_center", () => ({
             filters: Object.assign({ is_group: 0 }, frm.doc.company ? { company: frm.doc.company } : {}),
         }));
@@ -44,17 +45,22 @@ frappe.ui.form.on("Asset Allocation", {
 });
 
 frappe.ui.form.on("Asset Allocation Item", {
+    item_code(frm, cdt, cdn) {
+        const row = locals[cdt][cdn];
+        if (!row.item_code || row.project_asset) return;
+        show_item_stock(frm, cdt, cdn, row.item_code);
+    },
     project_asset(frm, cdt, cdn) {
         const row = locals[cdt][cdn];
         if (!row.project_asset) return;
         frappe.db.get_value("Project Asset", row.project_asset,
-            ["daily_rate", "depreciation_end_date", "available_qty", "item_code", "item_group"]).then((r) => {
+            ["depreciation_end_date", "item_code", "item_group", "asset_name", "uom"]).then((r) => {
             const v = r.message || {};
             frappe.model.set_value(cdt, cdn, {
-                daily_rate: v.daily_rate, charge_until: v.depreciation_end_date, available_qty: v.available_qty,
-                item_code: v.item_code, item_group: v.item_group,
+                charge_until: v.depreciation_end_date, item_code: v.item_code, item_group: v.item_group,
+                asset_name: v.asset_name, uom: v.uom,
             });
-            calculate(frm);
+            show_item_stock(frm, cdt, cdn, v.item_code);
         });
     },
     qty(frm, cdt, cdn) {
@@ -66,6 +72,29 @@ frappe.ui.form.on("Asset Allocation Item", {
     },
     items_remove: calculate,
 });
+
+// available quantity and average rate of the item over all its purchases
+function show_item_stock(frm, cdt, cdn, item_code) {
+    if (!item_code) return;
+    frappe.call({
+        method: "altor_project.altor_project.doctype.asset_allocation.asset_allocation.get_item_stock",
+        args: { item_code: item_code, company: frm.doc.company },
+    }).then((r) => {
+        const s = r.message || {};
+        frappe.model.set_value(cdt, cdn, {
+            available_qty: s.available, daily_rate: s.avg_daily_rate, uom: s.uom, item_group: s.item_group,
+            asset_name: s.asset_name,
+        });
+        calculate(frm);
+        frappe.show_alert({
+            message: __("{0}: {1} available from {2} purchase(s), average unit cost {3}", [
+                s.asset_name || item_code, flt(s.available), s.purchases,
+                format_currency(s.avg_unit_cost, frappe.defaults.get_default("currency")),
+            ]),
+            indicator: flt(s.available) > 0 ? "blue" : "orange",
+        }, 7);
+    });
+}
 
 function calculate(frm) {
     let qty = 0, daily = 0;
