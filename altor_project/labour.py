@@ -26,7 +26,7 @@ import calendar
 
 import frappe
 from frappe import _
-from frappe.utils import cint, flt, get_link_to_form, getdate
+from frappe.utils import cint, flt, get_datetime, get_link_to_form, getdate
 
 OWN = "Own Staff"
 OUTSOURCED = "Outsourced"
@@ -132,45 +132,88 @@ def split_hours(rows, auto, hours_per_day, holidays):
 		used[day] = used.get(day, 0) + row.custom_normal_hours
 
 
-def calculate_timesheet(doc, method=None):
-	"""doc_event (validate): split hours, cost them and use the cost as the Timesheet costing."""
-	if not doc.get("employee") or not doc.meta.has_field("custom_worker_type"):
-		return
-	employee = get_employee(doc.employee)
-	if not employee:
-		return
-	s = get_settings()
-	outsourced = cint(employee.get("custom_is_outsourced"))
-	doc.custom_worker_type = OUTSOURCED if outsourced else OWN
-	doc.custom_manpower_supplier = employee.get("custom_manpower_supplier") if outsourced else None
-	item_group = s.outsourced_item_group if outsourced else s.item_group
+MIXED = "Mixed"
+ROW_EMPLOYEE = "custom_employee"
 
+
+def row_employee(doc, row):
+	"""The employee of a Timesheet row: the row's own (crew Timesheet) or the Timesheet's."""
+	return row.get(ROW_EMPLOYEE) or doc.get("employee")
+
+
+def calculate_timesheet(doc, method=None):
+	"""doc_event (validate): split hours, cost them and use the cost as the Timesheet costing.
+
+	A Timesheet is for one employee (Employee at the top), or for a crew: the top left empty and an
+	Employee on each row (several employees and projects on one Timesheet)."""
+	if not doc.meta.has_field("custom_worker_type"):
+		return
 	rows = list(doc.get("time_logs") or [])
-	days = [getdate(r.from_time) for r in rows if r.from_time]
-	holidays = holiday_dates(doc.employee, min(days), max(days)) if days else set()
-	split_hours(
-		rows, cint(doc.get("custom_auto_overtime")), s.outsourced_hours if outsourced else s.hours, holidays
-	)
+	row_meta = frappe.get_meta("Timesheet Detail")
+	has_row_employee = row_meta.has_field(ROW_EMPLOYEE)
+	has_row_type = row_meta.has_field("custom_worker_type")
+	if doc.get("employee") and has_row_employee:
+		for row in rows:
+			row.set(ROW_EMPLOYEE, doc.employee)  # one-employee Timesheet: every row is theirs
+	if not any(row_employee(doc, r) for r in rows):
+		return  # nobody's labour (e.g. a user's own Timesheet without an employee)
+	missing = [str(r.idx) for r in rows if not row_employee(doc, r)]
+	if missing:
+		frappe.throw(
+			_("Select the Employee on rows {0} (or one Employee at the top).").format(", ".join(missing))
+		)
+
+	s = get_settings()
+	auto = cint(doc.get("custom_auto_overtime"))
+	by_employee = {}
+	for row in rows:
+		by_employee.setdefault(row_employee(doc, row), []).append(row)
 
 	totals = frappe._dict(normal=0, ot1=0, ot2=0, cost=0, ot_cost=0)
-	missing_rate = False
-	for row in rows:
-		normal_rate, ot1_rate, ot2_rate = hour_rates(employee, row.from_time or doc.get("start_date"), s)
-		ot_cost = flt(row.custom_ot1_hours) * ot1_rate + flt(row.custom_ot2_hours) * ot2_rate
-		# rows keep extra decimals so monthly totals match the salary sheet (rounded once)
-		row.custom_ot_cost = flt(ot_cost, 6)
-		row.custom_labour_cost = flt(flt(row.custom_normal_hours) * normal_rate + ot_cost, 6)
-		row.custom_item_group = item_group
-		missing_rate = missing_rate or bool(flt(row.hours) and not normal_rate)
-		# ERPNext project costing (Project > Total Costing Amount) uses the same figure
-		row.costing_rate = flt(row.custom_labour_cost / flt(row.hours), 6) if flt(row.hours) else 0
-		row.costing_amount = row.custom_labour_cost
-		totals.normal += flt(row.custom_normal_hours)
-		totals.ot1 += flt(row.custom_ot1_hours)
-		totals.ot2 += flt(row.custom_ot2_hours)
-		totals.cost += row.custom_labour_cost
-		totals.ot_cost += row.custom_ot_cost
+	types, suppliers, no_rate = set(), set(), []
+	for name, emp_rows in by_employee.items():
+		employee = get_employee(name)
+		if not employee:
+			frappe.throw(_("Employee {0} not found.").format(name))
+		outsourced = cint(employee.get("custom_is_outsourced"))
+		worker_type = OUTSOURCED if outsourced else OWN
+		supplier = employee.get("custom_manpower_supplier") if outsourced else None
+		types.add(worker_type)
+		if supplier:
+			suppliers.add(supplier)
+		days = [getdate(r.from_time) for r in emp_rows if r.from_time]
+		holidays = holiday_dates(name, min(days), max(days)) if days else set()
+		# normal hours per day are counted per employee, so each one's overtime is right on a crew sheet
+		split_hours(emp_rows, auto, s.outsourced_hours if outsourced else s.hours, holidays)
+		for row in emp_rows:
+			normal_rate, ot1_rate, ot2_rate = hour_rates(employee, row.from_time or doc.get("start_date"), s)
+			ot_cost = flt(row.custom_ot1_hours) * ot1_rate + flt(row.custom_ot2_hours) * ot2_rate
+			# rows keep extra decimals so monthly totals match the salary sheet (rounded once)
+			row.custom_ot_cost = flt(ot_cost, 6)
+			row.custom_labour_cost = flt(flt(row.custom_normal_hours) * normal_rate + ot_cost, 6)
+			row.custom_item_group = s.outsourced_item_group if outsourced else s.item_group
+			if has_row_type:
+				row.custom_worker_type = worker_type
+				row.custom_manpower_supplier = supplier
+			if flt(row.hours) and not normal_rate and name not in no_rate:
+				no_rate.append(name)
+			# ERPNext project costing (Project > Total Costing Amount) uses the same figure
+			row.costing_rate = flt(row.custom_labour_cost / flt(row.hours), 6) if flt(row.hours) else 0
+			row.costing_amount = row.custom_labour_cost
+			totals.normal += flt(row.custom_normal_hours)
+			totals.ot1 += flt(row.custom_ot1_hours)
+			totals.ot2 += flt(row.custom_ot2_hours)
+			totals.cost += row.custom_labour_cost
+			totals.ot_cost += row.custom_ot_cost
 
+	doc.custom_worker_type = types.pop() if len(types) == 1 else MIXED
+	doc.custom_manpower_supplier = suppliers.pop() if len(suppliers) == 1 else None
+	if not doc.get("employee") and doc.meta.has_field("title"):
+		doc.title = (
+			_("Crew: {0} employees").format(len(by_employee))
+			if len(by_employee) > 1
+			else (get_employee(next(iter(by_employee))) or {}).get("employee_name")
+		)
 	doc.custom_total_normal_hours = totals.normal
 	doc.custom_total_ot1_hours = totals.ot1
 	doc.custom_total_ot2_hours = totals.ot2
@@ -180,14 +223,54 @@ def calculate_timesheet(doc, method=None):
 	if doc.meta.has_field("base_total_costing_amount"):
 		doc.base_total_costing_amount = doc.total_costing_amount
 
-	if missing_rate:
+	if no_rate:
 		frappe.msgprint(
 			_(
 				"No cost rate for {0}. Fill the salary (own staff) or the Hourly Charge (outsourced) on the Employee under Manpower Costing."
-			).format(get_link_to_form("Employee", doc.employee)),
+			).format(", ".join(get_link_to_form("Employee", n) for n in no_rate)),
 			title=_("Labour Cost Missing"),
 			indicator="orange",
 		)
+
+
+def validate_employee_overlap(doc, method=None):
+	"""doc_event (Timesheet validate): an employee's rows may not overlap, on this Timesheet or another
+	(ERPNext checks the Timesheet's Employee only; on a crew Timesheet each row has its own)."""
+	if not frappe.get_meta("Timesheet Detail").has_field(ROW_EMPLOYEE):
+		return
+	if cint(frappe.db.get_single_value("Projects Settings", "ignore_employee_time_overlap")):
+		return
+	rows = [r for r in doc.get("time_logs") or [] if row_employee(doc, r) and r.from_time and r.to_time]
+	for i, row in enumerate(rows):
+		emp, start, end = row_employee(doc, row), get_datetime(row.from_time), get_datetime(row.to_time)
+		for other in rows[i + 1 :]:
+			if (
+				row_employee(doc, other) == emp
+				and start < get_datetime(other.to_time)
+				and get_datetime(other.from_time) < end
+			):
+				frappe.throw(
+					_("Rows {0} and {1}: the hours of {2} overlap.").format(row.idx, other.idx, emp),
+					title=_("Overlapping Hours"),
+				)
+		clash = frappe.db.sql(
+			f"""
+			SELECT ts.name FROM `tabTimesheet Detail` td
+			INNER JOIN `tabTimesheet` ts ON ts.name = td.parent
+			WHERE ts.docstatus < 2 AND ts.name != %(name)s
+				AND COALESCE(NULLIF(td.{ROW_EMPLOYEE}, ''), ts.employee) = %(emp)s
+				AND td.from_time < %(end)s AND td.to_time > %(start)s
+			LIMIT 1
+			""",
+			{"name": doc.name or "", "emp": emp, "start": start, "end": end},
+		)
+		if clash:
+			frappe.throw(
+				_("Row {0}: the hours of {1} overlap with Timesheet {2}.").format(
+					row.idx, emp, get_link_to_form("Timesheet", clash[0][0])
+				),
+				title=_("Overlapping Hours"),
+			)
 
 
 def on_timesheet_change(doc, method=None):
@@ -221,17 +304,31 @@ def labour_sql():
 			+ ", ".join(f"NULL AS {c.strip()}" for c in _COLUMNS.split(","))
 			+ " FROM DUAL WHERE 1 = 0"
 		)
-	return """
-		SELECT ts.name AS voucher, td.project, DATE(td.from_time) AS posting_date, ts.company,
-			IFNULL(NULLIF(ts.custom_worker_type, ''), 'Own Staff') AS worker_type,
-			ts.custom_manpower_supplier AS supplier, ts.employee, ts.employee_name, e.designation,
-			td.custom_item_group AS item_group, 1 AS no_of_workers,
-			SUM(IFNULL(td.custom_normal_hours, 0)) AS hours, SUM(IFNULL(td.custom_ot1_hours, 0)) AS ot_hours,
-			SUM(IFNULL(td.custom_ot2_hours, 0)) AS ot2_hours, SUM(IFNULL(td.custom_labour_cost, 0)) AS amount
-		FROM `tabTimesheet Detail` td
-		INNER JOIN `tabTimesheet` ts ON ts.name = td.parent
-		LEFT JOIN `tabEmployee` e ON e.name = ts.employee
-		WHERE ts.docstatus = 1 AND IFNULL(td.project, '') != ''
-		GROUP BY ts.name, td.project, DATE(td.from_time), td.custom_item_group, ts.company,
-			ts.custom_worker_type, ts.custom_manpower_supplier, ts.employee, ts.employee_name, e.designation
+	if frappe.db.has_column("Timesheet Detail", ROW_EMPLOYEE):
+		# crew Timesheets: each row has its own employee, worker type and agency
+		emp = f"COALESCE(NULLIF(td.{ROW_EMPLOYEE}, ''), ts.employee)"
+		wtype = "COALESCE(NULLIF(td.custom_worker_type, ''), NULLIF(ts.custom_worker_type, ''), 'Own Staff')"
+		supplier = "COALESCE(NULLIF(td.custom_manpower_supplier, ''), ts.custom_manpower_supplier)"
+	else:
+		emp, supplier = "ts.employee", "ts.custom_manpower_supplier"
+		wtype = "IFNULL(NULLIF(ts.custom_worker_type, ''), 'Own Staff')"
+	# row values first, then grouped by plain columns (MariaDB's ONLY_FULL_GROUP_BY)
+	return f"""
+		SELECT voucher, project, posting_date, company, worker_type, supplier, employee, employee_name,
+			designation, item_group, 1 AS no_of_workers, SUM(hours) AS hours, SUM(ot_hours) AS ot_hours,
+			SUM(ot2_hours) AS ot2_hours, SUM(amount) AS amount
+		FROM (
+			SELECT ts.name AS voucher, td.project, DATE(td.from_time) AS posting_date, ts.company,
+				{wtype} AS worker_type, {supplier} AS supplier, {emp} AS employee,
+				IFNULL(e.employee_name, ts.employee_name) AS employee_name, e.designation,
+				td.custom_item_group AS item_group,
+				IFNULL(td.custom_normal_hours, 0) AS hours, IFNULL(td.custom_ot1_hours, 0) AS ot_hours,
+				IFNULL(td.custom_ot2_hours, 0) AS ot2_hours, IFNULL(td.custom_labour_cost, 0) AS amount
+			FROM `tabTimesheet Detail` td
+			INNER JOIN `tabTimesheet` ts ON ts.name = td.parent
+			LEFT JOIN `tabEmployee` e ON e.name = {emp}
+			WHERE ts.docstatus = 1 AND IFNULL(td.project, '') != ''
+		) labour_rows
+		GROUP BY voucher, project, posting_date, company, worker_type, supplier, employee, employee_name,
+			designation, item_group
 	"""

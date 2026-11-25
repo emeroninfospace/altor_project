@@ -153,6 +153,18 @@ Lead, Quotation, Sales Order, Project and Site Visit are numbered by division, a
   items (quantity not yet on a submitted proforma), taxes and terms are filled from it. Also from the Sales Order:
   Create > Proforma Invoice. Submitted proformas of an order cannot exceed its total.
 
+### Crew Timesheet (several employees and projects on one Timesheet)
+
+A Timesheet is for one employee (Employee at the top, as in ERPNext) or for a crew: leave the Employee at the
+top empty and give each row its own **Employee** (row column; **Add Employees** adds a row per employee with
+the last row's project, activity, start and hours). Rows can be on different projects. Costing works per row
+employee (`labour.calculate_timesheet`): normal / OT 1 / OT 2 hours per employee per day, own staff from the
+salary, outsourced from the agency's hourly charge, each on its budget line; the Timesheet's Worker Type is
+"Mixed" when it holds both. Overlaps are checked per employee (`labour.validate_employee_overlap`, on this and
+other Timesheets); ERPNext's per-user overlap check is switched off (Projects Settings, by patch) because it
+would refuse a crew working the same hours. The labour figures, budget, Manpower Cost Summary and Employee
+Overtime read the row's employee.
+
 ### My Assignments (dashboard)
 
 The **My Work** workspace (first in the sidebar) and the top of the **Altor** workspace show the logged-in

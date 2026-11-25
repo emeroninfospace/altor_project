@@ -211,7 +211,10 @@ doc_events = {
 	},
 	# Timesheet labour cost: normal / OT 1 / OT 2 hours, own staff and outsourced
 	"Timesheet": {
-		"validate": "altor_project.labour.calculate_timesheet",
+		"validate": [
+			"altor_project.labour.calculate_timesheet",
+			"altor_project.labour.validate_employee_overlap",
+		],
 		"on_submit": "altor_project.labour.on_timesheet_change",
 		"on_cancel": "altor_project.labour.on_timesheet_change",
 	},
