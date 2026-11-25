@@ -110,5 +110,9 @@ def add_letter_head():
 				"is_default": 0,
 			}
 		).insert(ignore_permissions=True)
+		# the first letter head of a site is made the default; it must not be (it would print a
+		# second header above the ALTOR print formats on new documents)
+		frappe.db.set_value("Letter Head", LETTER_HEAD, "is_default", 0)
+		frappe.defaults.clear_default("letter_head")
 	except Exception:
 		frappe.log_error(title="ALTOR print formats: letter head")

@@ -102,6 +102,30 @@ def _image(name):
 		return "data:image/png;base64," + base64.b64encode(f.read()).decode()
 
 
+@lru_cache(maxsize=1)
+def font_css():
+	"""Carlito (metric twin of Calibri, the font of the client's templates; SIL OFL) embedded in the
+	page, so the PDF has the same letter widths on a server without Calibri. Latin subset only.
+	Written as "local(...), url(data:...)" so Frappe's PDF URL rewriting leaves it alone."""
+	faces = []
+	for weight, style, name in (
+		(400, "normal", "regular"),
+		(700, "normal", "bold"),
+		(400, "italic", "italic"),
+	):
+		path = frappe.get_app_path("altor_project", "public", "fonts", f"carlito-{name}.ttf")
+		if not os.path.exists(path):
+			continue
+		with open(path, "rb") as f:
+			data = base64.b64encode(f.read()).decode()
+		faces.append(
+			"@font-face { font-family: 'AltorCarlito'; "
+			f"src: local('Carlito'), url(data:font/truetype;base64,{data}) format('truetype'); "
+			f"font-weight: {weight}; font-style: {style}; }}"
+		)
+	return "\n".join(faces)
+
+
 def brand(doc=None):
 	"""Company details for the header, footer and bank block."""
 	company = (doc.get("company") if doc else None) or frappe.defaults.get_global_default("company")
@@ -270,7 +294,12 @@ def _foot_code(code):
 
 def _form(doc, title, subtitle, pages, header="standard", br=None):
 	return frappe._dict(
-		brand=br or brand(doc), title=_e(title), subtitle=_e(subtitle), header=header, pages=pages
+		fonts=font_css(),
+		brand=br or brand(doc),
+		title=_e(title),
+		subtitle=_e(subtitle),
+		header=header,
+		pages=pages,
 	)
 
 
