@@ -25,7 +25,7 @@ def _add(data, label, items, fieldnames=None, internal=None):
 
 
 def project(data):
-	_add(data, _("Budget & Manpower"), ["Project Budget", "Timesheet", "Daily Timesheet", "Expense Entry"])
+	_add(data, _("Budget & Manpower"), ["Project Budget", "Timesheet", "Expense Entry"])
 	_add(data, _("Planning"), ["Project Schedule"])
 	_add(data, _("Subcontract"), ["Subcontract Work Order", "Payment Certificate", "Subcontract Invoice"])
 	_add(data, _("Selling"), ["Quotation"], internal={"Quotation": "quotation"})
