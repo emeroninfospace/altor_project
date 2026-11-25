@@ -26,3 +26,4 @@ altor_project.patches.v2026_11.my_assignments_dashboard
 altor_project.patches.v2026_11.project_customer_from_sales_order
 altor_project.patches.v2026_11.crew_timesheet
 altor_project.patches.v2026_11.client_print_formats
+altor_project.patches.v2026_11.asset_stock_own_total_row

@@ -9,6 +9,9 @@ frappe.query_reports["Project Asset Stock"] = {
         { fieldname: "only_available", label: __("Only Available"), fieldtype: "Check", default: 0 },
     ],
     formatter(value, row, column, data, default_formatter) {
+        if (data && data.is_total_row) {
+            return column.fieldname === "item_code" ? `<b>${__("Total")}</b>` : `<b>${default_formatter(value, row, column, data)}</b>`;
+        }
         value = default_formatter(value, row, column, data);
         if (column.fieldname === "available" && data && flt(data.available) <= 0) value = `<span class="text-danger">${value}</span>`;
         return value;
