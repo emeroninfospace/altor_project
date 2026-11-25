@@ -1,0 +1,971 @@
+{
+ "po": {
+  "General Purchase": {
+   "subtitle": "GENERAL PURCHASE",
+   "commercial": [
+    [
+     "Delivery location",
+     "Site contact / phone"
+    ],
+    [
+     "Delivery / mobilization date",
+     "Payment terms"
+    ],
+    [
+     "Delivery / transport terms",
+     "Currency"
+    ],
+    [
+     "Delivery schedule",
+     "Required documents"
+    ],
+    [
+     "Warranty / service period",
+     "Acceptance criteria"
+    ],
+    [
+     "Scope / exclusions",
+     "Special conditions / attachment"
+    ],
+    [
+     "Delivery note requirements",
+     "Invoice submission email"
+    ],
+    [
+     "Partial delivery permitted?",
+     "Additional instructions"
+    ]
+   ],
+   "line_notes": [
+    "Enter freight or other agreed charges as separate line items."
+   ],
+   "acceptance": "This order includes the attached General PO Terms & Conditions (ALTOR-PROC-GPO-TC, Rev.01). Quote the PO number on all documents.",
+   "code": "ALTOR-PROC-GPO  |  Rev.01  |  Page 1 of 2   •   www.altor.ae",
+   "terms_intro": "These conditions form part of the purchase order. ALTOR means the buyer/hirer named on the order; Supplier means the named vendor.",
+   "terms": [
+    [
+     "Order acceptance",
+     "Confirm the PO in writing before supply. Special terms and approved attachments prevail over these conditions. Supplier terms apply only if ALTOR expressly accepts them in writing."
+    ],
+    [
+     "Prices & variations",
+     "Fixed rates cover the agreed scope, packing and delivery obligations, excluding applicable VAT. No substitutions, excess quantities, additional work or charges without written ALTOR approval."
+    ],
+    [
+     "Delivery & delays",
+     "Meet agreed dates and delivery terms; notify delays promptly. Provide a PO-referenced delivery note. Unless otherwise agreed, title and risk pass on delivery and acceptance. Delay damages apply only if stated in the PO."
+    ],
+    [
+     "Quality & compliance",
+     "Supply genuine, compliant, fit-for-purpose goods, new unless otherwise agreed; provide applicable certificates and safety data sheets. Services require competent personnel, applicable permits, insurance and site safety compliance."
+    ],
+    [
+     "Inspection & rejection",
+     "ALTOR may inspect before or after delivery. Receipt/payment is not final acceptance. Rectify or replace shortages, defects or rejected items at supplier cost, including collection and redelivery."
+    ],
+    [
+     "Invoice & payment",
+     "Quote the PO number; attach signed delivery note, approved receipt, service certificate or timesheet as applicable. Payment follows PO terms after valid invoice and supporting records; ALTOR may withhold disputed sums or offset documented amounts due."
+    ],
+    [
+     "Warranty & liability",
+     "Honour the agreed warranty and remedy defects at supplier cost. Each party is liable for direct losses caused by its breach or negligence, subject to law; supplier is responsible for third-party claims caused by its supply or misconduct."
+    ],
+    [
+     "Confidentiality & subcontracting",
+     "Protect ALTOR and client information; no disclosure except as legally required. No assignment or subcontracting without prior written ALTOR approval; supplier remains responsible."
+    ],
+    [
+     "Default & cancellation",
+     "ALTOR may terminate the affected balance for uncured material breach after written notice, or immediately for serious safety/legal breaches. Reasonable documented replacement costs may be recovered; pay only accepted supply and agreed unavoidable costs on convenience cancellation."
+    ],
+    [
+     "Force majeure",
+     "The affected party shall promptly notify the other in writing, provide evidence and mitigate delay. If performance is prevented for 30 days, either party may cancel the affected balance without penalty, subject to accrued obligations."
+    ],
+    [
+     "Ethics & compliance",
+     "Comply with applicable anti-bribery, sanctions, labour and trade laws; disclose conflicts of interest. No improper gifts or payments. ALTOR may suspend or terminate for serious compliance breaches. UAE law applies; unresolved disputes go to the competent courts of Abu Dhabi."
+    ]
+   ],
+   "terms_ack": "Supplier acknowledgment: acceptance of the PO includes acceptance of these conditions.",
+   "terms_code": "ALTOR-PROC-GPO-TC  |  Rev.01  |  Page 2 of 2   •   www.altor.ae"
+  },
+  "Asset Purchase": {
+   "subtitle": "ASSET PURCHASE",
+   "commercial": [
+    [
+     "Delivery location",
+     "Site contact / phone"
+    ],
+    [
+     "Delivery date",
+     "Payment terms"
+    ],
+    [
+     "Delivery / transport terms",
+     "Currency"
+    ],
+    [
+     "Asset condition (new / used)",
+     "Warranty duration / start event"
+    ],
+    [
+     "Testing / commissioning",
+     "Training / spares / support"
+    ],
+    [
+     "Required certificates / manuals",
+     "Payment milestones / attachment"
+    ],
+    [
+     "Asset class / specification ref.",
+     "Delivery / acceptance milestones"
+    ],
+    [
+     "Inspection location",
+     "Warranty response time"
+    ]
+   ],
+   "line_notes": [
+    "Enter freight or other agreed charges as separate line items."
+   ],
+   "acceptance": "This order includes the attached Asset PO Terms & Conditions (ALTOR-PROC-APO-TC, Rev.01). Quote the PO number on all documents.",
+   "code": "ALTOR-PROC-APO  |  Rev.01  |  Page 1 of 2   •   www.altor.ae",
+   "terms_intro": "These conditions form part of the purchase order. ALTOR means the buyer/hirer named on the order; Supplier means the named vendor.",
+   "terms": [
+    [
+     "Order & scope",
+     "Confirm the PO in writing. Special terms and approved attachments prevail. Supplier terms apply only if expressly accepted by ALTOR in writing; no deviations without written approval."
+    ],
+    [
+     "Specifications & condition",
+     "Supply the approved make, model, capacity, year and accessories. Assets shall be new and unused unless expressly stated otherwise. Disclose used-asset condition, operating hours, defects and service history before acceptance."
+    ],
+    [
+     "Price & delivery",
+     "Fixed prices cover agreed scope, excluding applicable VAT. Meet delivery schedule and packing/transport terms. Notify delays promptly; delay damages apply only if stated on the PO."
+    ],
+    [
+     "Inspection & acceptance",
+     "ALTOR may inspect before dispatch and at delivery. Final acceptance requires conformity, documents and agreed tests. Receipt or payment does not waive latent defects; rectify or replace rejected assets at supplier cost."
+    ],
+    [
+     "Documents & traceability",
+     "Supply serial/chassis or batch IDs, manufacturing year, applicable conformity/origin and inspection certificates, manuals, registration, service history and warranty documents."
+    ],
+    [
+     "Commissioning & training",
+     "Where included, complete installation, function/load tests and commissioning by competent personnel, with signed acceptance records and agreed operator/maintenance training."
+    ],
+    [
+     "Warranty & support",
+     "State warranty duration and start event; unless agreed otherwise, start at final acceptance. Supplier bears covered repair/replacement, labour, removal and transport costs. Rectified parts carry the agreed replacement warranty or remaining warranty, whichever is longer."
+    ],
+    [
+     "Title & risk",
+     "Supplier warrants clear title free from liens. Unless expressly agreed otherwise, title and risk pass on delivery and acceptance. Advance payments require agreed security/title arrangements where applicable."
+    ],
+    [
+     "Invoice & payment",
+     "Invoice against agreed milestones with PO reference, delivery/GRN, asset identification and acceptance evidence. ALTOR may withhold disputed sums or offset documented amounts due. Advance security/retention applies only if stated in PO."
+    ],
+    [
+     "Safety, insurance & liability",
+     "Meet applicable laws, site rules, permits and insurance requirements. Supplier is liable for direct loss and third-party claims caused by its defects, breach or negligence, subject to law."
+    ],
+    [
+     "Default & cancellation",
+     "ALTOR may reject or terminate for uncured material breach after written notice, or immediately for serious safety/legal breaches. Recover reasonable documented replacement costs; settle accepted supply and agreed unavoidable costs on convenience cancellation."
+    ],
+    [
+     "Force majeure",
+     "The affected party shall promptly notify the other in writing, provide evidence and mitigate delay. If performance is prevented for 30 days, either party may cancel the affected balance without penalty, subject to accrued obligations."
+    ],
+    [
+     "Ethics & confidentiality",
+     "No bribery, counterfeit goods or conflicts of interest; comply with applicable trade and labour laws. Protect client data; no assignment/subcontracting without written consent. UAE law applies; disputes go to competent Abu Dhabi courts."
+    ]
+   ],
+   "terms_ack": "Supplier acknowledgment: acceptance of the PO includes acceptance of these conditions.",
+   "terms_code": "ALTOR-PROC-APO-TC  |  Rev.01  |  Page 2 of 2   •   www.altor.ae"
+  },
+  "Cross Hire": {
+   "subtitle": "CROSS HIRE • MATERIALS & EQUIPMENT",
+   "commercial": [
+    [
+     "Delivery / hire location",
+     "Site contact / phone"
+    ],
+    [
+     "Delivery date",
+     "Payment terms"
+    ],
+    [
+     "Delivery / transport terms",
+     "Currency"
+    ],
+    [
+     "Est. hire from / to",
+     "Minimum hire / off-hire notice"
+    ],
+    [
+     "Collection / return party",
+     "Proration / billing cycle"
+    ],
+    [
+     "Mobilization / demobilization",
+     "Breakdown replacement time"
+    ],
+    [
+     "Operator / fuel / maintenance",
+     "Loading / unloading / installation"
+    ],
+    [
+     "Loss / damage rate schedule",
+     "Permitted sites / insurance scope"
+    ],
+    [
+     "Special conditions / attachment",
+     "Hire type / restrictions"
+    ]
+   ],
+   "line_notes": [
+    "Enter one-off charges on separate lines; select One-off as hire basis.",
+    "Estimated hire value only; invoices based on actual approved hire."
+   ],
+   "acceptance": "This order includes the attached Cross Hire PO Terms & Conditions (ALTOR-PROC-XHPO-TC, Rev.01). Quote the PO number on all documents.",
+   "code": "ALTOR-PROC-XHPO  |  Rev.01  |  Page 1 of 2   •   www.altor.ae",
+   "terms_intro": "These conditions form part of the purchase order. ALTOR means the buyer/hirer named on the order; Supplier means the named vendor.",
+   "terms": [
+    [
+     "Order & rates",
+     "Confirm in writing. Special terms and approved attachments prevail; supplier terms require express written ALTOR acceptance. Rates fixed for agreed scope/extensions unless revised in writing; VAT additional as applicable."
+    ],
+    [
+     "On-hire & acceptance",
+     "Hire starts per accepted quantity/unit on signed delivery or collection in serviceable condition; if commissioning is required, on signed commissioning acceptance. Rejected items and pre-acceptance time are not chargeable."
+    ],
+    [
+     "Duration & billing",
+     "Quantities/duration are indicative unless a minimum hire is expressly agreed. Bill actual accepted quantities and periods; use agreed day/week/month or hour basis and proration. Extensions and additional charges require written approval."
+    ],
+    [
+     "Off-hire & returns",
+     "For supplier collection, hire ends on effective written off-hire when items are ready for collection, subject to agreed notice/minimum hire. For ALTOR returns, hire ends on evidenced handover at agreed yard. Partial returns stop hire for those quantities."
+    ],
+    [
+     "Return verification",
+     "Record quantities, serials and condition jointly on delivery and return. Issue return acknowledgment promptly. Supplier counting delays do not extend hire where timely handover is evidenced."
+    ],
+    [
+     "Breakdown & replacement",
+     "Supplier maintains and repairs equipment and provides equivalent replacement within agreed response time. No hire for supplier-caused breakdown, unsafe condition or expired certification until restored/replaced, even during minimum hire. ALTOR-caused downtime remains chargeable."
+    ],
+    [
+     "Condition & certification",
+     "Supply compatible, safe, serviceable materials/equipment; provide current inspections, test certificates, manuals and permits as applicable. Maintain validity throughout hire; ALTOR may reject or stop unsafe items without hire liability."
+    ],
+    [
+     "Responsibilities & insurance",
+     "Allocate transport, loading, fuel, operators, installation and dismantling in PO. Supplier maintains applicable plant, personnel and liability insurance; provide evidence on request. Operators must be competent and licensed where required."
+    ],
+    [
+     "Loss & damage",
+     "ALTOR is liable for proven loss/damage attributable to its custody or misuse, excluding normal wear and pre-existing defects. Joint records, photos and agreed rates are required, net of salvage/insurance recovery. Hire on lost items stops on agreed settlement date; no double recovery."
+    ],
+    [
+     "Invoice & reconciliation",
+     "Quote PO number; attach delivery/return dockets, off-hire records, breakdown log, approved timesheets and monthly reconciliation as applicable. Pay as agreed; disputed amounts may be withheld and documented credits offset."
+    ],
+    [
+     "Deployment & liability",
+     "Supplier authorizes ALTOR to deploy items at agreed client sites, including approved sub-hire. No direct commercial dealings on this order with ALTOR's client without consent. Each party bears direct losses caused by its breach/negligence, subject to law."
+    ],
+    [
+     "Default & termination",
+     "ALTOR may suspend unsafe supply or terminate for uncured breach after notice, or immediately for serious safety/legal breach. Recover reasonable documented substitute costs; pay only accepted hire and expressly agreed charges. Off-hire rules govern termination."
+    ],
+    [
+     "Force majeure",
+     "The affected party shall promptly notify the other in writing, provide evidence and mitigate delay. If performance is prevented for 30 days, either party may cancel the affected balance without penalty, subject to accrued obligations."
+    ],
+    [
+     "Ethics & confidentiality",
+     "Comply with applicable anti-bribery, labour, trade and safety laws; disclose conflicts, protect client data and obtain consent before subcontracting. UAE law applies; unresolved disputes go to competent Abu Dhabi courts."
+    ]
+   ],
+   "terms_ack": "Supplier acknowledgment: acceptance of the PO includes acceptance of these conditions.",
+   "terms_code": "ALTOR-PROC-XHPO-TC  |  Rev.01  |  Page 2 of 2   •   www.altor.ae"
+  }
+ },
+ "dn": {
+  "Trading DN": {
+   "subtitle": "TRADING / GOODS SUPPLY",
+   "rows": [
+    [
+     "Customer / company",
+     "Delivery note no."
+    ],
+    [
+     "Delivery address / site",
+     "Dispatch date"
+    ],
+    [
+     "Project / job reference",
+     "Client PO / contract"
+    ],
+    [
+     "Site contact / phone",
+     "Sales order / job order"
+    ],
+    [
+     "Division",
+     "Dispatch from / warehouse"
+    ],
+    [
+     "Requested by / attention",
+     "Issue reference"
+    ],
+    [
+     "Vehicle / driver",
+     "Delivery time / trip ref."
+    ],
+    [
+     "Customer delivery schedule",
+     "Delivery status"
+    ],
+    [
+     "Packing / shipment ref.",
+     "Related previous DN"
+    ]
+   ],
+   "serial_label": "Batch / serial / model",
+   "qty_note": "Qty = dispatched quantity. Record actual received quantity if different, plus any shortage, excess, rejection or damage, in Remarks.",
+   "conditions": [
+    "Receiver must verify quantities and apparent condition at delivery; record shortages, excess, rejection or damage in Remarks before signing.",
+    "Receipt is not final quality acceptance and does not waive latent-defect or contractual rights. This document is not a tax invoice."
+   ],
+   "sign": [
+    "ISSUED BY / ALTOR",
+    "DELIVERED BY / DRIVER",
+    "RECEIVED BY / CUSTOMER OR SITE"
+   ],
+   "sign_note": "Receipt acknowledged, subject to exceptions recorded above.",
+   "code": "ALTOR  |  Delivery Note  |  Rev.01",
+   "copies": "Original: Receiver  /  Copy: ALTOR"
+  },
+  "Own Asset - Contract": {
+   "subtitle": "CONTRACT SUPPLY",
+   "rows": [
+    [
+     "Customer / company",
+     "Delivery note no."
+    ],
+    [
+     "Delivery address / site",
+     "Dispatch date"
+    ],
+    [
+     "Project / job reference",
+     "Client PO / contract"
+    ],
+    [
+     "Site contact / phone",
+     "Sales order / job order"
+    ],
+    [
+     "Division",
+     "Dispatch from / warehouse"
+    ],
+    [
+     "Requested by / attention",
+     "Issue reference"
+    ],
+    [
+     "Vehicle / driver",
+     "Delivery time / trip ref."
+    ],
+    [
+     "Work package / area",
+     "Delivery status"
+    ],
+    [
+     "Expected return / review date",
+     "Mobilisation reference"
+    ]
+   ],
+   "serial_label": "Batch / serial / asset ID",
+   "qty_note": "Qty = dispatched quantity. Record actual received quantity if different, plus any shortage, excess, rejection or damage, in Remarks.",
+   "conditions": [
+    "Issued solely for the stated contract works; title remains with the owner. Receipt confirms custody only, not work certification or rental commencement.",
+    "No unauthorized relocation, alteration or disposal. Report loss, damage or defects promptly; returns/transfers require an authorized note. Equipment must be cleared for safe use where applicable."
+   ],
+   "sign": [
+    "ISSUED BY / ALTOR",
+    "DELIVERED BY / DRIVER",
+    "RECEIVED BY / CUSTOMER OR SITE"
+   ],
+   "sign_note": "Receipt acknowledged, subject to exceptions recorded above.",
+   "code": "ALTOR  |  Delivery Note  |  Rev.01",
+   "copies": "Original: Receiver  /  Copy: ALTOR"
+  },
+  "Own Asset - Hire": {
+   "subtitle": "RENTAL SUPPLY",
+   "rows": [
+    [
+     "Customer / company",
+     "Delivery note no."
+    ],
+    [
+     "Delivery address / site",
+     "Dispatch date"
+    ],
+    [
+     "Project / job reference",
+     "Client PO / contract"
+    ],
+    [
+     "Site contact / phone",
+     "Sales order / job order"
+    ],
+    [
+     "Division",
+     "Dispatch from / warehouse"
+    ],
+    [
+     "Requested by / attention",
+     "Issue reference"
+    ],
+    [
+     "Vehicle / driver",
+     "Delivery time / trip ref."
+    ],
+    [
+     "Agreed on-hire date (if known)",
+     "Delivery status"
+    ],
+    [
+     "Hire agreement / schedule",
+     "Hire start basis"
+    ]
+   ],
+   "serial_label": "Batch / serial / asset ID",
+   "qty_note": "Qty = dispatched quantity. Record actual received quantity if different, plus any shortage, excess, rejection or damage, in Remarks.",
+   "conditions": [
+    "Title remains with the owner. Hire starts on the agreed contractual basis for accepted quantities; delivery alone does not confirm commissioning or off-hire.",
+    "Protect materials/equipment; no unauthorized transfer or alteration. Report loss, damage or breakdown promptly. Off-hire and return require separate written records; charges follow the hire agreement."
+   ],
+   "sign": [
+    "ISSUED BY / ALTOR",
+    "DELIVERED BY / DRIVER",
+    "RECEIVED BY / CUSTOMER OR SITE"
+   ],
+   "sign_note": "Receipt acknowledged, subject to exceptions recorded above.",
+   "code": "ALTOR  |  Delivery Note  |  Rev.01",
+   "copies": "Original: Receiver  /  Copy: ALTOR"
+  },
+  "Cross Hire - Contract": {
+   "subtitle": "CONTRACT SUPPLY",
+   "rows": [
+    [
+     "Customer / company",
+     "Delivery note no."
+    ],
+    [
+     "Delivery address / site",
+     "Dispatch date"
+    ],
+    [
+     "Project / job reference",
+     "Client PO / contract"
+    ],
+    [
+     "Site contact / phone",
+     "Sales order / job order"
+    ],
+    [
+     "Division",
+     "Dispatch location"
+    ],
+    [
+     "Requested by / attention",
+     "Issue reference"
+    ],
+    [
+     "Vehicle / driver",
+     "Delivery time / trip ref."
+    ],
+    [
+     "Work package / area",
+     "Delivery status"
+    ],
+    [
+     "Expected return / review date",
+     "Mobilisation reference"
+    ]
+   ],
+   "serial_label": "Batch / serial / asset ID",
+   "qty_note": "Qty = dispatched quantity. Record actual received quantity if different, plus any shortage, excess, rejection or damage, in Remarks.",
+   "conditions": [
+    "Issued solely for the stated contract works; title remains with the owner. Receipt confirms custody only, not work certification or rental commencement.",
+    "No unauthorized relocation, alteration or disposal. Report loss, damage or defects promptly; returns/transfers require an authorized note. Equipment must be cleared for safe use where applicable."
+   ],
+   "sign": [
+    "ISSUED BY / ALTOR",
+    "DELIVERED BY / DRIVER",
+    "RECEIVED BY / CUSTOMER OR SITE"
+   ],
+   "sign_note": "Receipt acknowledged, subject to exceptions recorded above.",
+   "code": "ALTOR  |  Delivery Note  |  Rev.01",
+   "copies": "Original: Receiver  /  Copy: ALTOR"
+  },
+  "Cross Hire - Hire": {
+   "subtitle": "RENTAL SUPPLY",
+   "rows": [
+    [
+     "Customer / company",
+     "Delivery note no."
+    ],
+    [
+     "Delivery address / site",
+     "Dispatch date"
+    ],
+    [
+     "Project / job reference",
+     "Client PO / contract"
+    ],
+    [
+     "Site contact / phone",
+     "Sales order / job order"
+    ],
+    [
+     "Division",
+     "Dispatch location"
+    ],
+    [
+     "Requested by / attention",
+     "Issue reference"
+    ],
+    [
+     "Vehicle / driver",
+     "Delivery time / trip ref."
+    ],
+    [
+     "Agreed on-hire date (if known)",
+     "Delivery status"
+    ],
+    [
+     "Hire agreement / schedule",
+     "Hire start basis"
+    ]
+   ],
+   "serial_label": "Batch / serial / asset ID",
+   "qty_note": "Qty = dispatched quantity. Record actual received quantity if different, plus any shortage, excess, rejection or damage, in Remarks.",
+   "conditions": [
+    "Title remains with the owner. Hire starts on the agreed contractual basis for accepted quantities; delivery alone does not confirm commissioning or off-hire.",
+    "Protect materials/equipment; no unauthorized transfer or alteration. Report loss, damage or breakdown promptly. Off-hire and return require separate written records; charges follow the hire agreement."
+   ],
+   "sign": [
+    "ISSUED BY / ALTOR",
+    "DELIVERED BY / DRIVER",
+    "RECEIVED BY / CUSTOMER OR SITE"
+   ],
+   "sign_note": "Receipt acknowledged, subject to exceptions recorded above.",
+   "code": "ALTOR  |  Delivery Note  |  Rev.01",
+   "copies": "Original: Receiver  /  Copy: ALTOR"
+  }
+ },
+ "rn": {
+  "Own Asset - Contract": {
+   "subtitle": "CONTRACT RETURN",
+   "section1": "01  /  RETURN & PROJECT DETAILS",
+   "rows": [
+    [
+     "Customer / company",
+     "Return note no."
+    ],
+    [
+     "Return from / project site",
+     "Return dispatch date"
+    ],
+    [
+     "Project / job reference",
+     "Client PO / contract"
+    ],
+    [
+     "Site contact / phone",
+     "Original delivery note(s)"
+    ],
+    [
+     "Division",
+     "Return to / warehouse"
+    ],
+    [
+     "Returned by / attention",
+     "Return authorization ref."
+    ],
+    [
+     "Vehicle / driver",
+     "Trip / collection ref."
+    ],
+    [
+     "Work package / area",
+     "Return status"
+    ],
+    [
+     "Return reason",
+     "Inspection / receipt ref."
+    ]
+   ],
+   "serial_label": "Batch / serial / model",
+   "qty_note": "Qty = quantity sent for return. Record actual quantity received if different, shortage, rejection, damage or missing accessories in Remarks.",
+   "conditions": [
+    "Verify quantity, identification and apparent condition jointly at receipt; record discrepancies and missing accessories before signing. Normal wear and tear is distinguished from damage.",
+    "Return closes site custody only for accepted quantities; outstanding items remain allocated until reconciled. This is not a work completion certificate.",
+    "Segregate damaged or unsafe items for inspection; no disposal, repair or reissue without authorization."
+   ],
+   "sign": [
+    "RELEASED BY / SITE",
+    "TRANSPORTED BY / DRIVER",
+    "RECEIVED BY / ALTOR"
+   ],
+   "sign_note": "Receipt acknowledged subject to the exceptions recorded above.",
+   "code": "ALTOR  |  Return Note  |  Rev.00",
+   "copies": "Original: Receiver  /  Copy: Sender"
+  },
+  "Own Asset - Hire": {
+   "subtitle": "RENTAL RETURN",
+   "section1": "01  /  RETURN & PROJECT DETAILS",
+   "rows": [
+    [
+     "Customer / company",
+     "Return note no."
+    ],
+    [
+     "Return from / project site",
+     "Return dispatch date"
+    ],
+    [
+     "Project / job reference",
+     "Client PO / contract"
+    ],
+    [
+     "Site contact / phone",
+     "Original delivery note(s)"
+    ],
+    [
+     "Division",
+     "Return to / warehouse"
+    ],
+    [
+     "Returned by / attention",
+     "Return authorization ref."
+    ],
+    [
+     "Vehicle / driver",
+     "Trip / collection ref."
+    ],
+    [
+     "Hire agreement / schedule",
+     "Return status"
+    ],
+    [
+     "Customer off-hire notice ref.",
+     "Agreed off-hire date / time"
+    ]
+   ],
+   "serial_label": "Batch / serial / asset ID",
+   "qty_note": "Qty = quantity sent for return. Record actual quantity received if different, shortage, rejection, damage or missing accessories in Remarks.",
+   "conditions": [
+    "Verify quantity, identification and apparent condition jointly at receipt; record discrepancies and missing accessories before signing. Normal wear and tear is distinguished from damage.",
+    "Return does not automatically establish the customer off-hire date; rental ceases for the agreed quantities and dates under the hire agreement. Partial returns leave the balance on hire.",
+    "Receipt is subject to final inspection; any loss or damage is assessed under the agreement. Unsafe items shall be isolated."
+   ],
+   "sign": [
+    "RELEASED BY / SITE",
+    "TRANSPORTED BY / DRIVER",
+    "RECEIVED BY / ALTOR"
+   ],
+   "sign_note": "Receipt acknowledged subject to the exceptions recorded above.",
+   "code": "ALTOR  |  Return Note  |  Rev.00",
+   "copies": "Original: Receiver  /  Copy: Sender"
+  },
+  "Cross Hire - Contract": {
+   "subtitle": "CONTRACT RETURN",
+   "section1": "01  /  RETURN & PROJECT DETAILS",
+   "rows": [
+    [
+     "Customer / company",
+     "Return note no."
+    ],
+    [
+     "Return from / project site",
+     "Return dispatch date"
+    ],
+    [
+     "Project / job reference",
+     "Client PO / contract"
+    ],
+    [
+     "Site contact / phone",
+     "Original delivery note(s)"
+    ],
+    [
+     "Division",
+     "Return to / warehouse"
+    ],
+    [
+     "Returned by / attention",
+     "Return authorization ref."
+    ],
+    [
+     "Vehicle / driver",
+     "Trip / collection ref."
+    ],
+    [
+     "Work package / area",
+     "Return status"
+    ],
+    [
+     "Return reason",
+     "Inspection / receipt ref."
+    ]
+   ],
+   "serial_label": "Batch / serial / asset ID",
+   "qty_note": "Qty = quantity sent for return. Record actual quantity received if different, shortage, rejection, damage or missing accessories in Remarks.",
+   "conditions": [
+    "Verify quantity, identification and apparent condition jointly at receipt; record discrepancies and missing accessories before signing. Normal wear and tear is distinguished from damage.",
+    "Return closes site custody only for accepted quantities; outstanding items remain allocated until reconciled. This is not a work completion certificate.",
+    "Segregate damaged or unsafe items for inspection; no disposal, repair or reissue without authorization."
+   ],
+   "sign": [
+    "RELEASED BY / SITE",
+    "TRANSPORTED BY / DRIVER",
+    "RECEIVED BY / ALTOR"
+   ],
+   "sign_note": "Receipt acknowledged subject to the exceptions recorded above.",
+   "code": "ALTOR  |  Return Note  |  Rev.00",
+   "copies": "Original: Receiver  /  Copy: Sender"
+  },
+  "Cross Hire - Hire": {
+   "subtitle": "RENTAL RETURN",
+   "section1": "01  /  RETURN & PROJECT DETAILS",
+   "rows": [
+    [
+     "Customer / company",
+     "Return note no."
+    ],
+    [
+     "Return from / project site",
+     "Return dispatch date"
+    ],
+    [
+     "Project / job reference",
+     "Client PO / contract"
+    ],
+    [
+     "Site contact / phone",
+     "Original delivery note(s)"
+    ],
+    [
+     "Division",
+     "Return to / warehouse"
+    ],
+    [
+     "Returned by / attention",
+     "Return authorization ref."
+    ],
+    [
+     "Vehicle / driver",
+     "Trip / collection ref."
+    ],
+    [
+     "Hire agreement / schedule",
+     "Return status"
+    ],
+    [
+     "Customer off-hire notice ref.",
+     "Agreed off-hire date / time"
+    ]
+   ],
+   "serial_label": "Batch / serial / asset ID",
+   "qty_note": "Qty = quantity sent for return. Record actual quantity received if different, shortage, rejection, damage or missing accessories in Remarks.",
+   "conditions": [
+    "Verify quantity, identification and apparent condition jointly at receipt; record discrepancies and missing accessories before signing. Normal wear and tear is distinguished from damage.",
+    "Return does not automatically establish the customer off-hire date; rental ceases for the agreed quantities and dates under the hire agreement. Partial returns leave the balance on hire.",
+    "Receipt is subject to final inspection; any loss or damage is assessed under the agreement. Unsafe items shall be isolated."
+   ],
+   "sign": [
+    "RELEASED BY / SITE",
+    "TRANSPORTED BY / DRIVER",
+    "RECEIVED BY / ALTOR"
+   ],
+   "sign_note": "Receipt acknowledged subject to the exceptions recorded above.",
+   "code": "ALTOR  |  Return Note  |  Rev.00",
+   "copies": "Original: Receiver  /  Copy: Sender"
+  },
+  "Return to Supplier": {
+   "subtitle": "SUPPLIER RETURN",
+   "section1": "01  /  RETURN & SUPPLIER DETAILS",
+   "rows": [
+    [
+     "Supplier / company",
+     "Return note no."
+    ],
+    [
+     "Supplier return location",
+     "Return dispatch date"
+    ],
+    [
+     "Dispatch from / ALTOR yard",
+     "Supplier PO / hire agreement"
+    ],
+    [
+     "Supplier contact / phone",
+     "Supplier DN / inward GRN"
+    ],
+    [
+     "Division",
+     "Return authorization ref."
+    ],
+    [
+     "Returned by / attention",
+     "Site return note ref."
+    ],
+    [
+     "Vehicle / driver",
+     "Trip / collection ref."
+    ],
+    [
+     "Supplier off-hire notice ref.",
+     "Return status"
+    ],
+    [
+     "Return reason",
+     "Agreed supplier off-hire date"
+    ]
+   ],
+   "serial_label": "Batch / serial / asset ID",
+   "qty_note": "Qty = quantity sent for return. Record actual quantity received if different, shortage, rejection, damage or missing accessories in Remarks.",
+   "conditions": [
+    "Verify quantity, identification and apparent condition jointly at receipt; record discrepancies and missing accessories before signing. Normal wear and tear is distinguished from damage.",
+    "Supplier to acknowledge the return with a dated receipt. Supplier hire ends in accordance with the hire PO; receipt does not confirm acceptance of damage charges.",
+    "Any loss/damage claim must be supported by evidence and agreed rates; reconcile outstanding quantities separately."
+   ],
+   "sign": [
+    "RETURNED BY / ALTOR",
+    "TRANSPORTED BY / DRIVER",
+    "RECEIVED BY / SUPPLIER"
+   ],
+   "sign_note": "Receipt acknowledged subject to the exceptions recorded above.",
+   "code": "ALTOR  |  Return Note  |  Rev.00",
+   "copies": "Original: Receiver  /  Copy: Sender"
+  }
+ },
+ "sco": {
+  "subtitle": "Works & services procurement",
+  "order_note": "Order value is before retention and advance recovery. Quantities are subject to the agreed pricing basis. VAT applies only where legally chargeable.",
+  "documents": "Scope and Responsibilities (Annex A) and Terms and Conditions (Annex B) form part of this order. Special conditions / approved attachments:",
+  "code": "ALTOR-SCO-F01  •  Rev.00  |  Your Access Needs. Our Expertise.",
+  "annex_a_subtitle": "Annex A  •  Subcontract order",
+  "annex_a_fields": [
+   "Detailed scope / deliverables",
+   "Exclusions / interfaces",
+   "Drawings / specifications / approved method statements",
+   "Milestones / acceptance criteria"
+  ],
+  "matrix": [
+   "Design / engineering / calculations",
+   "Material, tools and equipment",
+   "Mobilization / demobilization / transport",
+   "Competent workforce & supervision",
+   "PPE / training / statutory certificates",
+   "Access, permits & workfront readiness",
+   "Power / utilities / lifting arrangements",
+   "Inspection, testing & handover",
+   "Accommodation / welfare / logistics",
+   "Housekeeping & waste removal",
+   "Protection / loss / damage / storage"
+  ],
+  "matrix_note": "Note: Allocation must be agreed in writing. Shared responsibilities require clear boundaries; site approvals do not relieve the subcontractor of its statutory obligations.",
+  "annex_a_code": "ALTOR-SCO-F01-A  •  Rev.00  |  Your Access Needs. Our Expertise.",
+  "annex_b_subtitle": "Annex B  •  Subcontract order",
+  "terms_title": "STANDARD SUBCONTRACT CONDITIONS  |  Rev.00",
+  "terms": [
+   [
+    "Acceptance & precedence",
+    "Acceptance shall be in writing or by commencing work. The signed order, agreed special conditions, scope and these terms prevail over subcontractor quotations unless expressly incorporated. Changes require authorized written approval."
+   ],
+   [
+    "Scope & performance",
+    "Execute the agreed scope with competent supervision, adequate resources and approved methods. Confirm exclusions, interfaces and deliverables before mobilization. No further subcontracting without ALTOR’s written approval."
+   ],
+   [
+    "Programme & delays",
+    "Meet agreed mobilization, milestone and completion dates. Notify ALTOR promptly of delays and mitigate their effects. Delay damages apply only at the agreed rate and cap stated in the order, subject to applicable law."
+   ],
+   [
+    "Rates & variations",
+    "Rates are fixed for the agreed scope and include allocated resources and expenses, excluding legally chargeable VAT. Extras, overtime, standby and changes require prior written approval of scope, rate and time impact."
+   ],
+   [
+    "Measurement & certification",
+    "Payment quantities shall be based on jointly verified measurements, approved timesheets or completed milestones, as applicable. Certification does not waive quality, defect or contractual rights."
+   ],
+   [
+    "Invoices & payment",
+    "Submit valid invoices quoting the order reference, supported by certified progress, timesheets or delivery records as applicable. Payment follows agreed terms; ALTOR may withhold disputed amounts and recover documented sums due, subject to law."
+   ],
+   [
+    "Advance, retention & security",
+    "Any advance, recovery schedule, retention, release milestones and performance or advance security shall be expressly agreed in writing. No deduction shall be made twice for the same liability."
+   ],
+   [
+    "Personnel & statutory obligations",
+    "The subcontractor is responsible for lawful employment, permits, wages, welfare, competent personnel and agreed PPE. Replace unqualified or unsuitable personnel promptly at its cost."
+   ],
+   [
+    "Quality, HSE & site rules",
+    "Comply with applicable law, approved specifications, method statements and site HSE rules. Provide required certificates, risk assessments and inspections; immediately report incidents. ALTOR may stop unsafe work."
+   ],
+   [
+    "Inspection & defects",
+    "ALTOR may inspect and reject nonconforming work. Rectify defects promptly at subcontractor cost during execution and the agreed defects period. If not remedied after notice, ALTOR may arrange rectification and recover reasonable documented costs."
+   ],
+   [
+    "Materials, equipment & custody",
+    "Maintain and protect assigned materials, equipment and property. Record receipt, transfer and return; report loss or damage promptly. No unauthorized removal, substitution or modification."
+   ],
+   [
+    "Insurance & liability",
+    "Maintain legally required and agreed insurance and provide evidence before mobilization. The subcontractor is responsible for documented losses and third-party claims attributable to its breach, negligence or misconduct, subject to applicable law."
+   ],
+   [
+    "Confidentiality & ethics",
+    "Protect ALTOR and client information; comply with applicable anti-bribery, labour and trade-control laws. No unauthorized direct commercial dealings relating to this order with ALTOR’s client."
+   ],
+   [
+    "Suspension & termination",
+    "ALTOR may suspend work by written notice or terminate for material default after a reasonable cure period; serious safety or unlawful conduct may require immediate action. Convenience termination requires reasonable written notice; settle accepted work and agreed unavoidable costs, less valid recoveries."
+   ],
+   [
+    "Force majeure",
+    "Notify the other party promptly of events beyond reasonable control, provide evidence and mitigate impact. Agree time or other relief in writing; either party may terminate if prevention continues beyond an agreed period or 30 days if none is stated."
+   ],
+   [
+    "Handover & final account",
+    "Submit required inspection records, as-built documents, certificates and final measurements where applicable. Reconcile advances, retention, materials and approved variations before final settlement. Surviving warranty obligations remain effective."
+   ],
+   [
+    "Law & disputes",
+    "The order is governed by applicable UAE law. Seek amicable resolution first; unresolved disputes shall be referred to the competent courts of Abu Dhabi unless another forum is expressly agreed in writing."
+   ]
+  ],
+  "annex_b_code": "ALTOR-SCO-F01-B  •  Rev.00  |  Your Access Needs. Our Expertise."
+ },
+ "invoice": {
+  "remit_note": "Please quote the invoice number on your remittance.",
+  "thanks": "Thank you for your business."
+ }
+}

@@ -14,7 +14,21 @@
   "column_break_main",
   "delivery_date",
   "delivery_ref",
+  "delivery_type",
   "status",
+  "delivery_note_section",
+  "vehicle_driver",
+  "requested_by",
+  "site_contact",
+  "dispatch_from",
+  "trip_ref",
+  "column_break_dn",
+  "work_package",
+  "expected_return_date",
+  "mobilisation_ref",
+  "on_hire_date",
+  "hire_agreement",
+  "hire_start_basis",
   "items_section",
   "items",
   "totals_section",
@@ -101,6 +115,14 @@
    "label": "Delivery Note / Gate Pass No."
   },
   {
+   "fieldname": "delivery_type",
+   "fieldtype": "Select",
+   "label": "Delivery Note Type",
+   "options": "Own Asset - Contract\nOwn Asset - Hire\nCross Hire - Contract\nCross Hire - Hire",
+   "default": "Own Asset - Contract",
+   "description": "Chooses the printed delivery note layout and conditions"
+  },
+  {
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
@@ -111,6 +133,77 @@
    "allow_on_submit": 1,
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "delivery_note_section",
+   "fieldtype": "Section Break",
+   "label": "Delivery Note Details",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "vehicle_driver",
+   "fieldtype": "Data",
+   "label": "Vehicle / Driver"
+  },
+  {
+   "fieldname": "requested_by",
+   "fieldtype": "Data",
+   "label": "Requested By / Attention"
+  },
+  {
+   "fieldname": "site_contact",
+   "fieldtype": "Data",
+   "label": "Site Contact / Phone"
+  },
+  {
+   "fieldname": "dispatch_from",
+   "fieldtype": "Data",
+   "label": "Dispatch From / Warehouse"
+  },
+  {
+   "fieldname": "trip_ref",
+   "fieldtype": "Data",
+   "label": "Delivery Time / Trip Ref."
+  },
+  {
+   "fieldname": "column_break_dn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "work_package",
+   "fieldtype": "Data",
+   "label": "Work Package / Area",
+   "depends_on": "eval:in_list([\"Own Asset - Contract\", \"Cross Hire - Contract\"], doc.delivery_type)"
+  },
+  {
+   "fieldname": "expected_return_date",
+   "fieldtype": "Date",
+   "label": "Expected Return / Review Date",
+   "depends_on": "eval:in_list([\"Own Asset - Contract\", \"Cross Hire - Contract\"], doc.delivery_type)"
+  },
+  {
+   "fieldname": "mobilisation_ref",
+   "fieldtype": "Data",
+   "label": "Mobilisation Reference",
+   "depends_on": "eval:in_list([\"Own Asset - Contract\", \"Cross Hire - Contract\"], doc.delivery_type)"
+  },
+  {
+   "fieldname": "on_hire_date",
+   "fieldtype": "Date",
+   "label": "Agreed On-hire Date",
+   "depends_on": "eval:in_list([\"Own Asset - Hire\", \"Cross Hire - Hire\"], doc.delivery_type)"
+  },
+  {
+   "fieldname": "hire_agreement",
+   "fieldtype": "Data",
+   "label": "Hire Agreement / Schedule",
+   "depends_on": "eval:in_list([\"Own Asset - Hire\", \"Cross Hire - Hire\"], doc.delivery_type)"
+  },
+  {
+   "fieldname": "hire_start_basis",
+   "fieldtype": "Data",
+   "label": "Hire Start Basis",
+   "depends_on": "eval:in_list([\"Own Asset - Hire\", \"Cross Hire - Hire\"], doc.delivery_type)"
   },
   {
    "fieldname": "items_section",
@@ -217,7 +310,7 @@
    "link_fieldname": "asset_allocation"
   }
  ],
- "modified": "2026-11-16 10:00:00.000000",
+ "modified": "2026-11-25 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Asset Allocation",

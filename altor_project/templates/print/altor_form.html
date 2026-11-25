@@ -1,0 +1,298 @@
+{#-
+  ALTOR document layout (client print designs, 2026): renders the form that
+  altor_project.print_forms builds (altor_print_form). Every value arrives escaped,
+  so it is printed as is. Tables only (no flex / grid) so wkhtmltopdf PDFs match the preview.
+  Usage in a print format:
+    {% import "altor_project/templates/print/altor_form.html" as af with context %}
+    {{ af.render(altor_print_form(doc, "purchase_order")) }}
+-#}
+
+{%- macro styles() -%}
+<style>
+  .af { font-family: Calibri, Carlito, "Segoe UI", "Helvetica Neue", Arial, sans-serif; font-size: 8.6pt; color: #172c40; line-height: 1.32; }
+  .af * { box-sizing: border-box; }
+  .af table { width: 100%; border-collapse: collapse; font-size: inherit; color: inherit; }
+  .af td, .af th { font-size: inherit; vertical-align: top; }
+  .af .r { text-align: right; } .af .c { text-align: center; } .af .nw { white-space: nowrap; }
+  .af .b { font-weight: 700; } .af .mu { color: #5b6d7e; } .af .it { font-style: italic; }
+  .af-break { page-break-before: always; }
+  .af-page { position: relative; }
+  .af-wm { position: absolute; left: 22%; top: 280px; width: 56%; opacity: 1; z-index: 0; }
+  .af-page > * { position: relative; z-index: 1; }
+  /* header */
+  .af-hd td { vertical-align: bottom; padding: 0; }
+  .af-hd .logo img { height: 50px; }
+  .af-hd .ttl { text-align: right; }
+  .af-hd .ttl .t { font-size: 17pt; font-weight: 700; color: #082f52; letter-spacing: .3px; line-height: 1.05; }
+  .af-hd .ttl .s { font-size: 7.2pt; font-weight: 700; color: #082f52; text-transform: uppercase; letter-spacing: .4px; margin-top: 4px; }
+  .af-hd .ttl .tag { font-size: 7.4pt; font-style: italic; color: #17528b; margin-top: 2px; }
+  .af-hd .co-r { text-align: right; font-size: 7.6pt; color: #18344c; line-height: 1.4; }
+  .af-gold { height: 2.5px; background: #f2b300; margin: 5px 0 6px; }
+  .af-co { font-size: 7.8pt; color: #18344c; line-height: 1.45; margin-bottom: 4px; }
+  .af-co .n { font-weight: 700; color: #082f52; font-size: 8.6pt; }
+  .af-co .trn td { padding: 2px 0; }
+  .af-co .trn td.k { width: 17%; font-weight: 700; font-size: 7pt; color: #18344c; }
+  .af-co .trn td.v { width: 26%; background: #eaf2f8; }
+  .af-tagl { font-size: 7pt; font-weight: 700; color: #082f52; letter-spacing: .3px; text-transform: uppercase; }
+  .af-titleband { background: #082f52; color: #fff; text-align: center; font-weight: 700; font-size: 9.5pt; letter-spacing: .4px; padding: 4px; margin: 6px 0 8px; }
+  /* band header (timesheet / payslip) */
+  .af-bandhd { background: #082f52; }
+  .af-bandhd td { vertical-align: middle; padding: 8px 12px; color: #fff; }
+  .af-bandhd img { height: 46px; }
+  .af-bandhd .n { font-size: 9.5pt; font-weight: 700; letter-spacing: .3px; text-align: center; }
+  .af-bandhd .t { font-size: 15pt; font-weight: 700; text-align: center; margin-top: 3px; }
+  .af-bandhd + .af-gold { margin-top: 0; }
+  /* section bands */
+  .af-sec { margin-top: 7px; page-break-inside: avoid; }
+  .af-sec.flow { page-break-inside: auto; }
+  .af-band { background: #082f52; color: #fff; font-weight: 700; font-size: 7.6pt; letter-spacing: .3px; text-transform: uppercase; padding: 3.5px 6px; }
+  .af-band td { padding: 0; color: #fff; }
+  /* label / value grid */
+  .af-grid { table-layout: fixed; }
+  .af-grid td { padding: 3px 6px; border-bottom: 1.5px solid #fff; font-size: 7.9pt; }
+  .af-grid td.k { color: #18344c; font-weight: 700; font-size: 7.2pt; width: 17%; background: #f5f8fa; }
+  .af-grid td.v { width: 33%; background: #eaf2f8; color: #172c40; }
+  .af-grid td.gap { width: 1%; background: #fff; padding: 0; }
+  .af-grid.w4 td.k { width: 18%; } .af-grid.w4 td.v { width: 31%; }
+  /* item tables */
+  .af-items thead { display: table-header-group; }
+  .af-items th { background: #082f52; color: #fff; font-weight: 700; font-size: 7.3pt; padding: 4px 5px; text-align: left; vertical-align: middle; }
+  .af-items th.r { text-align: right; } .af-items th.c { text-align: center; }
+  .af-items td { padding: 3.5px 5px; border-bottom: 1px solid #dde7f0; font-size: 7.9pt; }
+  .af-items tbody tr:nth-child(even) td { background: #f5f8fa; }
+  .af-items tr { page-break-inside: avoid; }
+  .af-items td.fill { background: #eaf2f8 !important; }
+  .af-items tr.blank td { height: 17px; }
+  .af-items tr.calc td { background: #eaf1f7 !important; font-weight: 700; }
+  .af-items tr.grand td { background: #082f52 !important; color: #fff; font-weight: 700; }
+  .af-items tr.tot td { background: #082f52 !important; color: #fff; font-weight: 700; border: 0; }
+  .af-items .desc-sub { color: #5b6d7e; font-size: 7.4pt; }
+  .af-note { font-size: 7.3pt; color: #5b6d7e; font-style: italic; padding: 3px 0; }
+  /* totals */
+  .af-sum > tbody > tr > td { vertical-align: top; padding: 0; }
+  .af-tot td { padding: 3px 7px; font-size: 8.1pt; border-bottom: 1.5px solid #fff; }
+  .af-tot td.k { font-weight: 700; color: #082f52; background: #f5f8fa; }
+  .af-tot td.v { text-align: right; background: #eaf2f8; white-space: nowrap; font-weight: 700; }
+  .af-tot tr.gold td { background: #f2b300 !important; color: #082f52; font-size: 9pt; }
+  .af-tot tr.navy td { background: #082f52 !important; color: #fff; font-size: 9pt; }
+  .af-tot tr.small td { font-size: 7.3pt; font-weight: 400; color: #5b6d7e; }
+  .af-left { padding-right: 10px !important; }
+  .af-left .line { font-size: 7.7pt; color: #18344c; padding: 2px 0; }
+  /* text sections */
+  .af-text { padding: 5px 6px; background: #f5f8fa; font-size: 7.8pt; color: #18344c; }
+  .af-text div { margin: 1px 0; }
+  .af-kv td { padding: 4px 6px; font-size: 7.8pt; border-bottom: 1.5px solid #fff; }
+  .af-kv td.k { width: 35%; font-weight: 700; color: #18344c; background: #f5f8fa; }
+  .af-kv td.v { background: #eaf2f8; min-height: 18px; }
+  .af-kv.wide td.k { width: 20%; }
+  /* signatures */
+  .af-sign td { padding: 3px 6px; font-size: 7.6pt; color: #18344c; width: 33.3%; }
+  .af-sign tr.h td { font-weight: 700; color: #082f52; text-transform: uppercase; font-size: 7.2pt; border-bottom: 1px solid #082f52; }
+  .af-sign tr.fill td { background: #eaf2f8; border-bottom: 1.5px solid #fff; color: #17528b; }
+  .af-sign tr.tall td { height: 34px; vertical-align: bottom; }
+  .af-sign img { max-height: 40px; max-width: 120px; }
+  .af-sign tr.note td { font-size: 7.2pt; color: #5b6d7e; }
+  /* terms */
+  .af-intro { font-size: 7.8pt; color: #5b6d7e; padding: 8px 0 6px; }
+  .af-terms td { padding: 4px 7px; font-size: 7.7pt; border-bottom: 2px solid #fff; background: #f5f8fa; color: #18344c; }
+  .af-terms tr:nth-child(even) td { background: #eaf2f8; }
+  .af-terms td.no { width: 4%; background: #082f52 !important; color: #fff; font-weight: 700; text-align: center; vertical-align: middle; }
+  .af-terms td.tt { width: 22%; font-weight: 700; color: #082f52; }
+  .af-terms tr { page-break-inside: avoid; }
+  .af-ack { font-weight: 700; color: #082f52; font-size: 7.8pt; padding-top: 6px; }
+  /* footer line */
+  .af-foot { margin-top: 10px; }
+  .af-foot td { font-size: 7pt; color: #5b6d7e; padding-top: 3px; }
+  .af-foot.mid td { text-align: center; }
+  .af-words td { padding: 4px 6px; font-size: 7.9pt; border-bottom: 1.5px solid #fff; }
+  .af-words td.k { width: 18%; font-weight: 700; color: #18344c; background: #f5f8fa; }
+  .af-words td.v { background: #eaf2f8; }
+</style>
+{%- endmacro -%}
+
+{%- macro header(f, page) -%}
+{%- set br = f.brand -%}
+{%- set title = page.title or f.title -%}
+{%- set subtitle = page.subtitle or f.subtitle -%}
+{%- if f.header == "band" -%}
+<table class="af-bandhd"><tr>
+  <td style="width:34%"><img src="{{ br.logo_white }}"></td>
+  <td><div class="n">{{ br.name_caps }}</div><div class="t">{{ title }}</div></td>
+</tr></table>
+<div class="af-gold"></div>
+{%- elif f.header == "certificate" -%}
+<table class="af-hd"><tr>
+  <td class="logo" style="width:45%"><img src="{{ br.logo }}"><div class="af-tagl">{{ br.tagline }}</div></td>
+  <td class="co-r"><b>{{ br.name }}</b><br>{{ br.address }}<br>{{ br.contact_line_po }}</td>
+</tr></table>
+<div class="af-gold"></div>
+<div class="af-titleband">{{ title }}</div>
+{%- else -%}
+<table class="af-hd"><tr>
+  <td class="logo" style="width:45%"><img src="{{ br.logo }}"></td>
+  <td class="ttl">
+    <div class="t">{{ title }}</div>
+    {%- if subtitle %}<div class="s">{{ subtitle }}</div>{% endif %}
+    <div class="tag">{{ br.tagline }}</div>
+  </td>
+</tr></table>
+<div class="af-gold"></div>
+<div class="af-co">
+  <div class="n">{{ br.name }}</div>
+  <div>{{ br.address_line }}</div>
+  <div>{{ br.contact_line }}</div>
+  {%- if page.trn_row %}
+  <table class="trn"><tr><td class="k">{{ page.trn_row[0] }}</td><td class="v">{{ page.trn_row[1] }}</td><td></td></tr></table>
+  {%- endif %}
+</div>
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro band(title, right=None) -%}
+{%- if right -%}
+<table class="af-band"><tr><td style="width:50%">{{ title }}</td><td style="padding-left:6px">{{ right }}</td></tr></table>
+{%- elif title -%}
+<div class="af-band">{{ title }}</div>
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro grid(b) -%}
+<div class="af-sec">
+{{ band(b.title, b.title_right) }}
+<table class="af-grid{% if b.wide %} w4{% endif %}">
+{%- set n = [b.left | length, b.right | length] | max -%}
+{%- for i in range(n) %}
+{%- set l = b.left[i] if i < b.left | length else ["", ""] -%}
+{%- set r = b.right[i] if i < b.right | length else ["", ""] %}
+<tr>
+  <td class="k">{{ l[0] }}</td><td class="v">{{ l[1] }}</td>
+  <td class="gap"></td>
+  <td class="k">{{ r[0] }}</td><td class="v">{{ r[1] }}</td>
+</tr>
+{%- endfor %}
+</table>
+</div>
+{%- endmacro -%}
+
+{%- macro items(b) -%}
+<div class="af-sec flow">
+{{ band(b.title) }}
+<table class="af-items">
+  <thead><tr>
+  {%- for col in b.cols %}<th class="{{ col[2] or '' }}"{% if col[1] %} style="width:{{ col[1] }}%"{% endif %}>{{ col[0] }}</th>{% endfor %}
+  </tr></thead>
+  <tbody>
+  {%- for row in b.rows %}
+  <tr class="{{ row.cls or '' }}">
+    {%- for cell in row.cells %}<td class="{{ b.cols[loop.index0][2] or '' }}{% if b.fill and loop.index0 in b.fill %} fill{% endif %}"{% if row.span and loop.first %} colspan="{{ row.span }}"{% endif %}>{{ cell }}</td>{% endfor %}
+  </tr>
+  {%- endfor %}
+  {%- for i in range(b.pad or 0) %}
+  <tr class="blank">{% for col in b.cols %}<td class="{{ col[2] or '' }}{% if b.fill and loop.index0 in b.fill %} fill{% endif %}"></td>{% endfor %}</tr>
+  {%- endfor %}
+  </tbody>
+</table>
+{%- if b.note %}<div class="af-note">{{ b.note }}</div>{% endif %}
+</div>
+{%- endmacro -%}
+
+{%- macro totals(b) -%}
+<div class="af-sec">
+<table class="af-sum"><tr>
+  <td class="af-left" style="width:{{ b.left_width or 56 }}%">
+    {%- if b.left_title %}{{ band(b.left_title) }}{% endif %}
+    {%- for line in b.left or [] %}<div class="line">{{ line }}</div>{% endfor %}
+  </td>
+  <td>
+    {%- if b.right_title %}{{ band(b.right_title) }}{% endif %}
+    <table class="af-tot">
+    {%- for row in b.rows %}
+      <tr class="{{ row[2] or '' }}"><td class="k">{{ row[0] }}</td><td class="v">{{ row[1] }}</td></tr>
+    {%- endfor %}
+    </table>
+  </td>
+</tr></table>
+</div>
+{%- endmacro -%}
+
+{%- macro text(b) -%}
+<div class="af-sec">
+{{ band(b.title) }}
+{%- if b.lines %}
+<div class="af-text">
+  {%- for line in b.lines %}<div>{% if b.numbered %}{{ loop.index }}. {% endif %}{{ line }}</div>{% endfor %}
+</div>
+{%- endif %}
+{%- if b.kv %}
+<table class="af-kv{% if b.wide %} wide{% endif %}">
+  {%- for row in b.kv %}<tr><td class="k">{{ row[0] }}</td><td class="v">{{ row[1] or "&nbsp;" }}</td></tr>{% endfor %}
+</table>
+{%- endif %}
+</div>
+{%- endmacro -%}
+
+{%- macro words(b) -%}
+<div class="af-sec">
+{{ band(b.title) }}
+<table class="af-words">
+  {%- for row in b.rows %}<tr><td class="k">{{ row[0] }}</td><td class="v">{{ row[1] or "&nbsp;" }}</td></tr>{% endfor %}
+</table>
+</div>
+{%- endmacro -%}
+
+{%- macro signs(b) -%}
+<div class="af-sec">
+{{ band(b.title) }}
+<table class="af-sign">
+  {%- if b.heads %}<tr class="h">{% for h in b.heads %}<td style="width:{{ (100 / (b.heads | length)) | round(2) }}%">{{ h }}</td>{% endfor %}</tr>{% endif %}
+  {%- for row in b.rows %}
+  <tr class="{{ b.row_cls or '' }}">{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
+  {%- endfor %}
+  {%- if b.notes %}<tr class="note">{% for n in b.notes %}<td>{{ n }}</td>{% endfor %}</tr>{% endif %}
+</table>
+</div>
+{%- endmacro -%}
+
+{%- macro terms(b) -%}
+<div class="af-sec flow">
+{%- if b.intro %}<div class="af-intro">{{ b.intro }}</div>{% endif %}
+{%- if b.title %}{{ band(b.title) }}{% endif %}
+<table class="af-terms">
+  {%- for t in b.entries %}
+  <tr><td class="no">{{ t[0] }}</td>{% if b.split %}<td class="tt">{{ t[1] }}</td><td>{{ t[2] }}</td>{% else %}<td><b>{{ t[1] }}</b> &mdash; {{ t[2] }}</td>{% endif %}</tr>
+  {%- endfor %}
+</table>
+{%- if b.ack %}<div class="af-ack">{{ b.ack }}</div>{% endif %}
+</div>
+{%- endmacro -%}
+
+{%- macro block(b) -%}
+{%- if b.t == "grid" %}{{ grid(b) }}
+{%- elif b.t == "items" %}{{ items(b) }}
+{%- elif b.t == "totals" %}{{ totals(b) }}
+{%- elif b.t == "text" %}{{ text(b) }}
+{%- elif b.t == "words" %}{{ words(b) }}
+{%- elif b.t == "signs" %}{{ signs(b) }}
+{%- elif b.t == "terms" %}{{ terms(b) }}
+{%- elif b.t == "band" %}<div class="af-sec">{{ band(b.title) }}</div>
+{%- elif b.t == "html" %}{{ b.html }}
+{%- endif %}
+{%- endmacro -%}
+
+{%- macro render(f) -%}
+{{ styles() }}
+<div class="af">
+{%- for page in f.pages %}
+<div class="af-page{% if not loop.first %} af-break{% endif %}">
+  {%- if page.watermark and f.brand.watermark %}<img class="af-wm" src="{{ f.brand.watermark }}">{% endif %}
+  {{ header(f, page) }}
+  {%- for b in page.blocks %}{{ block(b) }}{% endfor %}
+  {%- if page.foot %}
+  <table class="af-foot{% if page.foot | length == 1 %} mid{% endif %}"><tr>
+    {%- for part in page.foot %}<td class="{{ 'r' if loop.last and not loop.first else '' }}">{{ part }}</td>{% endfor %}
+  </tr></table>
+  {%- endif %}
+</div>
+{%- endfor %}
+</div>
+{%- endmacro -%}

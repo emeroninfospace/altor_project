@@ -15,6 +15,20 @@
   "return_date",
   "delivery_date",
   "return_ref",
+  "return_type",
+  "return_note_section",
+  "returned_by",
+  "vehicle_driver",
+  "site_contact",
+  "return_to",
+  "trip_ref",
+  "inspection_ref",
+  "column_break_rn",
+  "work_package",
+  "return_reason",
+  "hire_agreement",
+  "off_hire_notice_ref",
+  "off_hire_date",
   "items_section",
   "items",
   "totals_section",
@@ -106,6 +120,84 @@
    "label": "Return Note / Gate Pass No."
   },
   {
+   "fieldname": "return_type",
+   "fieldtype": "Select",
+   "label": "Return Note Type",
+   "options": "Own Asset - Contract\nOwn Asset - Hire\nCross Hire - Contract\nCross Hire - Hire",
+   "default": "Own Asset - Contract",
+   "description": "Chooses the printed return note layout and conditions"
+  },
+  {
+   "fieldname": "return_note_section",
+   "fieldtype": "Section Break",
+   "label": "Return Note Details",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "returned_by",
+   "fieldtype": "Data",
+   "label": "Returned By / Attention"
+  },
+  {
+   "fieldname": "vehicle_driver",
+   "fieldtype": "Data",
+   "label": "Vehicle / Driver"
+  },
+  {
+   "fieldname": "site_contact",
+   "fieldtype": "Data",
+   "label": "Site Contact / Phone"
+  },
+  {
+   "fieldname": "return_to",
+   "fieldtype": "Data",
+   "label": "Return To / Warehouse"
+  },
+  {
+   "fieldname": "trip_ref",
+   "fieldtype": "Data",
+   "label": "Trip / Collection Ref."
+  },
+  {
+   "fieldname": "inspection_ref",
+   "fieldtype": "Data",
+   "label": "Inspection / Receipt Ref."
+  },
+  {
+   "fieldname": "column_break_rn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "work_package",
+   "fieldtype": "Data",
+   "label": "Work Package / Area",
+   "depends_on": "eval:in_list([\"Own Asset - Contract\", \"Cross Hire - Contract\"], doc.return_type)"
+  },
+  {
+   "fieldname": "return_reason",
+   "fieldtype": "Small Text",
+   "label": "Return Reason",
+   "depends_on": "eval:in_list([\"Own Asset - Contract\", \"Cross Hire - Contract\"], doc.return_type)"
+  },
+  {
+   "fieldname": "hire_agreement",
+   "fieldtype": "Data",
+   "label": "Hire Agreement / Schedule",
+   "depends_on": "eval:in_list([\"Own Asset - Hire\", \"Cross Hire - Hire\"], doc.return_type)"
+  },
+  {
+   "fieldname": "off_hire_notice_ref",
+   "fieldtype": "Data",
+   "label": "Customer Off-hire Notice Ref.",
+   "depends_on": "eval:in_list([\"Own Asset - Hire\", \"Cross Hire - Hire\"], doc.return_type)"
+  },
+  {
+   "fieldname": "off_hire_date",
+   "fieldtype": "Date",
+   "label": "Agreed Off-hire Date",
+   "depends_on": "eval:in_list([\"Own Asset - Hire\", \"Cross Hire - Hire\"], doc.return_type)"
+  },
+  {
    "fieldname": "items_section",
    "fieldtype": "Section Break",
    "label": "Assets Returned"
@@ -189,7 +281,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-11-16 10:00:00.000000",
+ "modified": "2026-11-25 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Asset Return",

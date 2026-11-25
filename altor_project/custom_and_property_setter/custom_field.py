@@ -425,3 +425,9 @@ CREATE_FIELDS = {
 		},
 	],
 }
+
+# Fields printed on the ALTOR document designs (print_forms.py)
+from altor_project.custom_and_property_setter.print_fields import PRINT_FIELDS
+
+for _doctype, _rows in PRINT_FIELDS.items():
+	CREATE_FIELDS.setdefault(_doctype, []).extend(_rows)

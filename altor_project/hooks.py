@@ -97,6 +97,7 @@ jinja = {
 		"altor_project.print_utils.altor_item_taxes",
 		"altor_project.print_utils.altor_item_groups",
 		"altor_project.print_utils.altor_validity_days",
+		"altor_project.print_forms.altor_print_form",
 	]
 }
 
