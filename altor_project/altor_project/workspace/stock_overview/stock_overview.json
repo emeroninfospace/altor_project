@@ -397,7 +397,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Project Assets",
-   "link_count": 4,
+   "link_count": 5,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -435,6 +435,16 @@
   {
    "hidden": 0,
    "is_query_report": 1,
+   "label": "Project Asset Stock",
+   "link_count": 0,
+   "link_to": "Project Asset Stock",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
    "label": "Project Asset Cost",
    "link_count": 0,
    "link_to": "Project Asset Cost",
@@ -443,5 +453,5 @@
    "type": "Link"
   }
  ],
- "modified": "2026-11-16 10:00:00.000000"
+ "modified": "2026-11-25 14:00:00.000000"
 }

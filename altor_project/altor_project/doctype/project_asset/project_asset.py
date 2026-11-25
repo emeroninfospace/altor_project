@@ -73,8 +73,12 @@ class ProjectAsset(Document):
 		self.update(values)
 
 	def onload(self):
+		from altor_project.assets import item_stock
+
 		self.set_onload("book_value", flt(self.get_book_value(), 2))
 		self.set_onload("on_projects", self.get_on_projects())
+		if self.item_code:
+			self.set_onload("item_stock", item_stock(self.item_code, self.company))
 
 	def get_book_value(self, on_date=None):
 		return book_value(

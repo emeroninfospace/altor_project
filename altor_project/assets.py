@@ -111,6 +111,70 @@ def update_asset_quantities(assets):
 		)
 
 
+STOCK_FIELDS = [
+	"name",
+	"asset",
+	"asset_name",
+	"item_group",
+	"uom",
+	"company",
+	"purchase_date",
+	"qty",
+	"unit_cost",
+	"daily_rate",
+	"available_qty",
+	"allocated_qty",
+	"damaged_qty",
+	"depreciation_end_date",
+	"status",
+]
+
+
+def item_stock(item_code, company=None):
+	"""All purchases (Project Assets) of one asset item taken together.
+
+	Each purchase stays its own Project Asset (it is linked to its own Fixed Asset for the accounts);
+	this adds them up: 4 bought at 300 and 5 at 250 -> 9 units, average unit cost
+	(4 x 300 + 5 x 250) / 9 = 272.22. Averages are weighted by the quantity still owned
+	(purchased less damaged / lost); the average daily rate is worked out the same way.
+	"""
+	filters = {"item_code": item_code, "disabled": 0}
+	if company:
+		filters["company"] = company
+	lots = frappe.get_all(
+		"Project Asset", filters=filters, fields=STOCK_FIELDS, order_by="purchase_date asc, creation asc"
+	)
+	out = frappe._dict(
+		item_code=item_code,
+		purchases=len(lots),
+		qty=0.0,
+		owned=0.0,
+		available=0.0,
+		on_projects=0.0,
+		damaged=0.0,
+		avg_unit_cost=0.0,
+		avg_daily_rate=0.0,
+		uom=lots[0].uom if lots else None,
+		item_group=lots[0].item_group if lots else None,
+		asset_name=lots[0].asset_name if lots else None,
+		lots=lots,
+	)
+	cost = rate = 0.0
+	for lot in lots:
+		owned = max(flt(lot.qty) - flt(lot.damaged_qty), 0)
+		out.qty += flt(lot.qty)
+		out.owned += owned
+		out.available += max(flt(lot.available_qty), 0)
+		out.on_projects += flt(lot.allocated_qty)
+		out.damaged += flt(lot.damaged_qty)
+		cost += owned * flt(lot.unit_cost)
+		rate += owned * flt(lot.daily_rate)
+	if out.owned:
+		out.avg_unit_cost = flt(cost / out.owned, 2)
+		out.avg_daily_rate = flt(rate / out.owned, 4)
+	return out
+
+
 def lock_assets(assets):
 	"""Lock Project Asset rows while quantities are checked and changed (concurrent issues)."""
 	assets = sorted({a for a in assets if a})

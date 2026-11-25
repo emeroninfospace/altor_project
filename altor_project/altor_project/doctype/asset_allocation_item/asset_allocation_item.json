@@ -5,6 +5,7 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "item_code",
   "project_asset",
   "asset_name",
   "uom",
@@ -12,7 +13,6 @@
   "qty",
   "daily_rate",
   "daily_amount",
-  "item_code",
   "item_group",
   "charge_until",
   "column_break_status",
@@ -25,20 +25,32 @@
  ],
  "fields": [
   {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item",
+   "fetch_from": "project_asset.item_code",
+   "read_only": 0,
+   "in_list_view": 1,
+   "columns": 2,
+   "description": "Pick the item to issue from all its purchases (oldest first), or pick a Project Asset below"
+  },
+  {
    "fieldname": "project_asset",
    "fieldtype": "Link",
-   "label": "Project Asset",
+   "label": "Project Asset (Purchase)",
    "options": "Project Asset",
-   "reqd": 1,
+   "reqd": 0,
    "in_list_view": 1,
-   "columns": 3
+   "columns": 2,
+   "description": "Filled when you save, if you picked only the Item"
   },
   {
    "fieldname": "asset_name",
    "fieldtype": "Data",
    "label": "Asset Name",
    "fetch_from": "project_asset.asset_name",
-   "in_list_view": 1,
+   "in_list_view": 0,
    "columns": 2,
    "read_only": 1
   },
@@ -55,8 +67,7 @@
   {
    "fieldname": "available_qty",
    "fieldtype": "Float",
-   "label": "Available",
-   "fetch_from": "project_asset.available_qty",
+   "label": "Available (Item)",
    "in_list_view": 1,
    "columns": 1,
    "print_hide": 1,
@@ -75,7 +86,7 @@
   {
    "fieldname": "daily_rate",
    "fieldtype": "Currency",
-   "label": "Rate / Unit / Day",
+   "label": "Avg. Rate / Unit / Day",
    "options": "Company:company:default_currency",
    "precision": "4",
    "in_list_view": 1,
@@ -88,15 +99,7 @@
    "label": "Per Day",
    "options": "Company:company:default_currency",
    "in_list_view": 1,
-   "columns": 1,
-   "read_only": 1
-  },
-  {
-   "fieldname": "item_code",
-   "fieldtype": "Link",
-   "label": "Item",
-   "options": "Item",
-   "fetch_from": "project_asset.item_code",
+   "columns": 2,
    "read_only": 1
   },
   {
@@ -174,7 +177,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-11-16 10:00:00.000000",
+ "modified": "2026-11-25 14:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Asset Allocation Item",

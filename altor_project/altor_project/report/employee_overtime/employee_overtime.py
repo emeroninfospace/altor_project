@@ -27,34 +27,46 @@ def execute(filters=None):
 
 def get_data(filters):
 	s = get_settings()
+	if frappe.db.has_column("Timesheet Detail", "custom_employee"):
+		# crew Timesheets: each row has its own employee, worker type and agency
+		emp = "COALESCE(NULLIF(td.custom_employee, ''), ts.employee)"
+		wtype = "COALESCE(NULLIF(td.custom_worker_type, ''), NULLIF(ts.custom_worker_type, ''), 'Own Staff')"
+		supplier = "COALESCE(NULLIF(td.custom_manpower_supplier, ''), ts.custom_manpower_supplier)"
+	else:
+		emp, supplier = "ts.employee", "ts.custom_manpower_supplier"
+		wtype = "IFNULL(ts.custom_worker_type, 'Own Staff')"
 	conditions = ["ts.docstatus = 1", "DATE(td.from_time) BETWEEN %(from_date)s AND %(to_date)s"]
 	for field, column in (
 		("company", "ts.company"),
-		("employee", "ts.employee"),
+		("employee", emp),
 		("project", "td.project"),
-		("worker_type", "ts.custom_worker_type"),
-		("supplier", "ts.custom_manpower_supplier"),
+		("worker_type", wtype),
+		("supplier", supplier),
 	):
 		if filters.get(field):
 			conditions.append(f"{column} = %({field})s")
 	by_project = filters.get("group_by") == "Employee and Project"
-	project_col = "td.project" if by_project else "''"
+	where = " AND ".join(conditions)
+	project_col = "project" if by_project else "''"
+	# row values first, then grouped by plain columns (MariaDB's ONLY_FULL_GROUP_BY)
 	rows = frappe.db.sql(
 		f"""
-		SELECT ts.employee, MAX(ts.employee_name) AS employee_name,
-			MAX(IFNULL(ts.custom_worker_type, 'Own Staff')) AS worker_type,
-			MAX(ts.custom_manpower_supplier) AS supplier, {project_col} AS project,
-			COUNT(DISTINCT DATE(td.from_time)) AS days,
-			SUM(td.custom_normal_hours) AS normal_hours,
-			SUM(td.custom_ot1_hours) AS ot1_hours,
-			SUM(td.custom_ot2_hours) AS ot2_hours,
-			SUM(td.custom_ot_cost) AS ot_amount,
-			SUM(td.custom_labour_cost) AS total_cost
-		FROM `tabTimesheet Detail` td
-		INNER JOIN `tabTimesheet` ts ON ts.name = td.parent
-		WHERE {" AND ".join(conditions)}
-		GROUP BY ts.employee, {project_col}
-		ORDER BY MAX(ts.employee_name), {project_col}
+		SELECT employee, MAX(employee_name) AS employee_name, MAX(worker_type) AS worker_type,
+			MAX(supplier) AS supplier, {project_col} AS project, COUNT(DISTINCT day) AS days,
+			SUM(normal_hours) AS normal_hours, SUM(ot1_hours) AS ot1_hours, SUM(ot2_hours) AS ot2_hours,
+			SUM(ot_amount) AS ot_amount, SUM(total_cost) AS total_cost
+		FROM (
+			SELECT {emp} AS employee, IFNULL(e.employee_name, ts.employee_name) AS employee_name,
+				{wtype} AS worker_type, {supplier} AS supplier, td.project, DATE(td.from_time) AS day,
+				td.custom_normal_hours AS normal_hours, td.custom_ot1_hours AS ot1_hours,
+				td.custom_ot2_hours AS ot2_hours, td.custom_ot_cost AS ot_amount, td.custom_labour_cost AS total_cost
+			FROM `tabTimesheet Detail` td
+			INNER JOIN `tabTimesheet` ts ON ts.name = td.parent
+			LEFT JOIN `tabEmployee` e ON e.name = {emp}
+			WHERE {where}
+		) ot_rows
+		GROUP BY employee, {project_col}
+		ORDER BY MAX(employee_name), {project_col}
 		""",
 		filters,
 		as_dict=True,

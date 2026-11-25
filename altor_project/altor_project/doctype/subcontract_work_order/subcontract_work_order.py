@@ -7,6 +7,14 @@ from frappe.utils import add_days, getdate
 
 
 class SubcontractWorkOrder(Document):
+	def before_insert(self):
+		# the printed Annex A responsibility matrix: start from the standard activities
+		if not self.get("responsibilities"):
+			from altor_project.print_forms import content
+
+			for activity in content()["sco"]["matrix"]:
+				self.append("responsibilities", {"activity": activity})
+
 	def on_submit(self):
 		self.db_set("status", "To Receive and Bill")
 

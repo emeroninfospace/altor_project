@@ -38,6 +38,8 @@
   "damaged_qty",
   "column_break_qty",
   "allocations_html",
+  "item_stock_section",
+  "item_stock_html",
   "remarks_section",
   "remarks"
  ],
@@ -69,15 +71,6 @@
    "description": "The fixed asset in the accounts. Quantity, cost, salvage value and depreciation come from it (created automatically when the asset is submitted)."
   },
   {
-   "fieldname": "asset_status",
-   "fieldtype": "Data",
-   "label": "Asset Status",
-   "fetch_from": "asset.status",
-   "read_only": 1,
-   "no_copy": 1,
-   "depends_on": "eval:doc.asset"
-  },
-  {
    "fieldname": "item_code",
    "fieldtype": "Link",
    "label": "Item",
@@ -85,6 +78,15 @@
    "reqd": 1,
    "in_standard_filter": 1,
    "read_only_depends_on": "eval:doc.asset"
+  },
+  {
+   "fieldname": "asset_status",
+   "fieldtype": "Data",
+   "label": "Asset Status",
+   "fetch_from": "asset.status",
+   "read_only": 1,
+   "no_copy": 1,
+   "depends_on": "eval:doc.asset"
   },
   {
    "fieldname": "item_group",
@@ -287,6 +289,16 @@
    "label": "On Projects Now"
   },
   {
+   "fieldname": "item_stock_section",
+   "fieldtype": "Section Break",
+   "label": "All Purchases of this Item"
+  },
+  {
+   "fieldname": "item_stock_html",
+   "fieldtype": "HTML",
+   "label": "All Purchases of this Item"
+  },
+  {
    "fieldname": "remarks_section",
    "fieldtype": "Section Break",
    "label": "Remarks",
@@ -318,7 +330,7 @@
    "is_child_table": 1
   }
  ],
- "modified": "2026-11-16 16:00:00.000000",
+ "modified": "2026-11-25 14:00:00.000000",
  "modified_by": "Administrator",
  "module": "Altor Project",
  "name": "Project Asset",

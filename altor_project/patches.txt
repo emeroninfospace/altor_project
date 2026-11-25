@@ -24,3 +24,5 @@ altor_project.patches.v2026_11.quotation_for_lead_only
 altor_project.patches.v2026_11.project_from_sales_order_only
 altor_project.patches.v2026_11.my_assignments_dashboard
 altor_project.patches.v2026_11.project_customer_from_sales_order
+altor_project.patches.v2026_11.crew_timesheet
+altor_project.patches.v2026_11.client_print_formats

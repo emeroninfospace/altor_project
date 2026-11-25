@@ -7,7 +7,7 @@ from frappe.model.document import Document
 from frappe.utils import flt, getdate
 
 from altor_project.asset_accounting import ENDED, asset_state
-from altor_project.assets import lock_assets, on_movement, update_allocation
+from altor_project.assets import item_stock, lock_assets, on_movement, update_allocation
 
 
 class AssetAllocation(Document):
@@ -15,6 +15,7 @@ class AssetAllocation(Document):
 		if self.docstatus == 0:
 			self.status = "Draft"
 		self.validate_project()
+		self.expand_item_rows()
 		self.set_rows()
 		if self.docstatus == 0:
 			self.check_available(throw=False)
@@ -49,6 +50,49 @@ class AssetAllocation(Document):
 				_("Project {0} is {1}. Assets cannot be issued to it.").format(self.project, _(status))
 			)
 
+	def expand_item_rows(self):
+		"""A row with only an Item issues from that item's purchases, oldest first: it becomes one row
+		per Project Asset used (4 from the first purchase, 3 from the next...)."""
+		if not any(row.item_code and not row.project_asset for row in self.items):
+			return
+		taken = {}
+		for row in self.items:
+			if row.project_asset:
+				taken[row.project_asset] = taken.get(row.project_asset, 0) + flt(row.qty)
+		rows = []
+		for row in self.items:
+			if row.project_asset or not row.item_code:
+				rows.append(row)
+				continue
+			need = flt(row.qty)
+			if need <= 0:
+				frappe.throw(_("Row #{0}: Qty must be more than 0.").format(row.idx))
+			for lot in issue_lots(row.item_code, self.company, self.delivery_date):
+				free = flt(lot.available_qty) - taken.get(lot.name, 0)
+				if free <= 1e-9:
+					continue
+				use = min(free, need)
+				rows.append({"project_asset": lot.name, "item_code": row.item_code, "qty": use})
+				taken[lot.name] = taken.get(lot.name, 0) + use
+				need -= use
+				if need <= 1e-9:
+					break
+			if need > 1e-9:
+				stock = item_stock(row.item_code, self.company)
+				frappe.throw(
+					_("Row #{0}: only {1} {2} of {3} available (issuing {4}).").format(
+						row.idx,
+						flt(row.qty) - need,
+						stock.uom or "",
+						stock.asset_name or row.item_code,
+						flt(row.qty),
+					),
+					title=_("Insufficient Quantity"),
+				)
+		self.set("items", [])
+		for row in rows:
+			self.append("items", row)
+
 	def set_rows(self):
 		if not self.items:
 			frappe.throw(_("Add the assets to issue."))
@@ -73,6 +117,7 @@ class AssetAllocation(Document):
 				],
 			)
 		}
+		stocks = {}
 		total_qty = daily = 0
 		for row in self.items:
 			asset = assets.get(row.project_asset)
@@ -101,10 +146,14 @@ class AssetAllocation(Document):
 						row.idx, asset.asset_name, frappe.format(asset.purchase_date, "Date")
 					)
 				)
+			# all purchases of an item are charged at the item's average rate (weighted by quantity);
 			# rate and depreciation end are fixed when the asset is issued (validate does not run after submit)
-			row.daily_rate = flt(asset.daily_rate, 4)
+			if asset.item_code not in stocks:
+				stocks[asset.item_code] = item_stock(asset.item_code, asset.company)
+			stock = stocks[asset.item_code]
+			row.daily_rate = flt(stock.avg_daily_rate if stock.owned else asset.daily_rate, 4)
 			row.charge_until = asset.depreciation_end_date
-			row.available_qty = flt(asset.available_qty)
+			row.available_qty = flt(stock.available)
 			row.asset_name = asset.asset_name
 			row.item_code = asset.item_code
 			row.item_group = asset.item_group
@@ -138,6 +187,27 @@ class AssetAllocation(Document):
 		if throw:
 			frappe.throw(message, title=_("Insufficient Quantity"))
 		frappe.msgprint(message, title=_("Insufficient Quantity"), indicator="orange")
+
+
+def issue_lots(item_code, company, delivery_date=None):
+	"""Project Assets of an item that can be issued, oldest purchase first."""
+	lots = []
+	for lot in item_stock(item_code, company).lots:
+		if flt(lot.available_qty) <= 0:
+			continue
+		if delivery_date and lot.purchase_date and getdate(lot.purchase_date) > getdate(delivery_date):
+			continue
+		if asset_state(lot.name)[1] in ENDED:
+			continue
+		lots.append(lot)
+	return lots
+
+
+@frappe.whitelist()
+def get_item_stock(item_code, company=None):
+	"""Available quantity and average rates of an asset item over all its purchases."""
+	frappe.has_permission("Project Asset", "read", throw=True)
+	return item_stock(item_code, company)
 
 
 @frappe.whitelist()

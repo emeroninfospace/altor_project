@@ -97,6 +97,7 @@ jinja = {
 		"altor_project.print_utils.altor_item_taxes",
 		"altor_project.print_utils.altor_item_groups",
 		"altor_project.print_utils.altor_validity_days",
+		"altor_project.print_forms.altor_print_form",
 	]
 }
 
@@ -211,7 +212,10 @@ doc_events = {
 	},
 	# Timesheet labour cost: normal / OT 1 / OT 2 hours, own staff and outsourced
 	"Timesheet": {
-		"validate": "altor_project.labour.calculate_timesheet",
+		"validate": [
+			"altor_project.labour.calculate_timesheet",
+			"altor_project.labour.validate_employee_overlap",
+		],
 		"on_submit": "altor_project.labour.on_timesheet_change",
 		"on_cancel": "altor_project.labour.on_timesheet_change",
 	},

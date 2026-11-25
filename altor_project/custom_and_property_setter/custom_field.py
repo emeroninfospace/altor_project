@@ -278,6 +278,40 @@ CREATE_FIELDS = {
 		},
 	],
 	"Timesheet Detail": [
+		# crew Timesheet: leave the Timesheet's Employee empty and give each row its employee
+		{
+			"fieldname": "custom_employee",
+			"label": "Employee",
+			"fieldtype": "Link",
+			"options": "Employee",
+			"in_list_view": 1,
+			"columns": 2,
+			"insert_after": "activity_type",
+			"description": "Filled from the Timesheet's Employee; on a crew Timesheet (Employee at the top empty) one per row",
+		},
+		{
+			"fieldname": "custom_employee_name",
+			"label": "Employee Name",
+			"fieldtype": "Data",
+			"fetch_from": "custom_employee.employee_name",
+			"read_only": 1,
+			"insert_after": "custom_employee",
+		},
+		{
+			"fieldname": "custom_worker_type",
+			"label": "Worker Type",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"insert_after": "custom_item_group",
+		},
+		{
+			"fieldname": "custom_manpower_supplier",
+			"label": "Manpower Supplier",
+			"fieldtype": "Link",
+			"options": "Supplier",
+			"read_only": 1,
+			"insert_after": "custom_worker_type",
+		},
 		{
 			"fieldname": "custom_ot1_hours",
 			"label": "OT 1 Hrs",
@@ -391,3 +425,9 @@ CREATE_FIELDS = {
 		},
 	],
 }
+
+# Fields printed on the ALTOR document designs (print_forms.py)
+from altor_project.custom_and_property_setter.print_fields import PRINT_FIELDS
+
+for _doctype, _rows in PRINT_FIELDS.items():
+	CREATE_FIELDS.setdefault(_doctype, []).extend(_rows)
