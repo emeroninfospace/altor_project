@@ -7,7 +7,7 @@ altor_print_form(doc, kind) builds the page content (sections, rows, tables, ter
 templates/print/altor_form.html draws it, so every document shares one look:
 
 * Tax Invoice ............. Sales Invoice
-* Purchase Order .......... Purchase Order (General / Asset / Cross Hire, page 2 = terms)
+* Purchase Order .......... Purchase Order: General, Asset and Cross Hire, a print format each (page 2 = terms)
 * Subcontract Order ....... Subcontract Work Order (Annex A scope, Annex B terms)
 * Delivery Note ........... Delivery Note (trading and hire variants) and Asset Allocation
 * Return Note ............. Asset Return, Purchase Receipt return (return to supplier)
@@ -555,8 +555,9 @@ def _po_value(doc, label):
 	return _d(value) if field == "schedule_date" else _e(value)
 
 
-def purchase_order(doc):
-	po_type = doc.get("custom_po_type") if doc.get("custom_po_type") in PO_TYPES else "General Purchase"
+def purchase_order(doc, po_type="General Purchase"):
+	"""One of the three PO templates; each has its own print format (General, Asset, Cross Hire)."""
+	po_type = po_type if po_type in PO_TYPES else "General Purchase"
 	cfg = content()["po"][po_type]
 	br_ = brand(doc)
 	from altor_project.print_utils import altor_party
@@ -1727,6 +1728,8 @@ def payment_certificate(doc):
 BUILDERS = {
 	"tax_invoice": tax_invoice,
 	"purchase_order": purchase_order,
+	"asset_purchase_order": lambda doc: purchase_order(doc, "Asset Purchase"),
+	"cross_hire_purchase_order": lambda doc: purchase_order(doc, "Cross Hire"),
 	"delivery_note": delivery_note,
 	"asset_allocation": asset_allocation,
 	"asset_return": asset_return,

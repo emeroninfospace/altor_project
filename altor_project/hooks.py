@@ -51,6 +51,7 @@ doctype_js = {
 	"Timesheet": "public/js/timesheet.js",
 	"Item": "public/js/item.js",
 	"Sales Order": "public/js/sales_order.js",
+	"Purchase Order": "public/js/purchase_order.js",
 }
 
 override_doctype_class = {
