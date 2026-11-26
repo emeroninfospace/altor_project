@@ -103,4 +103,14 @@ def data(filters):
 				"company": pair.company,
 			}
 		)
+	if rows:
+		rows.append(total_row(rows))
 	return rows
+
+
+def total_row(rows):
+	"""Quantities and value added up; the averages are left out (a sum of averages means nothing)."""
+	row = {"item_code": _("Total"), "is_total_row": 1}
+	for field in ("purchases", "qty", "on_projects", "damaged", "available", "available_value"):
+		row[field] = sum(flt(r.get(field)) for r in rows)
+	return row

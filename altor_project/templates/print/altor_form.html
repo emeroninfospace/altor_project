@@ -7,9 +7,10 @@
     {{ af.render(altor_print_form(doc, "purchase_order")) }}
 -#}
 
-{%- macro styles() -%}
+{%- macro styles(f) -%}
 <style>
-  .af { font-family: Calibri, Carlito, "Segoe UI", "Helvetica Neue", Arial, sans-serif; font-size: 8.6pt; color: #172c40; line-height: 1.32; }
+  {{ f.fonts or "" }}
+  .af { font-family: AltorCarlito, Calibri, Carlito, "Segoe UI", "Helvetica Neue", Arial, sans-serif; font-size: 8.6pt; color: #172c40; line-height: 1.32; }
   .af * { box-sizing: border-box; }
   .af table { width: 100%; border-collapse: collapse; font-size: inherit; color: inherit; }
   .af td, .af th { font-size: inherit; vertical-align: top; }
@@ -42,6 +43,7 @@
   .af-bandhd .n { font-size: 9.5pt; font-weight: 700; letter-spacing: .3px; text-align: center; }
   .af-bandhd .t { font-size: 15pt; font-weight: 700; text-align: center; margin-top: 3px; }
   .af-bandhd + .af-gold { margin-top: 0; }
+  .af-bandhd div, .af-bandhd .n, .af-bandhd .t { color: #fff !important; }
   /* section bands */
   .af-sec { margin-top: 7px; page-break-inside: avoid; }
   .af-sec.flow { page-break-inside: auto; }
@@ -280,7 +282,7 @@
 {%- endmacro -%}
 
 {%- macro render(f) -%}
-{{ styles() }}
+{{ styles(f) }}
 <div class="af">
 {%- for page in f.pages %}
 <div class="af-page{% if not loop.first %} af-break{% endif %}">
